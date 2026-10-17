@@ -3,7 +3,8 @@
 // After each build, site.json goes beside the pages: the manifest OP System (https://app.officialpartner.work) reads
 // to show this site to its team and its client. It holds the project (op.config.json), the pages (read from the
 // built HTML: title, description, whether it is indexed), the screens, the Web System (the tokens of
-// src/styles/base.css, their values at 320 and 1440 px) and the themes (their roles). Nothing here runs in the
+// src/styles/base.css, a fluid one at both ends of its range, --viewport-min and --viewport-max; the text styles the
+// sheets declare) and the themes (their roles). Nothing here runs in the
 // browser: the review's bridge is added by OP System's proxy, never by this site.
 //
 // A build is kept out of search engines (dist/_headers says noindex) until op.config.json says the site is live
@@ -30,7 +31,7 @@ const FR = {
   tablet: "Tablette",
   mobile: "Mobile",
   sample: "Un titre qui donne le ton",
-  about: "Le système du site, lu dans src/styles/base.css : ses couleurs, ses textes et ses espaces, à 320 et à 1440 px.",
+  about: "Le système du site, lu dans src/styles/base.css : ses couleurs, ses textes et ses espaces, d’un bout à l’autre des écrans.",
 };
 const EN = {
   home: "Home",
@@ -49,14 +50,12 @@ const EN = {
   tablet: "Tablet",
   mobile: "Mobile",
   sample: "A heading that sets the tone",
-  about: "The site's system, read from src/styles/base.css: its colours, its text and its spacing, at 320 and 1440 px.",
+  about: "The site's system, read from src/styles/base.css: its colours, its text and its spacing, from the narrowest screen to the widest.",
 };
 
-const STYLES = [
-  ["display", "Display"], ["h1", "H1"], ["h2", "H2"], ["h3", "H3"], ["h4", "H4"], ["h5", "H5"], ["h6", "H6"],
-  ["text-large", "Text large"], ["text-main", "Text main"], ["text-small", "Text small"],
-];
-const STYLE_CLASS = { "text-large": "large", "text-main": "main", "text-small": "small" };
+/* the text styles' names in words (a style of the site's own keeps its name) */
+const STYLE_LABELS = { display: "Display", h1: "H1", h2: "H2", h3: "H3", h4: "H4", h5: "H5", h6: "H6",
+  large: "Text large", main: "Text main", small: "Text small" };
 
 const ROLES_FR = {
   background: "Fond", "background-2": "Fond 2", "background-3": "Fond 3", "background-skeleton": "Fond en chargement",
@@ -165,19 +164,31 @@ export default function opSystem(site) {
         // the home page first, then as the site lists them
         pages.sort((a, b) => (a.path === "./" ? -1 : b.path === "./" ? 1 : 0));
 
-        // the Web System, from the tokens
-        const { vars, themes } = readTokens(await read("src/styles/base.css"));
+        // the Web System, from the tokens: a fluid one runs from --viewport-min to --viewport-max (Lumos: 320 to 1440)
+        const css = await read("src/styles/base.css");
+        const { vars, themes } = readTokens(css);
+        const vmin = num(vars.get("--viewport-min")) || 320, vmax = num(vars.get("--viewport-max")) || 1440;
         const fluid = (name, label, kind) => {
           const min = num(vars.get(`${name}-min`)), max = num(vars.get(`${name}-max`));
           if (min === null || max === null) return [];
           const one = (edge, w, v) => ({ name: `${name}-${edge}`, label: t.at(label, w), type: "length", value: v, css: "{v}", unitLabel: "px",
             min: 0, max: kind === "type" ? 240 : 320, step: 1, editable: true });
-          return [one("min", 320, min), one("max", 1440, max)];
+          return [one("min", vmin, min), one("max", vmax, max)];
         };
+        // the text styles: each .text-style-<id> class of the site's styles whose size is a fluid token (--<id>, or
+        // --text-<id> as Lumos names the body's), in the order the sheet declares them, the headings first
+        const sheetsCss = [css, ...await Promise.all(["src/styles/patterns.css", "src/styles/global.css", "src/styles/utilities.css"].map(read))].join("\n");
+        const styleIds = [...new Set([...sheetsCss.matchAll(/\.text-style-([\w-]+)\s*[,{]/g)].map((m) => m[1]))];
+        const STYLES = styleIds.map((id) => [id, num(vars.get(`--${id}-min`)) !== null ? `--${id}` : num(vars.get(`--text-${id}-min`)) !== null ? `--text-${id}` : null])
+          .filter(([, token]) => token)
+          .sort((a, b) => {
+            const head = (x) => /^(display|h\d)$/.test(x[0]);
+            return head(a) && head(b) ? 0 : head(a) ? -1 : head(b) ? 1 : num(vars.get(`${b[1]}-max`)) - num(vars.get(`${a[1]}-max`));
+          });
         const label = (name) => tokenLabel(lang, name.slice(2));
         const colors = [...vars].filter(([, v]) => /^#[0-9a-f]{3,8}$/i.test(v)).map(([name, value]) => ({
           name, label: label(name), type: "color", value, editable: true }));
-        const type = STYLES.flatMap(([id, label]) => fluid(`--${id}`, label, "type"));
+        const type = STYLES.flatMap(([id, token]) => fluid(token, STYLE_LABELS[id] || words(id), "type"));
         const space = [
           ...[...vars.keys()].filter((n) => /^--space-\d+$/.test(n)).flatMap((n) => fluid(n, label(n), "space")),
           ...[...vars.keys()].filter((n) => /^--section-space-[\w-]+$/.test(n) && !/-(min|max)$/.test(n)).flatMap((n) => fluid(n, label(n), "space")),
@@ -206,11 +217,11 @@ export default function opSystem(site) {
           css: [...sheets],
           inline,
           base: "theme-light",
-          reference: 1440,
+          reference: vmax,
           updated: today,
           about: t.about,
           collections,
-          styles: STYLES.map(([id, label]) => ({ id, label, class: `text-style-${STYLE_CLASS[id] || id}`, size: `--${id}`, sample: t.sample })),
+          styles: STYLES.map(([id, token]) => ({ id, label: STYLE_LABELS[id] || words(id), class: `text-style-${id}`, size: token, sample: t.sample })),
           roles: roleNames.map((id) => ({ id, label: lang === "en" ? words(id) : (ROLES_FR[id] || words(id)), name: `--${id}` })),
           fonts: families.map((family) => ({ family, stack: `${family}, system-ui, sans-serif`, weights: weights.length ? weights : [400], use: t.site })),
         };
@@ -245,7 +256,7 @@ export default function opSystem(site) {
         const manifest = {
           schema: "op-web-system/1",
           project: Object.assign({ id: conf.id || "site", name: conf.name || siteName, client: conf.client || "", studio: conf.studio || "",
-            system: "Lumos for Astro", version: commit, updated: today, branch, lang, domain, description: conf.description || "" },
+            system: "Lumos for Astro", version: commit, updated: today, branch, lang, domain, live: conf.live === true, description: conf.description || "" },
             conf.staging ? { staging: conf.staging } : {}),
           modes: [
             { id: "desktop", label: t.desktop, media: "(min-width: 64rem)", min: 1024 },
