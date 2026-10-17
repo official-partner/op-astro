@@ -78,10 +78,18 @@ const TOKENS_FR = {
   "section-space-nav-overlap": "Section sous le menu", "site-margin": "Marge du site", "site-gutter": "Gouttière",
   "radius-small": "Rayon, petit", "radius-main": "Rayon", "border-width": "Épaisseur des lignes", "focus-width": "Contour du focus",
   "max-width-small": "Largeur maximale, petite", "nav-height": "Hauteur du menu", "hover-duration": "Durée du survol",
+  "base-duration": "Durée de base", "slow-duration": "Durée lente", "open-duration": "Durée d’ouverture",
+  "button-size": "Taille des boutons", "button-size-small": "Taille des boutons, petite", "button-gap": "Espace entre les boutons",
+  "icon-size": "Taille des icônes", "logo-width": "Largeur du logo", "tag-height": "Hauteur des étiquettes",
+  "ease-smooth": "Doux", "ease-osmo": "Osmo", "ease-rebound": "Rebond", "ease-spring": "Ressort", "ease-arrive": "Arrivée",
+  "ease-leave": "Départ", "ease-travel": "Trajet", "ease-flip": "Bascule", "ease-in-out": "Entrée et sortie",
+  "ease-out": "Sortie", "ease-in": "Entrée",
 };
 const tokenLabel = (lang, id) => {
-  if (lang !== "fr") return words(id);
+  const ease = /^ease-(.+)$/.exec(id);   // a curve by its own word (--ease-smooth: Smooth, Doux)
+  if (lang !== "fr") return words(ease ? ease[1] : id);
   if (TOKENS_FR[id]) return TOKENS_FR[id];
+  if (ease) return words(ease[1]);
   const space = /^space-(\d+)$/.exec(id);
   if (space) return `Espace ${space[1]}`;
   const swatch = /^([a-z]+)-(\d+)$/.exec(id);
@@ -262,7 +270,8 @@ export default function opSystem(site) {
           { id: "motion", name: t.motion, kind: "motion", variables: motion },
         ].filter((c) => c.variables.length);
         const astroConfig = await read("astro.config.mjs");
-        const families = [...astroConfig.matchAll(/name:\s*"([^"]+)"/g)].map((m) => m[1]);
+        // each font of astro.config.mjs and the variable Astro names it by (its family is renamed in the build: REM-6e9d…)
+        const families = [...astroConfig.matchAll(/name:\s*"([^"]+)"([\s\S]*?)(?=name:\s*"|$)/g)].map((m) => [m[1], (/cssVariable:\s*"(--[\w-]+)"/.exec(m[2]) || [])[1]]);
         const weights = [...new Set([...astroConfig.matchAll(/weight:\s*"?(\d+)/g)].map((m) => Number(m[1])))].sort((a, b) => a - b);
         const roleNames = themes.length ? themes[0].roles.map(([n]) => n.slice(2)) : [];
         const system = {
@@ -277,7 +286,7 @@ export default function opSystem(site) {
           collections,
           styles: STYLES.map(([id, token]) => ({ id, label: STYLE_LABELS[id] || words(id), class: `text-style-${id}`, size: token, sample: t.sample })),
           roles: roleNames.map((id) => ({ id, label: lang === "en" ? words(id) : (ROLES_FR[id] || words(id)), name: `--${id}` })),
-          fonts: families.map((family) => ({ family, stack: `${family}, system-ui, sans-serif`, weights: weights.length ? weights : [400], use: t.site })),
+          fonts: families.map(([family, cssVar]) => ({ family, stack: `${cssVar ? `var(${cssVar}, ${family})` : family}, system-ui, sans-serif`, weights: weights.length ? weights : [400], use: t.site })),
         };
         // each role's colour variable: a role that takes another role's (--button-text-hover: var(--background)) takes
         // that role's colour in the same theme, then :root's (a theme sets only what it changes)
@@ -288,10 +297,19 @@ export default function opSystem(site) {
           if (/^#/.test(vars.get(m[1]) || "")) return m[1];
           return colourOf(own, own.get(m[1]) || rootRoles.get(m[1]) || vars.get(m[1]), depth + 1);
         };
-        // a role's colour, and its opacity when it is a tint (color-mix(in lab, var(--text) 60%, transparent))
+        // a role's colour, and its opacity when it is a tint (color-mix(in lab, var(--text) 60%, transparent)); the tints
+        // the themes use, by colour, written as the site mixes them
+        const mixes = new Map();
         const refOf = (own, v) => {
-          const mix = /^color-mix\(in \w+,\s*(var\(--[\w-]+\))\s+(\d+(?:\.\d+)?)%,\s*transparent\)$/.exec(v || "");
-          if (mix) { const token = colourOf(own, mix[1]); return token ? { token, alpha: Number(mix[2]) / 100 } : null; }
+          const mix = /^color-mix\(in (\w+),\s*(var\(--[\w-]+\))\s+(\d+(?:\.\d+)?)%,\s*transparent\)$/.exec(v || "");
+          if (mix) {
+            const token = colourOf(own, mix[2]);
+            if (!token) return null;
+            const alpha = Number(mix[3]) / 100;
+            if (!mixes.has(token)) mixes.set(token, new Map());
+            if (!mixes.get(token).has(alpha)) mixes.get(token).set(alpha, mix[1]);
+            return { token, alpha };
+          }
           const token = colourOf(own, v);
           return token ? { token } : null;
         };
@@ -304,6 +322,49 @@ export default function opSystem(site) {
             ? [["Text on ground", "text", "background"], ["Text 2 on ground", "text-2", "background"], ["Button", "button-text", "button-background"]]
             : [["Texte sur le fond", "text", "background"], ["Texte 2 sur le fond", "text-2", "background"], ["Bouton", "button-text", "button-background"]],
         }));
+
+        // each colour's tints the themes use (a role at 10 % of --marine): no variable of their own in the site, the CSS
+        // they are written with, so OP System shows a role's value and writes it again when the team changes it
+        colors.forEach((c) => {
+          const used = mixes.get(c.name);
+          if (!used) return;
+          c.derived = [...used].sort((a, b) => a[0] - b[0]).map(([alpha, space]) => {
+            const pct = Math.round(alpha * 1000) / 10;
+            return { name: `${c.name}-${String(pct).replace(".", "-")}`, alpha, css: `color-mix(in ${space}, var(${c.name}) ${pct}%, transparent)` };
+          });
+        });
+
+        // the layout grid OP System draws over the pages (its « Grille »): the site's margin and gutter, its columns on
+        // each screen (--site-columns when the site names them, else 12, 8 and 4), as wide as its main width at most
+        const cols = (mode, fallback) => num(at(mode, "--site-columns")) || fallback;
+        const grid = vars.has("--site-margin") ? {
+          columns: [
+            { media: `(min-width: ${desktopAt}rem)`, count: cols("desktop", 12) },
+            { media: `(min-width: ${tabletAt}rem)`, count: cols("tablet", 8) },
+            { count: cols("mobile", 4) },
+          ],
+          margin: "var(--site-margin)",
+          gutter: vars.has("--site-gutter") ? "var(--site-gutter)" : undefined,
+          max: vars.has("--max-width-main") ? "calc(var(--max-width-main) + var(--site-margin) * 2)" : undefined,
+        } : null;
+
+        // the curves (--ease-*: a cubic-bezier() or a linear()), each in the family OP's ease bank sorts them by: a
+        // curve that goes past its end bounces (joueur), one that starts slow and ends slow is calm (posé), the rest net
+        const curveOf = (v, depth = 0) => {
+          const m = /^var\((--[\w-]+)\)$/.exec(v || "");
+          return m && depth < 5 ? curveOf(vars.get(m[1]), depth + 1) : v;
+        };
+        const familyOf = (css) => {
+          if (/^linear\(/.test(css)) return [...css.matchAll(/(-?\d*\.?\d+)(?:\s+[\d.]+%)?\s*[,)]/g)].some((m) => Number(m[1]) > 1.001 || Number(m[1]) < -0.001) ? "joueur" : "net";
+          const b = /^cubic-bezier\(([^)]+)\)$/.exec(css);
+          if (!b) return css === "linear" ? "constant" : "net";
+          const [x1, y1, x2, y2] = b[1].split(",").map(Number);
+          if (y1 > 1 || y2 > 1 || y1 < 0 || y2 < 0) return "joueur";
+          return x1 >= 0.3 && x2 <= 0.7 && y1 <= 0.1 && y2 >= 0.9 ? "pose" : "net";
+        };
+        const eases = [...vars].filter(([n]) => /^--ease-[\w-]+$/.test(n)).map(([name, v]) => [name, curveOf(v)])
+          .filter(([, css]) => /^(cubic-bezier|linear)\(/.test(css || ""))
+          .map(([name, css]) => ({ id: name.slice(2), label: label(name), token: name, css, family: familyOf(css) }));
 
         let domain = "";
         try { domain = siteUrl ? new URL(siteUrl).host : ""; } catch { domain = ""; }
@@ -320,9 +381,11 @@ export default function opSystem(site) {
           pages,
           system,
           themes: themeList,
+          eases,
           components: [],
           changes: [],
         };
+        if (grid) manifest.grid = JSON.parse(JSON.stringify(grid));
         await writeFile(path.join(out, "site.json"), JSON.stringify(manifest, null, 1) + "\n");
         // out of search engines until the site is live, and always on a branch other than main
         const indexed = branch === "main" && conf.live === true;
