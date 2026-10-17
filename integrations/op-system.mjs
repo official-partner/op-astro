@@ -100,13 +100,27 @@ const words = (id) => id.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase()
 function readTokens(css) {
   const root = /:root\s*\{([\s\S]*?)\n\}/.exec(css);
   const vars = new Map(root ? declarations(root[1]) : []);
+  // a screen's own values: @media (width >= Xrem) { :root { … } }, the narrowest first
+  const screens = [...css.matchAll(/@media \((?:width >= |min-width: ?)([\d.]+)rem\) \{\s*:root \{([\s\S]*?)\n  \}\n\}/g)]
+    .map((m) => ({ rem: Number(m[1]), vars: new Map(declarations(m[2])) })).sort((a, b) => a.rem - b.rem);
   const themes = [];
   for (const m of css.matchAll(/((?:[^{}]*\.theme-[\w-]+[^{}]*))\{([^{}]*--background[^{}]*)\}/g)) {
     const selectors = m[1].split(",").map((s) => s.trim());
     const own = selectors.find((s) => /^\.theme-[\w-]+$/.test(s));
     if (own) themes.push({ cls: own.slice(1), roles: declarations(m[2]) });
   }
-  return { vars, themes };
+  return { vars, screens, themes };
+}
+
+/* a length as the Web System edits it: the first rem, px or vw number of the value, the rest kept around it; a vw is
+   shown in px of the design (`ref` wide) */
+function measure(value, ref = 1440) {
+  const m = /(-?\d*\.?\d+)(rem|px|vw)/.exec(value || "");
+  if (!m) return null;
+  const n = Number(m[1]), at = (css) => value.slice(0, m.index) + css + value.slice(m.index + m[0].length);
+  if (m[2] === "rem") return { value: Math.round(n * 16 * 100) / 100, css: at("calc({v} * 0.0625rem)"), unit: "px" };
+  if (m[2] === "px") return { value: n, css: at("calc({v} * 0.0625rem)"), unit: "px" };
+  return { value: Math.round((n * ref) / 100 * 100) / 100, css: at(`calc({v} * ${Number((100 / ref).toFixed(6))}vw)`), unit: "px" };
 }
 
 async function htmlFiles(dir, base = dir) {
@@ -169,8 +183,33 @@ export default function opSystem(site) {
 
         // the Web System, from the tokens: a fluid one runs from --viewport-min to --viewport-max (Lumos: 320 to 1440)
         const css = await read("src/styles/base.css");
-        const { vars, themes } = readTokens(css);
+        const { vars, screens, themes } = readTokens(css);
         const vmin = num(vars.get("--viewport-min")) || 320, vmax = num(vars.get("--viewport-max")) || 1440;
+        // the screens: a phone below the narrowest media block, a tablet, a computer from the widest (Lumos: 48, 64rem)
+        const steps = screens.length ? screens.map((s) => s.rem) : [48, 64];
+        const tabletAt = steps.length > 1 ? steps[0] : 48, desktopAt = steps[steps.length - 1];
+        // the design's width: what a value that follows the screen's width is drawn at (op.config.json designWidth)
+        const ref = Number(conf.designWidth) || vmax;
+        const at = (mode, name) => {
+          const from = mode === "desktop" ? desktopAt : mode === "tablet" ? tabletAt : 0;
+          let v = vars.get(name);
+          screens.forEach((s) => { if (s.rem <= from && s.vars.has(name)) v = s.vars.get(name); });
+          return v;
+        };
+        const perScreen = (name) => screens.some((s) => s.vars.has(name));
+        const byScreen = (name, label, kind) => {
+          const modes = {};
+          for (const mode of ["desktop", "tablet", "mobile"]) {
+            const m = measure(at(mode, name), ref);
+            if (!m) return [];
+            modes[mode] = m;
+          }
+          return [{ name, label, type: "length", modes, unitLabel: "px", min: 0, max: kind === "type" ? 240 : 320, step: 1, editable: true }];
+        };
+        // a token as the Web System shows it: its two ends when it is fluid, its value on each screen when the media
+        // blocks change it, else its value
+        const entry = (name, label, kind) => num(vars.get(`${name}-min`)) !== null ? fluid(name, label, kind)
+          : perScreen(name) ? byScreen(name, label, kind) : null;
         const fluid = (name, label, kind) => {
           const min = num(vars.get(`${name}-min`)), max = num(vars.get(`${name}-max`));
           if (min === null || max === null) return [];
@@ -182,20 +221,22 @@ export default function opSystem(site) {
         // --text-<id> as Lumos names the body's), in the order the sheet declares them, the headings first
         const sheetsCss = [css, ...await Promise.all(["src/styles/patterns.css", "src/styles/global.css", "src/styles/utilities.css"].map(read))].join("\n");
         const styleIds = [...new Set([...sheetsCss.matchAll(/\.text-style-([\w-]+)\s*[,{]/g)].map((m) => m[1]))];
-        const STYLES = styleIds.map((id) => [id, num(vars.get(`--${id}-min`)) !== null ? `--${id}` : num(vars.get(`--text-${id}-min`)) !== null ? `--text-${id}` : null])
+        const sized = (token) => num(vars.get(`${token}-min`)) !== null || (vars.has(token) && perScreen(token));
+        const STYLES = styleIds.map((id) => [id, sized(`--${id}`) ? `--${id}` : sized(`--text-${id}`) ? `--text-${id}` : null])
           .filter(([, token]) => token)
           .sort((a, b) => {
             const head = (x) => /^(display|h\d)$/.test(x[0]);
-            return head(a) && head(b) ? 0 : head(a) ? -1 : head(b) ? 1 : num(vars.get(`${b[1]}-max`)) - num(vars.get(`${a[1]}-max`));
+            const big = (x) => num(vars.get(`${x[1]}-max`)) ?? (measure(at("desktop", x[1]), ref) || {}).value ?? 0;
+            return head(a) && head(b) ? 0 : head(a) ? -1 : head(b) ? 1 : big(b) - big(a);
           });
         const label = (name) => tokenLabel(lang, name.slice(2));
         const colors = [...vars].filter(([, v]) => /^#[0-9a-f]{3,8}$/i.test(v)).map(([name, value]) => ({
           name, label: label(name), type: "color", value, editable: true }));
-        const type = STYLES.flatMap(([id, token]) => fluid(token, STYLE_LABELS[id] || words(id), "type"));
+        const type = STYLES.flatMap(([id, token]) => entry(token, STYLE_LABELS[id] || words(id), "type") || []);
         const space = [
-          ...[...vars.keys()].filter((n) => /^--space-\d+$/.test(n)).flatMap((n) => fluid(n, label(n), "space")),
-          ...[...vars.keys()].filter((n) => /^--section-space-[\w-]+$/.test(n) && !/-(min|max)$/.test(n)).flatMap((n) => fluid(n, label(n), "space")),
-          ...fluid("--site-margin", label("--site-margin"), "space"), ...fluid("--site-gutter", label("--site-gutter"), "space"),
+          ...[...vars.keys()].filter((n) => /^--space-\d+$/.test(n)).flatMap((n) => entry(n, label(n), "space") || []),
+          ...[...vars.keys()].filter((n) => /^--section-space-[\w-]+$/.test(n) && !/-(min|max)$/.test(n)).flatMap((n) => entry(n, label(n), "space") || []),
+          ...(entry("--site-margin", label("--site-margin"), "space") || []), ...(entry("--site-gutter", label("--site-gutter"), "space") || []),
         ];
         const rem = (names) => names.map((name) => [name, remOf(vars.get(name))]).filter(([, v]) => v !== null).map(([name, value]) => ({
           name, label: label(name), type: "length", value, css: "{v}rem", unitLabel: "rem", min: 0, max: 100, step: 0.0625, editable: true }));
@@ -203,12 +244,12 @@ export default function opSystem(site) {
         // height, a logo's width), each in the first collection it fits
         const taken = new Set([...type, ...space].map((v) => v.name.replace(/-(min|max)$/, "")));
         const own = (test) => [...vars.keys()].filter((n) => !/-(min|max)$/.test(n) && !taken.has(n) && test(n))
-          .flatMap((n) => { taken.add(n); return num(vars.get(`${n}-min`)) !== null ? fluid(n, label(n), "size") : rem([n]); });
+          .flatMap((n) => { taken.add(n); return entry(n, label(n), "size") || rem([n]); });
         const radius = own((n) => /^--radius-/.test(n));
         const border = own((n) => /^--(border|focus)-width$/.test(n));
         const STYLE_PARTS = /-(line-height|letter-spacing|text-transform|margin-top|margin-bottom|font-family|font-weight|text-wrap)$/;
         const ofStyle = (n) => STYLE_PARTS.test(n) && STYLES.some(([, token]) => n.startsWith(`${token}-`));
-        const size = own((n) => !ofStyle(n) && !/^--(viewport|line-height|letter-spacing|focus-offset)/.test(n) && (remOf(vars.get(n)) !== null || num(vars.get(`${n}-min`)) !== null));
+        const size = own((n) => !ofStyle(n) && !/^--(viewport|line-height|letter-spacing|focus-offset)/.test(n) && (remOf(vars.get(n)) !== null || num(vars.get(`${n}-min`)) !== null || perScreen(n)));
         const motion = [...vars].filter(([n, v]) => msOf(v) !== null && /duration/.test(n)).map(([name, v]) => ({
           name, label: label(name), type: "time", value: msOf(v), css: "{v}ms", unitLabel: "ms", min: 0, max: 2000, step: 10, editable: true }));
         const collections = [
@@ -229,8 +270,8 @@ export default function opSystem(site) {
           page: "app",
           css: [...sheets],
           inline,
-          base: "theme-light",
-          reference: vmax,
+          base: themes.length ? themes[0].cls : "theme-light",
+          reference: ref,
           updated: today,
           about: t.about,
           collections,
@@ -272,9 +313,9 @@ export default function opSystem(site) {
             system: "Lumos for Astro", version: commit, updated: today, branch, lang, domain, live: conf.live === true, description: conf.description || "" },
             conf.staging ? { staging: conf.staging } : {}),
           modes: [
-            { id: "desktop", label: t.desktop, media: "(min-width: 64rem)", min: 1024 },
-            { id: "tablet", label: t.tablet, media: "(min-width: 48rem) and (max-width: 63.99rem)", min: 768, max: 1023 },
-            { id: "mobile", label: t.mobile, media: "(max-width: 47.99rem)", max: 767 },
+            { id: "desktop", label: t.desktop, media: `(min-width: ${desktopAt}rem)`, min: desktopAt * 16 },
+            { id: "tablet", label: t.tablet, media: `(min-width: ${tabletAt}rem) and (max-width: ${desktopAt - 0.01}rem)`, min: tabletAt * 16, max: desktopAt * 16 - 1 },
+            { id: "mobile", label: t.mobile, media: `(max-width: ${tabletAt - 0.01}rem)`, max: tabletAt * 16 - 1 },
           ],
           pages,
           system,

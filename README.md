@@ -11,8 +11,12 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   fluid token as its value at 320 px and at 1440 px, each colour, each theme's roles); the project from
   `op.config.json`. Nothing of it runs in the browser: OP System adds its own bridge to the pages through its proxy.
 - `op.config.json`: the project's id, name, client, studio and description, its staging link if it has one,
-  `systemPages` (the team's pages, shown under Système in OP System) and `live` (false until the launch: every build
-  is kept out of search engines until then, `dist/_headers`).
+  `systemPages` (the team's pages, shown under Système in OP System), `designWidth` (the width the design is drawn
+  at, when values follow the screen's width; 1440 by default) and `live` (false until the launch: every build is kept
+  out of search engines until then, `dist/_headers`).
+- Tokens per screen: Lumos's fluid tokens (`--x-min`, `--x-max`) show as their two ends; a site whose values change by
+  screen instead writes them in `@media (width >= Xrem) { :root { … } }` blocks of `src/styles/base.css` (a tablet's,
+  then a computer's), and each shows per screen in OP System, its screens' widths taken from those blocks.
 - `wrangler.jsonc`: an assets-only Worker on Cloudflare, its workers.dev address, and a preview address for every
   branch but `main` (Worker Previews). `main` is the live site; `review` is the one OP System shows.
 - `CLAUDE.md`: how Claude works here (the review branch, publishing only when asked, OP System's queue, the checks).
