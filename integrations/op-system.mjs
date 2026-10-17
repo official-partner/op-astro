@@ -107,6 +107,24 @@ const remOf = (v) => { const m = /^(-?\d+(?:\.\d+)?)rem$/.exec(v || ""); return 
 const msOf = (v) => { const m = /^(\d+(?:\.\d+)?)ms$/.exec(v || ""); return m ? Number(m[1]) : null; };
 const words = (id) => id.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
 
+/* the scripts OP System's settings list (its « Bibliothèques »): what a site loads, by its package, its imports or its
+   <script src> (cdnjs, jsDelivr, unpkg). Ids OP System knows; the GSAP plugins each by its own */
+const GSAP_PLUGINS = { ScrollTrigger: "scrolltrigger", Flip: "flip", SplitText: "splittext", DrawSVGPlugin: "drawsvg",
+  MorphSVGPlugin: "morphsvg", MotionPathPlugin: "motionpath", CustomEase: "customease", Observer: "observer",
+  Draggable: "draggable", InertiaPlugin: "inertia", ScrollToPlugin: "scrollto", ScrambleTextPlugin: "scrambletext",
+  TextPlugin: "text", ScrollSmoother: "scrollsmoother" };
+const PACKAGES = { gsap: "gsap", lenis: "lenis", "@studio-freight/lenis": "lenis", "@barba/core": "barba", swiper: "swiper",
+  "embla-carousel": "embla", "lottie-web": "lottie", "@lottiefiles/dotlottie-web": "lottie", three: "three" };
+async function sourceFiles(dir) {
+  const out = [];
+  for (const e of await readdir(dir, { withFileTypes: true }).catch(() => [])) {
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) out.push(...await sourceFiles(full));
+    else if (/\.(astro|ts|js|mjs|tsx|jsx)$/.test(e.name)) out.push(full);
+  }
+  return out;
+}
+
 /* the tokens of :root, and each theme's roles */
 function readTokens(css) {
   const root = /:root\s*\{([\s\S]*?)\n\}/.exec(css);
@@ -172,6 +190,8 @@ export default function opSystem(site) {
         const pages = [];
         const sheets = new Set();
         let inline = "";   // the home page's own <style> that loads the fonts and names them (Astro's <Font>)
+        const scriptSrcs = new Set();   // every <script src> of the pages (a library from a CDN)
+        let icon = "";   // the home page's favicon
         for (const file of await htmlFiles(out)) {
           if (/(^|\/)404\.html$/.test(file)) continue;
           const html = await readFile(path.join(out, file), "utf8");
@@ -182,6 +202,11 @@ export default function opSystem(site) {
           const index = !/<meta name="robots" content="[^"]*noindex/.test(html);
           for (const s of html.matchAll(/<link rel="stylesheet" href="\/?([^"]+\.css)"/g)) sheets.add(s[1]);
           if (route === "./") inline = [...html.matchAll(/<style>([^<]*)<\/style>/g)].map((s) => s[1]).filter((css) => /@font-face|--font-/.test(css)).join("\n");
+          for (const m of html.matchAll(/<script[^>]+src="([^"]+)"/g)) scriptSrcs.add(m[1]);
+          if (route === "./") {   // the home page's favicon, its SVG first
+            const icons = [...html.matchAll(/<link\b[^>]*>/g)].map((m) => m[0]).filter((l) => /rel="(?:shortcut )?icon"/.test(l)).map((l) => (/href="([^"]+)"/.exec(l) || [])[1]).filter(Boolean);
+            icon = (icons.find((x) => /\.svg(\?|$)/.test(x)) || icons[0] || "").replace(/^\//, "");
+          }
           const components = /example-components|composantes|components/.test(route);
           // a page of the team's (a test page, a style sheet): op.config.json's systemPages, « * » for any characters
           const internal = components || (conf.systemPages || []).some((g) => new RegExp(`^${String(g).replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`).test(route));
@@ -373,6 +398,31 @@ export default function opSystem(site) {
           .filter(([, css]) => /^(cubic-bezier|linear)\(/.test(css || ""))
           .map(([name, css]) => ({ id: name.slice(2), label: label(name), token: name, css, family: familyOf(css) }));
 
+        // the libraries the site loads (OP System's settings, « Bibliothèques »): its packages, the GSAP plugins it imports
+        // or loads from a CDN, the page transitions of Astro's router
+        const pkg = JSON.parse((await read("package.json")) || "{}");
+        const deps = Object.assign({}, pkg.dependencies || {}, pkg.devDependencies || {});
+        const libs = new Map();
+        const lib = (id, version) => { if (!libs.has(id) || (version && !libs.get(id).version)) libs.set(id, Object.assign({ id }, version ? { version } : {})); };
+        Object.entries(PACKAGES).forEach(([name, id]) => { if (deps[name]) lib(id, String(deps[name]).replace(/^[^\d]*/, "")); });
+        const code = (await Promise.all((await sourceFiles(path.join(root, "src"))).map((f) => readFile(f, "utf8").catch(() => "")))).join("\n");
+        for (const m of code.matchAll(/gsap\/(?:dist\/)?(\w+)/g)) if (GSAP_PLUGINS[m[1]]) lib(GSAP_PLUGINS[m[1]]);
+        for (const src of [...scriptSrcs, ...[...code.matchAll(/https:\/\/[^"'\s]+\.js/g)].map((m) => m[0])]) {
+          const g = /gsap(?:@|\/)(\d+\.\d+\.\d+)?.*?\/(\w+?)(?:\.min)?\.js/.exec(src);
+          if (g && /gsap/.test(src)) { if (g[2] === "gsap") lib("gsap", g[1]); else if (GSAP_PLUGINS[g[2]]) lib(GSAP_PLUGINS[g[2]]); continue; }
+          Object.entries({ lenis: "lenis", barba: "barba", swiper: "swiper", embla: "embla", lottie: "lottie", "three.": "three" }).forEach(([word, id]) => { if (src.toLowerCase().includes(word)) lib(id); });
+        }
+        if (libs.size && [...libs.keys()].some((id) => Object.values(GSAP_PLUGINS).includes(id))) lib("gsap");
+        const routed = /<ClientRouter\b|<ViewTransitions\b/.test(code);
+        if (routed) lib("view-transitions");
+        const libraries = [...libs.values()];
+        // the loading screen and the page transitions (op.config.json loader and transitions: the starter's Loader and
+        // Astro's router): OP System replays the one (?op-loader) and names the other
+        const motionOf = {
+          loader: conf.loader === true ? { name: lang === "en" ? "Loading screen" : "Écran de chargement" } : null,
+          transition: conf.transitions === true || routed ? { name: lang === "en" ? "Page transition" : "Transition entre les pages", kind: "view-transitions" } : null,
+        };
+
         let domain = "";
         try { domain = siteUrl ? new URL(siteUrl).host : ""; } catch { domain = ""; }
         const manifest = {
@@ -389,10 +439,13 @@ export default function opSystem(site) {
           system,
           themes: themeList,
           eases,
+          libraries,
+          motion: motionOf,
           components: [],
           changes: [],
         };
         if (grid) manifest.grid = JSON.parse(JSON.stringify(grid));
+        if (icon) manifest.favicon = icon;
         await writeFile(path.join(out, "site.json"), JSON.stringify(manifest, null, 1) + "\n");
         // out of search engines until the site is live, and always on a branch other than main
         const indexed = branch === "main" && conf.live === true;
