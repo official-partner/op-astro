@@ -11,9 +11,10 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   fluid token as its value at 320 px and at 1440 px, each colour, each theme's roles); the project from
   `op.config.json`. Nothing of it runs in the browser: OP System adds its own bridge to the pages through its proxy.
 - `op.config.json`: the project's id, name, client, studio and description, its staging link if it has one,
-  `systemPages` (the team's pages, shown under Système in OP System), `designWidth` (the width the design is drawn
-  at, when values follow the screen's width; 1440 by default) and `live` (false until the launch: every build is kept
-  out of search engines until then, `dist/_headers`).
+  `brandColor` (the ground of the favicon until the site has its logo's mark; OP's ink by default), `systemPages`
+  (the team's pages, shown under Système in OP System), `designWidth` (the width the design is drawn at, when values
+  follow the screen's width; 1440 by default) and `live` (false until the launch: every build is kept out of search
+  engines until then, `dist/_headers`).
 - Tokens per screen: Lumos's fluid tokens (`--x-min`, `--x-max`) show as their two ends; a site whose values change by
   screen instead writes them in `@media (width >= Xrem) { :root { … } }` blocks of `src/styles/base.css` (a tablet's,
   then a computer's), and each shows per screen in OP System, its screens' widths taken from those blocks.
@@ -21,13 +22,23 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   branch but `main` (Worker Previews). `main` is the live site; `review` is the one OP System shows.
 - `CLAUDE.md`: how Claude works here (the review branch, publishing only when asked, OP System's queue, the checks).
 - French by default: `SITE_LOCALE` fr-CA, the page's `lang`, the menu, the 404 page and the skip link.
+- OP System's look until the client's (Oct 17, 2026; Sam: « aucune trace de Lumos, à part pour donner le crédit… tout
+  devrait être relié à OP System et au langage graphique de l'app »): the tokens of `src/styles/base.css` are the
+  app's (its canvas, surfaces, ink, one blue accent, hairlines, regular weight, the system's type, its radii and
+  eases), the first page says what the site is and where things are (`src/components/system/StarterHome.astro`), and
+  the components page shows only the site's own components (`src/pages/composantes.astro`). A new site replaces the
+  swatches, the themes and the first page with the client's; Lumos's code (components, utilities, conventions, skills)
+  stays as it is.
+- `scripts/favicon.mjs` (`npm run favicon`, and `prebuild` for what is missing): `public/favicon.svg`, `favicon.ico`,
+  `apple-touch-icon.png` and `og-image.jpg` from the logo's mark (`src/assets/logo/mark.svg`), or from the site's
+  initial on `brandColor` until there is one (CLAUDE.md, Logo and favicon).
 
 ## Start a site
 
 1. GitHub: on this repository, « Use this template » › « Create a new repository », in `official-partner`, named after
    the client (`client-web`, private). Or ask Claude to copy it into an empty repository.
 2. Claude, in a session with the new repository: the project's id and names in `op.config.json`, the Worker's `name`
-   in `wrangler.jsonc` (the id), `SITE_NAME` and `SITE_DESCRIPTION` in `src/consts.ts`; `npm ci`, `npm run check`,
+   in `wrangler.jsonc` (the id), `SITE_NAME` and `SITE_DESCRIPTION` in `src/consts.ts` (the favicon follows the name at the next build); `npm ci`, `npm run check`,
    `npm run build`; a commit on `main`, then the branch `review` from it, both pushed.
 3. Cloudflare (Workers & Pages › Create › Import a repository): the repository, build command `npm run build`, deploy
    command `npx wrangler deploy`. Then the Worker's Settings › Build › Branch control: « Enable Preview Builds » (the
@@ -49,16 +60,33 @@ Node 22.19 or newer is required.
 
 ## Lumos for Astro
 
-The components, the styles, `LUMOS.md`, `AGENTS.md` and the skills in `.agents/skills/` are Lumos for Astro's, MIT
-licensed, © 2026 Timothy Ricks (LICENSE). Its documentation: [lumosframework.com](https://lumosframework.com). Taken
+Built with [Astro](https://astro.build) (MIT) and Lumos for Astro by Timothy Ricks. The components, the styles,
+`LUMOS.md`, `AGENTS.md` and the skills in `.agents/skills/` are Lumos for Astro's, MIT licensed, © 2026 Timothy Ricks
+(LICENSE). Its documentation: [lumosframework.com](https://lumosframework.com). Taken
 from `lumosframework/lumos-for-astro` at 1.0.0 (commit 04795f8); an upgrade goes through the `lumos-upgrade-version`
 skill. What OP changed in Lumos's own files, so an upgrade keeps it:
 
-- `astro.config.mjs`: the OP System integration.
-- `src/consts.ts`: French placeholders, `SITE_LOCALE` fr-CA, the components page out of search engines.
+- `astro.config.mjs`: the OP System integration; no font of its own (Lumos's Inter is removed: the system's stack,
+  `--primary-family`, until the site has its fonts).
+- `src/consts.ts`: French placeholders, `SITE_LOCALE` fr-CA, the components page (`/composantes`) out of search
+  engines.
 - `src/layouts/BaseLayout.astro`: `lang` from `SITE_LOCALE`.
-- `src/components/global/Nav.astro`, `Footer.astro`, `SkipLink.astro`, `src/pages/404.astro`,
-  `src/pages/example-components.astro`: their words in French.
+- `src/styles/base.css`: OP System's swatches (`--canvas`, `--sunken`, `--surface`, `--ink`, `--ink-2`, `--ink-3`,
+  `--grey-dark`, `--grey-light`, `--accent`, `--accent-light`, `--accent-text`) in place of Lumos's light, dark and
+  brand ones, and the three themes on them (light on the canvas, dark on the ink, brand on the accent); Lumos's token
+  names, roles and fluid structure kept. Headings in regular weight at -0.02em, radii 10 and 14 px, hover 140 ms and
+  opening 240 ms on `--ease-smooth`, OP's three eases (`--ease-smooth`, `--ease-osmo`, `--ease-rebound`), the nav
+  3.5rem high, a `--focus` role (the outline's colour) and `--mono-family` for code.
+- `src/components/utility/BaseHead.astro`: no font preload; `favicon.ico`, `favicon.svg` and `apple-touch-icon.png`.
+- `src/components/global/Nav.astro`, `Footer.astro`: the site's name set in type until `src/assets/logo/logo.svg`
+  exists (then the logo); the menu's links as the app's tiles, the footer in one row.
+- `src/components/global/SkipLink.astro`, `src/pages/404.astro`: their words in French; the 404 page on the grid's
+  left edge.
+- `src/pages/index.astro`: the starter's first page in place of Lumos's style guide cover.
+- `src/pages/example-components.astro` removed (Lumos's own components shown): `src/pages/composantes.astro` shows
+  the site's components only.
+- Removed: Lumos's logo (`src/assets/logo/`), `src/assets/graphics/lumos-background.svg`, the Inter file, Lumos's
+  favicon and social image (`public/`).
 - `wrangler.jsonc`: no custom domain, workers.dev and Worker Previews.
 - `.github/`: Lumos's publishing workflows and README assets removed; Dependabot on `review`, monthly.
 - `.gitattributes`: `wrangler.jsonc`, `.github` and `.gitattributes` kept in an archive of the starter (a site copied from

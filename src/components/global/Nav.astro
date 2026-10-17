@@ -1,8 +1,16 @@
 ---
+import type { SvgComponent } from "astro/types";
 import Icon from "@/components/media/Icon.astro";
 import NavLink from "@/components/global/NavLink.astro";
-import logo from "@/assets/logo/logo.svg";
 import { SITE_NAME } from "@/consts.ts";
+
+/* The client's logo once it is in src/assets/logo/logo.svg; the site's name set in type until then. */
+const [logo] = Object.values(
+  import.meta.glob<SvgComponent>("/src/assets/logo/logo.svg", {
+    eager: true,
+    import: "default",
+  }),
+);
 
 interface Props {
   /** Set to `false` to omit the component. */
@@ -18,9 +26,15 @@ const { render = true, overlap = false } = Astro.props;
   render && (
     <header class:list={["nav_wrap", overlap && "overlap"]}>
       <div class="nav_inner">
-        <a class="nav_logo" href="/" aria-label={SITE_NAME}>
-          <Icon src={logo} variant="full-width" />
-        </a>
+        {logo ? (
+          <a class="nav_logo" href="/" aria-label={SITE_NAME}>
+            <Icon src={logo} variant="full-width" />
+          </a>
+        ) : (
+          <a class="nav_name" href="/">
+            {SITE_NAME}
+          </a>
+        )}
         <button
           class="nav_toggle"
           type="button"
@@ -34,7 +48,7 @@ const { render = true, overlap = false } = Astro.props;
           <div class="nav_menu_inner">
             <ul class="nav_links">
               <NavLink href="/">Accueil</NavLink>
-              <NavLink href="/example-components">Composantes</NavLink>
+              <NavLink href="/composantes">Composantes</NavLink>
             </ul>
           </div>
         </nav>
@@ -128,6 +142,7 @@ const { render = true, overlap = false } = Astro.props;
 
     /* Bar height */
     .nav_logo,
+    .nav_name,
     .nav_toggle {
       min-height: var(--nav-height);
     }
@@ -136,6 +151,20 @@ const { render = true, overlap = false } = Astro.props;
       display: flex;
       align-items: center;
       width: 6.5rem;
+      transition: opacity var(--hover-duration) var(--hover-ease);
+      @media (hover: hover) {
+        &:hover {
+          opacity: 0.6;
+        }
+      }
+    }
+
+    .nav_name {
+      display: flex;
+      align-items: center;
+      font-size: var(--text-small);
+      font-weight: var(--primary-medium);
+      line-height: var(--line-height-medium);
       transition: opacity var(--hover-duration) var(--hover-ease);
       @media (hover: hover) {
         &:hover {
@@ -232,7 +261,6 @@ const { render = true, overlap = false } = Astro.props;
       flex-direction: column;
       padding: var(--space-2) var(--site-margin) var(--space-4);
       font-size: var(--text-main);
-      font-weight: var(--primary-medium);
       & > li + li {
         border-top: var(--border-width) solid var(--border);
       }
@@ -241,11 +269,12 @@ const { render = true, overlap = false } = Astro.props;
     .nav_link {
       display: block;
       padding-block: var(--space-3);
-      color: color-mix(in lab, currentcolor 60%, transparent);
+      color: var(--text-2);
       text-decoration: none;
-      text-underline-offset: 0.4em;
-      text-decoration-thickness: var(--border-width);
-      transition: color var(--hover-duration) var(--hover-ease);
+      border-radius: var(--radius-small);
+      transition:
+        color var(--hover-duration) var(--hover-ease),
+        background-color var(--hover-duration) var(--hover-ease);
       &[aria-current="page"] {
         color: var(--text);
       }
@@ -264,6 +293,7 @@ const { render = true, overlap = false } = Astro.props;
       .nav_menu {
         position: static;
         display: block;
+        margin-inline-end: -0.75rem;
         visibility: visible;
         background-color: transparent;
         border-bottom: 0;
@@ -279,7 +309,7 @@ const { render = true, overlap = false } = Astro.props;
         flex-wrap: wrap;
         align-items: center;
         padding: 0;
-        gap: var(--space-4);
+        gap: 0.25rem;
         font-size: var(--text-small);
         & > li + li {
           border-top: 0;
@@ -287,9 +317,15 @@ const { render = true, overlap = false } = Astro.props;
       }
 
       .nav_link {
-        padding-block: 0;
+        padding: 0.375rem 0.75rem;
+        line-height: var(--line-height-large);
         &[aria-current="page"] {
-          text-decoration: underline;
+          background-color: var(--background-3);
+        }
+        @media (hover: hover) {
+          &:hover:not([aria-current="page"]) {
+            background-color: color-mix(in lab, var(--text) 4.5%, transparent);
+          }
         }
       }
     }

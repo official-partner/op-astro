@@ -1,12 +1,13 @@
 {
   "id": "op-astro",
-  "name": "Gabarit Lumos pour Astro",
+  "name": "Gabarit de site",
   "client": "",
   "studio": "Official Partner",
-  "description": "Le point de départ d’un site en Lumos pour Astro, relu dans OP System.",
+  "description": "Le point de départ d’un nouveau site, relu dans OP System.",
   "staging": "",
   "live": false,
+  "brandColor": "#141413",
   "systemPages": [
-    "example-components"
+    "composantes"
   ]
 }

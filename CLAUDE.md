@@ -38,7 +38,7 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   (`site.json: N pages, N variables, N themes`): check it after a change to the pages or the tokens.
 - A new page: a file in `src/pages/`, its title and description given to the layout. It shows in OP System at the next
   build of `review`. A page kept out of search engines: `NOINDEX_ROUTES` in src/consts.ts. The components page
-  (`example-components`) and the team's own pages (op.config.json `systemPages`, « * » for any characters: a test page,
+  (`composantes`) and the team's own pages (op.config.json `systemPages`, « * » for any characters: a test page,
   a style sheet) are the system's: OP System shows them under Système. Keep those out of search engines too.
 - A new token: in `src/styles/base.css`, as Lumos names them (`--x-min` and `--x-max` for a fluid one, a hex for a
   colour in `:root`, a theme's roles in its `.theme-*` class). Edits made in OP System's Variables come back as
@@ -48,6 +48,29 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   (both clean, the site.json line as expected), a line in PROJECT.md, commit, `git push` (Cloudflare builds `review`
   in about a minute), then `add_journal` for each change, `settle_comment` for each comment, one `reply` per request,
   and `finish_work` with `published: true`. Never `main` from the queue.
+
+## The look, the logo and the favicon
+- The starter wears OP System's look (README.md, What this repository adds): a new site replaces the swatches and the
+  themes of `src/styles/base.css` with the client's (same token names), and `src/pages/index.astro` with its own home
+  page (then `src/components/system/StarterHome.astro` goes). Nothing of Lumos's own look comes back: no Lumos logo,
+  colour or showcase page; its credit stays in README.md and LICENSE only.
+- The client's logo goes in `src/assets/logo/logo.svg`: the nav and the footer show it in place of the site's name.
+- Logo and favicon: when a client's logo is added, draw `src/assets/logo/mark.svg` from the logo's first letter: that
+  letter's own path cut out of the logo's SVG (never a letter set in a font), centred on a square of the brand's main
+  colour (a `viewBox` square, the colour edge to edge, the letter about 42 % of the square's height, as OP System's own
+  mark: 13.5 of 32), in the colour the logo uses on that ground. Set `brandColor` in op.config.json to the same colour,
+  run `npm run favicon` (it writes `public/favicon.svg`, `favicon.ico`, `apple-touch-icon.png` and, unless one was
+  made by hand, `og-image.jpg`), look at the result, commit them with the mark. A site with no logo yet: its initial
+  (SITE_NAME) on OP's ink, which `prebuild` keeps up to date when the name or `brandColor` changes. A favicon or a
+  social image made by hand is never replaced by the build.
+
+## The components page
+- `src/pages/composantes.astro` (« Composantes », under Système in OP System) shows the components made for this site,
+  never Lumos's base ones: every file of `src/components/content/` and `src/components/section/` is listed by
+  itself. Each custom component gets its sample there when it is made, in the same commit:
+  `<ComponentSample file="content/HeroBlog.astro" note="…"><HeroBlog …sample props /></ComponentSample>` inside
+  `<ComponentList>`, with the client's copy or a plausible stand-in, never lorem ipsum. A component without one shows
+  under « Sans exemple ».
 
 ## Build and check
 - `npm ci` once, then `npm run dev` (http://localhost:4321), `npm run check` (types), `npm run build` (`dist/` and its

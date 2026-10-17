@@ -1,0 +1,71 @@
+---
+import { slotContent } from "@/utils/slots.ts";
+
+interface Props {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+  /** The component's file, from src/components: `content/HeroBlog.astro`. */
+  file: string;
+  /** What the sample shows, in one short line. */
+  note?: string;
+}
+
+const { render = true, file, note } = Astro.props;
+
+const name = (file.split("/").pop() ?? file).replace(/\.astro$/, "");
+const content = await slotContent(Astro.slots);
+---
+
+{
+  render && file && content && (
+    <article class="component-sample_wrap" id={name} data-component-file={file}>
+      <header class="component-sample_bar">
+        <h2 class="component-sample_name">{name}</h2>
+        {note && <p class="component-sample_note">{note}</p>}
+        <code class="component-sample_file">src/components/{file}</code>
+      </header>
+      <div class="component-sample_stage">
+        <Fragment set:html={content} />
+      </div>
+    </article>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .component-sample_wrap {
+      display: flex;
+      flex-direction: column;
+      scroll-margin-top: var(--nav-height);
+    }
+
+    .component-sample_bar {
+      width: var(--site-width);
+      max-width: var(--max-width-main);
+      margin-inline: auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: var(--space-1) var(--space-4);
+      padding-block: var(--space-3);
+      border-top: var(--border-width) solid var(--border);
+      font-size: var(--text-small);
+      line-height: var(--line-height-large);
+    }
+
+    .component-sample_name {
+      font-size: inherit;
+      font-weight: var(--primary-medium);
+      letter-spacing: normal;
+    }
+
+    .component-sample_note {
+      color: var(--text-2);
+    }
+
+    .component-sample_file {
+      margin-inline-start: auto;
+      color: var(--text-2);
+    }
+  }
+</style>

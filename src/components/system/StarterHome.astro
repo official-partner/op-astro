@@ -1,0 +1,183 @@
+---
+import Button from "@/components/Button.astro";
+import Icon from "@/components/media/Icon.astro";
+import arrow from "@/assets/icons/arrow-full.svg";
+import { SITE_NAME } from "@/consts.ts";
+
+interface Props {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+
+const places = [
+  {
+    name: "Les pages",
+    text: "Un fichier par page. Chacune paraît dans OP System à la construction suivante.",
+    path: "src/pages",
+  },
+  {
+    name: "Le Web System",
+    text: "Les couleurs, les textes et les espaces du site. OP System les montre sous Système.",
+    path: "src/styles/base.css",
+  },
+  {
+    name: "Les composantes",
+    text: "Celles faites pour ce site, chacune avec un exemple.",
+    path: "src/components",
+    href: "/composantes",
+  },
+  {
+    name: "Les décisions",
+    text: "Ce qui a été décidé pour ce site, par qui et quand.",
+    path: "PROJECT.md",
+  },
+];
+---
+
+{
+  render && (
+    <div class="starter_wrap">
+      <div class="starter_head">
+        <div class="starter_intro">
+          <h1 class="starter_title text-style-h3">{SITE_NAME}</h1>
+          <p class="starter_lead text-style-large">
+            Ce site vient d’être créé. Il se construit ici, page par page, et se
+            relit dans OP System avec le client.
+          </p>
+        </div>
+        <Button element="link" href="https://app.officialpartner.work">
+          Ouvrir OP System
+        </Button>
+      </div>
+      <section class="starter_panel" aria-labelledby="starter-places">
+        <h2 class="starter_panel_title text-style-h5" id="starter-places">
+          Où sont les choses
+        </h2>
+        <ul class="starter_list">
+          {places.map(({ name, text, path, href }) => {
+            const Row = href ? "a" : "div";
+            return (
+              <li>
+                <Row class:list={["starter_row", href && "link"]} href={href}>
+                  <span class="starter_name">{name}</span>
+                  <span class="starter_text">{text}</span>
+                  <span class="starter_end">
+                    <code class="starter_path">{path}</code>
+                    {href && (
+                      <span class="starter_arrow" aria-hidden="true">
+                        <Icon src={arrow} variant="small" />
+                      </span>
+                    )}
+                  </span>
+                </Row>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .starter_wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-7);
+    }
+
+    .starter_head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: var(--space-5) var(--space-6);
+    }
+
+    .starter_intro {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      max-width: 44ch;
+    }
+
+    .starter_lead {
+      color: var(--text-2);
+    }
+
+    .starter_panel {
+      padding: var(--space-4) var(--space-5) var(--space-2);
+      background-color: var(--background-3);
+      border-radius: var(--radius-main);
+    }
+
+    .starter_panel_title {
+      padding-block: var(--space-2) var(--space-4);
+    }
+
+    .starter_list > li {
+      border-top: var(--border-width) solid var(--border);
+    }
+
+    .starter_row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-1) var(--space-5);
+      padding-block: var(--space-3);
+      font-size: var(--text-small);
+      line-height: var(--line-height-large);
+      text-decoration: none;
+      @media (width >= 48rem) {
+        grid-template-columns: minmax(9rem, 1fr) minmax(0, 2.5fr) minmax(
+            max-content,
+            1fr
+          );
+        align-items: baseline;
+      }
+    }
+
+    .starter_name {
+      font-weight: var(--primary-medium);
+    }
+
+    .starter_text {
+      color: var(--text-2);
+    }
+
+    .starter_end {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      @media (width >= 48rem) {
+        justify-content: end;
+      }
+    }
+
+    .starter_path {
+      overflow-wrap: anywhere;
+      color: var(--text-2);
+    }
+
+    .starter_arrow {
+      display: flex;
+      width: 1em;
+      color: var(--text-2);
+      transition:
+        translate var(--hover-duration) var(--hover-ease),
+        color var(--hover-duration) var(--hover-ease);
+    }
+
+    .starter_row.link {
+      @media (hover: hover) {
+        &:hover .starter_arrow {
+          translate: 0.25em 0;
+          color: var(--text);
+        }
+      }
+    }
+  }
+</style>

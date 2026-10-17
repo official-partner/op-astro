@@ -1,23 +1,27 @@
 /* Design tokens */
 :root {
   /* Swatches */
-  --light-100: #ffffff;
-  --light-200: #ebebeb;
-  --light-300: #d9d9d9;
-  --dark-700: #453e42;
-  --dark-800: #2f2b2d;
-  --dark-900: #1f1d1e;
-  --brand-500: #c6fb50;
-  --brand-text: var(--dark-900);
+  --canvas: #efefec;
+  --sunken: #f4f4f1;
+  --surface: #ffffff;
+  --ink: #141413;
+  --ink-2: #1c1c1a;
+  --ink-3: #252523;
+  --grey-dark: #5c5c55;
+  --grey-light: #a3a39d;
+  --accent: #2e44ff;
+  --accent-light: #8f97ff;
+  --accent-text: var(--surface);
 
   /* Typography primitives */
-  --primary-family: var(--font-inter, system-ui, sans-serif);
+  --primary-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
   --primary-regular: 400;
   --primary-medium: 500;
   --primary-bold: 700;
 
   /* Letter spacing */
-  --letter-spacing-tight: -0.03em;
+  --letter-spacing-tight: -0.02em;
   --letter-spacing-normal: 0em;
 
   /* Line height */
@@ -33,16 +37,21 @@
   --focus-offset-inner: calc(var(--focus-width) * -1);
 
   /* Hover motion */
-  --hover-duration: 200ms;
-  --hover-ease: ease;
+  --hover-duration: 140ms;
+  --hover-ease: var(--ease-smooth);
 
   /* Opening motion */
-  --open-duration: var(--hover-duration);
-  --open-ease: var(--hover-ease);
+  --open-duration: 240ms;
+  --open-ease: var(--ease-smooth);
+
+  /* Eases */
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-osmo: cubic-bezier(0.625, 0.05, 0, 1);
+  --ease-rebound: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* Radius */
-  --radius-small: 0.5rem;
-  --radius-main: 1rem;
+  --radius-small: 0.625rem;
+  --radius-main: 0.875rem;
   --radius-round: 100vw;
 
   /* Fluid scale range */
@@ -55,7 +64,7 @@
   --max-width-full: 100%;
 
   /* Nav */
-  --nav-height: 5rem;
+  --nav-height: 3.5rem;
 
   /* Typography styles */
   --display: clamp(var(--display-min) / 16 * 1rem, ((var(--display-min) - ((var(--display-max) - var(--display-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--display-max) - var(--display-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--display-max) / 16 * 1rem);
@@ -67,7 +76,7 @@
   --display-margin-top: var(--space-7);
   --display-margin-bottom: var(--space-6);
   --display-font-family: var(--primary-family);
-  --display-font-weight: var(--primary-medium);
+  --display-font-weight: var(--primary-regular);
   --display-text-wrap: balance;
 
   --h1: clamp(var(--h1-min) / 16 * 1rem, ((var(--h1-min) - ((var(--h1-max) - var(--h1-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--h1-max) - var(--h1-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h1-max) / 16 * 1rem);
@@ -79,7 +88,7 @@
   --h1-margin-top: var(--space-7);
   --h1-margin-bottom: var(--space-6);
   --h1-font-family: var(--primary-family);
-  --h1-font-weight: var(--primary-medium);
+  --h1-font-weight: var(--primary-regular);
   --h1-text-wrap: balance;
 
   --h2: clamp(var(--h2-min) / 16 * 1rem, ((var(--h2-min) - ((var(--h2-max) - var(--h2-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--h2-max) - var(--h2-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h2-max) / 16 * 1rem);
@@ -91,7 +100,7 @@
   --h2-margin-top: var(--space-7);
   --h2-margin-bottom: var(--space-5);
   --h2-font-family: var(--primary-family);
-  --h2-font-weight: var(--primary-medium);
+  --h2-font-weight: var(--primary-regular);
   --h2-text-wrap: balance;
 
   --h3: clamp(var(--h3-min) / 16 * 1rem, ((var(--h3-min) - ((var(--h3-max) - var(--h3-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--h3-max) - var(--h3-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h3-max) / 16 * 1rem);
@@ -103,7 +112,7 @@
   --h3-margin-top: var(--space-6);
   --h3-margin-bottom: var(--space-5);
   --h3-font-family: var(--primary-family);
-  --h3-font-weight: var(--primary-medium);
+  --h3-font-weight: var(--primary-regular);
   --h3-text-wrap: balance;
 
   --h4: clamp(var(--h4-min) / 16 * 1rem, ((var(--h4-min) - ((var(--h4-max) - var(--h4-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--h4-max) - var(--h4-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h4-max) / 16 * 1rem);
@@ -115,7 +124,7 @@
   --h4-margin-top: var(--space-6);
   --h4-margin-bottom: var(--space-4);
   --h4-font-family: var(--primary-family);
-  --h4-font-weight: var(--primary-medium);
+  --h4-font-weight: var(--primary-regular);
   --h4-text-wrap: balance;
 
   --h5: clamp(var(--h5-min) / 16 * 1rem, ((var(--h5-min) - ((var(--h5-max) - var(--h5-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--h5-max) - var(--h5-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h5-max) / 16 * 1rem);
@@ -127,7 +136,7 @@
   --h5-margin-top: var(--space-5);
   --h5-margin-bottom: var(--space-4);
   --h5-font-family: var(--primary-family);
-  --h5-font-weight: var(--primary-medium);
+  --h5-font-weight: var(--primary-regular);
   --h5-text-wrap: balance;
 
   --h6: clamp(var(--h6-min) / 16 * 1rem, ((var(--h6-min) - ((var(--h6-max) - var(--h6-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--h6-max) - var(--h6-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h6-max) / 16 * 1rem);
@@ -139,7 +148,7 @@
   --h6-margin-top: var(--space-5);
   --h6-margin-bottom: var(--space-3);
   --h6-font-family: var(--primary-family);
-  --h6-font-weight: var(--primary-medium);
+  --h6-font-weight: var(--primary-regular);
   --h6-text-wrap: balance;
 
   --text-large: clamp(var(--text-large-min) / 16 * 1rem, ((var(--text-large-min) - ((var(--text-large-max) - var(--text-large-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--text-large-max) - var(--text-large-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--text-large-max) / 16 * 1rem);
@@ -236,70 +245,72 @@
 .theme-brand .theme-invert {
   color-scheme: light;
 
-  --background: var(--light-300);
-  --background-2: var(--light-200);
-  --background-3: var(--light-100);
-  --background-skeleton: color-mix(in lab, currentcolor 10%, transparent);
-  --text: var(--dark-900);
-  --text-2: color-mix(in lab, currentcolor 60%, transparent);
-  --border: color-mix(in lab, var(--text) 20%, transparent);
-  --heading-accent: color-mix(in srgb, var(--brand-500), black 20%);
+  --background: var(--canvas);
+  --background-2: var(--sunken);
+  --background-3: var(--surface);
+  --background-skeleton: color-mix(in lab, currentcolor 6%, transparent);
+  --text: var(--ink);
+  --text-2: var(--grey-dark);
+  --border: color-mix(in lab, var(--text) 9%, transparent);
+  --heading-accent: var(--accent);
+  --focus: var(--accent);
 
-  --selection-background: var(--text);
-  --selection-text: var(--background);
+  --selection-background: color-mix(in lab, var(--accent) 16%, transparent);
+  --selection-text: var(--text);
 
-  --button-background: var(--brand-500);
+  --button-background: var(--ink);
   --button-border: var(--button-background);
-  --button-text: var(--brand-text);
-  --button-background-hover: var(--text);
+  --button-text: var(--surface);
+  --button-background-hover: color-mix(in lab, var(--ink) 86%, var(--background));
   --button-border-hover: var(--button-background-hover);
-  --button-text-hover: var(--background);
+  --button-text-hover: var(--button-text);
 
-  --button-2-background: transparent;
+  --button-2-background: var(--surface);
   --button-2-border: var(--border);
   --button-2-text: var(--text);
-  --button-2-background-hover: var(--text);
-  --button-2-border-hover: var(--button-2-background-hover);
-  --button-2-text-hover: var(--background);
+  --button-2-background-hover: var(--sunken);
+  --button-2-border-hover: var(--button-2-border);
+  --button-2-text-hover: var(--text);
 
   --link-text: var(--text);
-  --link-border: var(--border);
+  --link-border: color-mix(in lab, var(--text) 17%, transparent);
   --link-text-hover: var(--text);
-  --link-border-hover: var(--brand-500);
+  --link-border-hover: var(--text);
 }
 
 .theme-dark,
 .theme-light .theme-invert {
   color-scheme: dark;
 
-  --background: var(--dark-900);
-  --background-2: var(--dark-800);
-  --background-3: var(--dark-700);
-  --background-skeleton: color-mix(in lab, currentcolor 10%, transparent);
-  --text: var(--light-100);
-  --text-2: color-mix(in lab, currentcolor 60%, transparent);
-  --border: color-mix(in lab, var(--text) 20%, transparent);
-  --heading-accent: var(--brand-500);
+  --background: var(--ink);
+  --background-2: var(--ink-2);
+  --background-3: var(--ink-3);
+  --background-skeleton: color-mix(in lab, currentcolor 8%, transparent);
+  --text: var(--canvas);
+  --text-2: var(--grey-light);
+  --border: color-mix(in lab, var(--text) 10%, transparent);
+  --heading-accent: var(--accent-light);
+  --focus: var(--accent-light);
 
-  --selection-background: var(--text);
-  --selection-text: var(--background);
+  --selection-background: color-mix(in lab, var(--accent-light) 28%, transparent);
+  --selection-text: var(--text);
 
-  --button-background: var(--brand-500);
+  --button-background: var(--canvas);
   --button-border: var(--button-background);
-  --button-text: var(--brand-text);
-  --button-background-hover: var(--text);
+  --button-text: var(--ink);
+  --button-background-hover: color-mix(in lab, var(--canvas) 86%, var(--background));
   --button-border-hover: var(--button-background-hover);
-  --button-text-hover: var(--background);
+  --button-text-hover: var(--button-text);
 
-  --button-2-background: transparent;
+  --button-2-background: var(--ink-2);
   --button-2-border: var(--border);
   --button-2-text: var(--text);
-  --button-2-background-hover: var(--text);
-  --button-2-border-hover: var(--button-2-background-hover);
-  --button-2-text-hover: var(--background);
+  --button-2-background-hover: var(--ink-3);
+  --button-2-border-hover: var(--button-2-border);
+  --button-2-text-hover: var(--text);
 
   --link-text: var(--text);
-  --link-border: var(--border);
+  --link-border: color-mix(in lab, var(--text) 18%, transparent);
   --link-text-hover: var(--text);
   --link-border-hover: var(--text);
 }
@@ -307,31 +318,32 @@
 .theme-brand {
   color-scheme: dark;
 
-  --background: var(--brand-500);
+  --background: var(--accent);
   --background-2: color-mix(in lab, var(--background) 90%, var(--text));
   --background-3: color-mix(in lab, var(--background) 80%, var(--text));
   --background-skeleton: color-mix(in lab, currentcolor 10%, transparent);
-  --text: var(--brand-text);
-  --text-2: color-mix(in lab, currentcolor 60%, transparent);
-  --border: color-mix(in lab, var(--text) 20%, transparent);
-  --heading-accent: color-mix(in srgb, var(--text), white 20%);
+  --text: var(--accent-text);
+  --text-2: color-mix(in lab, var(--text) 84%, transparent);
+  --border: color-mix(in lab, var(--text) 24%, transparent);
+  --heading-accent: var(--text);
+  --focus: var(--text);
 
   --selection-background: var(--text);
   --selection-text: var(--background);
 
-  --button-background: var(--brand-text);
+  --button-background: var(--accent-text);
   --button-border: var(--button-background);
-  --button-text: var(--background);
-  --button-background-hover: var(--light-100);
+  --button-text: var(--accent);
+  --button-background-hover: color-mix(in lab, var(--accent-text) 88%, var(--background));
   --button-border-hover: var(--button-background-hover);
-  --button-text-hover: var(--dark-900);
+  --button-text-hover: var(--button-text);
 
   --button-2-background: transparent;
   --button-2-border: var(--border);
   --button-2-text: var(--text);
-  --button-2-background-hover: var(--light-100);
-  --button-2-border-hover: var(--button-2-background-hover);
-  --button-2-text-hover: var(--dark-900);
+  --button-2-background-hover: color-mix(in lab, var(--text) 12%, transparent);
+  --button-2-border-hover: var(--button-2-border);
+  --button-2-text-hover: var(--text);
 
   --link-text: var(--text);
   --link-border: var(--border);
@@ -441,6 +453,14 @@ label {
   font-weight: inherit;
 }
 
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--mono-family);
+  font-size: 0.875em;
+}
+
 select:has(option[value=""]:checked) {
   color: color-mix(in lab, currentcolor 60%, transparent);
 }
@@ -450,7 +470,7 @@ select:has(option[value=""]:checked) {
 }
 
 :focus-visible {
-  outline-color: var(--text);
+  outline-color: var(--focus);
   outline-offset: var(--focus-offset);
   outline-width: var(--focus-width);
   outline-style: solid;
