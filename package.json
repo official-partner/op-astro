@@ -9,10 +9,12 @@
   "scripts": {
     "dev": "astro dev",
     "check": "astro check",
+    "prebuild": "node scripts/favicon.mjs --if-missing",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "favicon": "node scripts/favicon.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",

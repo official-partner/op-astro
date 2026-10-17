@@ -1,0 +1,207 @@
+---
+import { slotContent } from "@/utils/slots.ts";
+
+interface Props {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+
+/* The site's own components: every file of src/components/content and src/components/section. */
+const files = Object.keys(
+  import.meta.glob("/src/components/{content,section}/**/*.astro"),
+)
+  .map((file) => file.replace(/^\/src\/components\//, ""))
+  .sort();
+const nameOf = (file: string) =>
+  (file.split("/").pop() ?? file).replace(/\.astro$/, "");
+
+const samples = await slotContent(Astro.slots);
+const shown = new Set(
+  [...samples.matchAll(/data-component-file="([^"]+)"/g)].map((m) => m[1]),
+);
+const missing = files.filter((file) => !shown.has(file));
+
+const kinds = [
+  {
+    name: "Un bloc",
+    text: "Un en-tête de page, une carte, un appel à l’action : ce qui vit dans une section.",
+    path: "src/components/content",
+  },
+  {
+    name: "Une section entière",
+    text: "Quand son style ou son script agit sur toute la section, par exemple une section épinglée au défilement.",
+    path: "src/components/section",
+  },
+];
+---
+
+{
+  render && (
+    <div class="components_wrap">
+      <header class="components_head">
+        <h1 class="components_title text-style-h3">
+          Composantes
+          {files.length > 0 && (
+            <span class="components_count">{files.length}</span>
+          )}
+        </h1>
+        <p class="components_lead text-style-large">
+          Les composantes faites pour ce site, chacune dessinée avec un exemple.
+          Les composantes de base du système n’y sont pas.
+        </p>
+      </header>
+
+      {files.length === 0 && (
+        <section class="components_panel" aria-labelledby="components-empty">
+          <h2
+            class="components_panel_title text-style-h5"
+            id="components-empty"
+          >
+            Pas encore de composante
+          </h2>
+          <p class="components_note">
+            Une composante se fait quand une partie du site demande son propre
+            style ou son propre script. Elle paraît ici dès qu’elle existe, avec
+            un exemple.
+          </p>
+          <ul class="components_list">
+            {kinds.map(({ name, text, path }) => (
+              <li class="components_row">
+                <span class="components_name">{name}</span>
+                <span class="components_text">{text}</span>
+                <code class="components_path">{path}</code>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <Fragment set:html={samples} />
+
+      {missing.length > 0 && (
+        <section class="components_panel" aria-labelledby="components-missing">
+          <h2
+            class="components_panel_title text-style-h5"
+            id="components-missing"
+          >
+            Sans exemple
+            <span class="components_count">{missing.length}</span>
+          </h2>
+          <p class="components_note">
+            Leur exemple s’ajoute dans src/pages/composantes.astro.
+          </p>
+          <ul class="components_list">
+            {missing.map((file) => (
+              <li class="components_row">
+                <span class="components_name">{nameOf(file)}</span>
+                <span class="components_text">Pas encore d’exemple</span>
+                <code class="components_path">src/components/{file}</code>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .components_wrap {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-7);
+      padding-block: var(--section-space-small) var(--section-space-large);
+    }
+
+    .components_head,
+    .components_panel {
+      width: var(--site-width);
+      max-width: var(--max-width-main);
+      margin-inline: auto;
+    }
+
+    .components_head {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+
+    .components_count {
+      display: inline-flex;
+      vertical-align: middle;
+      margin-inline-start: var(--space-2);
+      align-items: center;
+      justify-content: center;
+      min-width: 1.75em;
+      height: 1.75em;
+      padding-inline: 0.5em;
+      border-radius: var(--radius-round);
+      background-color: color-mix(in lab, var(--text) 6%, transparent);
+      color: var(--text-2);
+      font-family: var(--primary-family);
+      font-size: var(--text-small);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: normal;
+      line-height: 1;
+    }
+
+    .components_lead {
+      max-width: 44ch;
+      color: var(--text-2);
+    }
+
+    .components_panel {
+      padding: var(--space-4) var(--space-5) var(--space-2);
+      background-color: var(--background-3);
+      border-radius: var(--radius-main);
+    }
+
+    .components_panel_title {
+      padding-top: var(--space-2);
+    }
+
+    .components_note {
+      max-width: 64ch;
+      padding-block: var(--space-4);
+      color: var(--text-2);
+      font-size: var(--text-small);
+      line-height: var(--line-height-large);
+    }
+
+    .components_row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-1) var(--space-5);
+      padding-block: var(--space-3);
+      border-top: var(--border-width) solid var(--border);
+      font-size: var(--text-small);
+      line-height: var(--line-height-large);
+      @media (width >= 48rem) {
+        grid-template-columns: minmax(9rem, 1fr) minmax(0, 2.5fr) minmax(
+            max-content,
+            1fr
+          );
+        align-items: baseline;
+      }
+    }
+
+    .components_name {
+      font-weight: var(--primary-medium);
+    }
+
+    .components_text,
+    .components_path {
+      color: var(--text-2);
+    }
+
+    .components_path {
+      overflow-wrap: anywhere;
+      @media (width >= 48rem) {
+        text-align: end;
+      }
+    }
+  }
+</style>

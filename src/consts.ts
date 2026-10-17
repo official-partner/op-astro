@@ -7,4 +7,4 @@ export const SITE_URL = "https://example.com";
 /** BCP 47 locale tag: the pages' `lang`, and how dates and numbers are written. */
 export const SITE_LOCALE = "fr-CA";
 /** Routes excluded from search and the sitemap. Surrounding slashes are ignored. */
-export const NOINDEX_ROUTES: string[] = ["/404", "/example-components"];
+export const NOINDEX_ROUTES: string[] = ["/404", "/composantes"];
