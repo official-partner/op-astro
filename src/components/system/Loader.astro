@@ -1,0 +1,207 @@
+---
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { SITE_NAME } from "@/consts.ts";
+
+interface Props {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+  /** `head`: its styles and the script that decides, before the first paint, whether it plays. `cover`: the screen itself, first in the body. */
+  part: "head" | "cover";
+}
+
+const { render = true, part } = Astro.props;
+
+/* The site's mark once it has one (src/assets/logo/mark.svg), else its favicon, drawn from its initial (scripts/favicon.mjs) */
+const [mark] = Object.values(
+  import.meta.glob<string>("/src/assets/logo/mark.svg", {
+    eager: true,
+    query: "?raw",
+    import: "default",
+  }),
+);
+const favicon = () => {
+  try {
+    return readFileSync(
+      path.join(process.cwd(), "public", "favicon.svg"),
+      "utf8",
+    );
+  } catch {
+    return "";
+  }
+};
+const icon =
+  part === "cover"
+    ? (mark ?? favicon())
+        .replace(/<\?xml[\s\S]*?\?>|<!--[\s\S]*?-->/g, "")
+        .trim()
+    : "";
+
+/* Its styles, inline before the site's stylesheets, so the screen is there at the first paint; the head's stylesheets
+   hold that paint until they load, so the tokens are there too */
+const CSS = String.raw`
+@layer components {
+  .loader_wrap {
+    display: none;
+  }
+
+  html[data-loader] .loader_wrap {
+    /* If the script never ends it: gone a second after its longest wait */
+    --_failsafe: 3.5s;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    background-color: var(--background);
+    color: var(--text);
+    transition: opacity var(--loader-duration) var(--loader-ease);
+  }
+
+  html[data-loader="play"] .loader_wrap {
+    animation: loader-failsafe 1ms linear var(--_failsafe) forwards;
+  }
+
+  html[data-loader="leave"] .loader_wrap {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .loader_mark {
+    display: block;
+    inline-size: 4rem;
+    border-radius: 21.875%;
+    overflow: clip;
+  }
+
+  .loader_mark > svg {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+  }
+
+  /* The mark arrives at the first paint (from its starting style), and leaves first */
+  .loader_mark,
+  .loader_name {
+    transition:
+      opacity calc(var(--loader-duration) * 0.6) var(--ease-smooth),
+      translate calc(var(--loader-duration) * 0.6) var(--ease-smooth);
+  }
+
+  @starting-style {
+    html[data-loader] :is(.loader_mark, .loader_name) {
+      opacity: 0;
+      translate: 0 0.5rem;
+    }
+  }
+
+  html[data-loader="leave"] :is(.loader_mark, .loader_name) {
+    opacity: 0;
+    translate: 0 -0.5rem;
+    transition-duration: calc(var(--loader-duration) / 2);
+    transition-timing-function: var(--loader-ease);
+  }
+
+  @keyframes loader-failsafe {
+    from,
+    to {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+}
+`;
+
+const SCRIPT = String.raw`
+(() => {
+  /* The loading screen (src/components/system/Loader.astro): once per tab session, every time with
+     ?op-loader in the address (OP System's replay), never again in the same tab nor, unless asked for,
+     with reduced motion. It holds at least MIN and at most MAX milliseconds, until the fonts are loaded
+     and the first image in view is decoded, then leaves. */
+  const MIN = 600;
+  const MAX = 2500;
+  const root = document.documentElement;
+  const replay = new URLSearchParams(location.search).has("op-loader");
+  let seen = true;
+  try {
+    seen = sessionStorage.getItem("op-loader") === "1";
+    sessionStorage.setItem("op-loader", "1");
+  } catch {}
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!replay && (seen || reduce)) return;
+
+  root.dataset.loader = "play";
+  const start = performance.now();
+  const until = (ms) =>
+    new Promise((done) =>
+      setTimeout(done, Math.max(0, start + ms - performance.now())),
+    );
+
+  const leave = () => {
+    if (root.dataset.loader !== "play") return;
+    root.dataset.loader = "leave";
+    document.dispatchEvent(new Event("op:loader-leave"));
+    const end = () => {
+      if (root.dataset.loader === "leave") delete root.dataset.loader;
+    };
+    const cover = document.querySelector(".loader_wrap");
+    if (!cover) return end();
+    void getComputedStyle(cover).opacity;
+    const moves = cover
+      .getAnimations({ subtree: true })
+      .map((move) => move.finished);
+    const late = new Promise((done) => setTimeout(done, 2000));
+    Promise.race([Promise.allSettled(moves), late]).then(end);
+  };
+
+  const ready = () => {
+    const image = [...document.images].find((img) => {
+      if (img.closest(".loader_wrap")) return false;
+      const box = img.getBoundingClientRect();
+      return box.width > 0 && box.bottom > 0 && box.top < innerHeight;
+    });
+    return Promise.all([
+      image && image.decode().catch(() => {}),
+      document.fonts && document.fonts.ready,
+      until(MIN),
+    ]);
+  };
+
+  until(MAX).then(leave);
+  if (document.readyState !== "loading") ready().then(leave);
+  else
+    addEventListener("DOMContentLoaded", () => ready().then(leave), {
+      once: true,
+    });
+})();
+`;
+
+/* Each page carries them: without their comments and line breaks */
+const compact = (code: string) =>
+  code
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\s*\n\s*/g, " ")
+    .trim();
+---
+
+{
+  render && part === "head" && (
+    <Fragment>
+      <style is:inline set:html={compact(CSS)} />
+      <script is:inline set:html={compact(SCRIPT)} />
+    </Fragment>
+  )
+}
+
+{
+  render && part === "cover" && (
+    <div class="loader_wrap" aria-hidden="true">
+      {icon ? (
+        <span class="loader_mark" set:html={icon} />
+      ) : (
+        <span class="loader_name text-style-h5">{SITE_NAME}</span>
+      )}
+    </div>
+  )
+}

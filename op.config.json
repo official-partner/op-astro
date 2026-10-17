@@ -6,6 +6,8 @@
   "description": "Le point de départ d’un nouveau site, relu dans OP System.",
   "staging": "",
   "live": false,
+  "loader": false,
+  "transitions": false,
   "brandColor": "#141413",
   "systemPages": [
     "composantes"

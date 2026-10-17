@@ -1,0 +1,121 @@
+---
+import { ClientRouter } from "astro:transitions";
+
+interface Props {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+
+/* After a page change, focus goes to the new page's content, as the skip link does (unless the address names a place
+   in the page); Astro's router announces the page's title */
+const SCRIPT = String.raw`
+document.addEventListener("astro:after-swap", () => {
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (id && document.getElementById(id)) return;
+  document.querySelector("main")?.focus({ preventScroll: true });
+});
+`;
+---
+
+{
+  render && (
+    <Fragment>
+      <ClientRouter />
+      <script is:inline set:html={SCRIPT} />
+    </Fragment>
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* A page change: the page leaves, lifting a little, then the next one rises into place; the nav holds still.
+       Back mirrors it. Only while Astro's router changes the page (data-astro-transition). */
+    html[data-astro-transition] {
+      --_page-shift: 1;
+    }
+
+    html[data-astro-transition="back"] {
+      --_page-shift: -1;
+    }
+
+    html[data-astro-transition]::view-transition {
+      background-color: var(--background);
+    }
+
+    html[data-astro-transition]::view-transition-group(*) {
+      animation-duration: var(--page-arrive-duration);
+      animation-timing-function: var(--page-arrive-ease);
+    }
+
+    /* A menu open on a phone folds into the bar instead of hanging over the next page */
+    html[data-astro-transition]::view-transition-group(site-nav) {
+      overflow: clip;
+    }
+
+    html[data-astro-transition]::view-transition-old(root) {
+      mix-blend-mode: normal;
+      animation: page-leave var(--page-leave-duration) var(--page-leave-ease)
+        both;
+    }
+
+    html[data-astro-transition]::view-transition-new(root) {
+      mix-blend-mode: normal;
+      animation: page-arrive var(--page-arrive-duration) var(--page-arrive-ease)
+        calc(var(--page-leave-duration) / 4) both;
+    }
+
+    /* Browsers without view transitions: Astro's fallback plays the same on the page's content */
+    html[data-astro-transition-fallback="old"] body > :is(main, footer) {
+      animation: page-leave var(--page-leave-duration) var(--page-leave-ease)
+        both;
+    }
+
+    html[data-astro-transition-fallback="new"] body > :is(main, footer) {
+      animation: page-arrive var(--page-arrive-duration) var(--page-arrive-ease)
+        both;
+    }
+
+    /* Reduced motion: a short crossfade, nothing travels */
+    @media (prefers-reduced-motion: reduce) {
+      html[data-astro-transition]::view-transition-group(*) {
+        animation: none;
+      }
+
+      html[data-astro-transition]::view-transition-old(root) {
+        animation: page-fade-out var(--hover-duration) linear both;
+      }
+
+      html[data-astro-transition]::view-transition-new(root) {
+        animation: page-fade-in var(--hover-duration) linear both;
+      }
+    }
+
+    @keyframes page-leave {
+      to {
+        opacity: 0;
+        translate: 0 calc(var(--_page-shift, 1) * -1rem);
+      }
+    }
+
+    @keyframes page-arrive {
+      from {
+        opacity: 0;
+        translate: 0 calc(var(--_page-shift, 1) * 1.5rem);
+      }
+    }
+
+    @keyframes page-fade-out {
+      to {
+        opacity: 0;
+      }
+    }
+
+    @keyframes page-fade-in {
+      from {
+        opacity: 0;
+      }
+    }
+  }
+</style>

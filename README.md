@@ -10,11 +10,23 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   op-system's README, site.json). The pages come from the built HTML; the Web System from `src/styles/base.css` (each
   fluid token as its value at 320 px and at 1440 px, each colour, each theme's roles); the project from
   `op.config.json`. Nothing of it runs in the browser: OP System adds its own bridge to the pages through its proxy.
+  Its `motion` says what OP System can show of the site's motion: `{ loader: { name } | null, transition: { name,
+  kind: "view-transitions" } | null }`, each `null` unless op.config.json turns it on (`loader`, `transitions`);
+  OP System replays the loading screen (« Chargement ») by loading a page with `?op-loader`, and the transition shows
+  when moving between pages.
 - `op.config.json`: the project's id, name, client, studio and description, its staging link if it has one,
   `brandColor` (the ground of the favicon until the site has its logo's mark; OP's ink by default), `systemPages`
   (the team's pages, shown under Système in OP System), `designWidth` (the width the design is drawn at, when values
-  follow the screen's width; 1440 by default) and `live` (false until the launch: every build is kept out of search
-  engines until then, `dist/_headers`).
+  follow the screen's width; 1440 by default), `live` (false until the launch: every build is kept out of search
+  engines until then, `dist/_headers`), `loader` and `transitions` (the loading screen and the page transitions, both
+  false until the team turns them on: CLAUDE.md, Loading screen and page transitions).
+- A loading screen and page transitions, ready to turn on and to restyle per client (Oct 17, 2026; Sam: « un loading
+  screen par projet et un langage de transition entre les pages (comme Barba), intégré dans l'UX de l'app »):
+  `src/components/system/Loader.astro` (the site's mark on the page's ground, from the first paint until the fonts and
+  the first image in view are ready, 600 ms to 2.5 s, once per tab session, `?op-loader` to replay it) and
+  `src/components/system/PageTransitions.astro` (Astro's `<ClientRouter />`: the page leaves lifting a little, the
+  next one rises into place, on `--page-leave-*` and `--page-arrive-*`; a crossfade with reduced motion). Every
+  script of the components runs again after a page change through `src/utils/page.ts` (`onPage`).
 - Tokens per screen: Lumos's fluid tokens (`--x-min`, `--x-max`) show as their two ends; a site whose values change by
   screen instead writes them in `@media (width >= Xrem) { :root { … } }` blocks of `src/styles/base.css` (a tablet's,
   then a computer's), and each shows per screen in OP System, its screens' widths taken from those blocks.
@@ -70,16 +82,24 @@ skill. What OP changed in Lumos's own files, so an upgrade keeps it:
   `--primary-family`, until the site has its fonts).
 - `src/consts.ts`: French placeholders, `SITE_LOCALE` fr-CA, the components page (`/composantes`) out of search
   engines.
-- `src/layouts/BaseLayout.astro`: `lang` from `SITE_LOCALE`.
+- `src/layouts/BaseLayout.astro`: `lang` from `SITE_LOCALE`; the loading screen (`Loader`, its head part and its
+  cover) and `PageTransitions`, each rendered only when op.config.json turns it on.
+- The scripts of `Nav`, `Footer`, `Form`, `Range`, `Accordion`, `Dropdown`, `Marquee`, `Modal`, `Slider` and `Tabs`:
+  their body in `onPage((signal) => { … })` (`src/utils/page.ts`, added), so they run again after a page change when
+  the transitions are on, `signal` on their listeners to `document`, `window` and media queries, their observers and
+  timers stopped with it. What each does is unchanged.
 - `src/styles/base.css`: OP System's swatches (`--canvas`, `--sunken`, `--surface`, `--ink`, `--ink-2`, `--ink-3`,
   `--grey-dark`, `--grey-light`, `--accent`, `--accent-light`, `--accent-text`) in place of Lumos's light, dark and
   brand ones, and the three themes on them (light on the canvas, dark on the ink, brand on the accent); Lumos's token
   names, roles and fluid structure kept. Headings in regular weight at -0.02em, radii 10 and 14 px, hover 140 ms and
   opening 240 ms on `--ease-smooth`, OP's three eases (`--ease-smooth`, `--ease-osmo`, `--ease-rebound`), the nav
-  3.5rem high, a `--focus` role (the outline's colour) and `--mono-family` for code.
+  3.5rem high, a `--focus` role (the outline's colour), `--mono-family` for code, and the page motion
+  (`--loader-duration` 600 ms and `--loader-ease`, `--page-leave-duration` 320 ms and `--page-leave-ease`,
+  `--page-arrive-duration` 560 ms and `--page-arrive-ease`).
 - `src/components/utility/BaseHead.astro`: no font preload; `favicon.ico`, `favicon.svg` and `apple-touch-icon.png`.
 - `src/components/global/Nav.astro`, `Footer.astro`: the site's name set in type until `src/assets/logo/logo.svg`
-  exists (then the logo); the menu's links as the app's tiles, the footer in one row.
+  exists (then the logo); the menu's links as the app's tiles, the footer in one row; the nav named for view
+  transitions (`view-transition-name: site-nav`), so it holds still while the page changes.
 - `src/components/global/SkipLink.astro`, `src/pages/404.astro`: their words in French; the 404 page on the grid's
   left edge.
 - `src/pages/index.astro`: the starter's first page in place of Lumos's style guide cover.
