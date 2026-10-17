@@ -1,0 +1,14 @@
+# Kept out of `git archive` tarballs, so sites scaffolded with `npm create
+# lumos` and downloads of the source archive don't inherit the framework's
+# own repository automation or deploy target. Clones and forks still get
+# everything — export-ignore only applies to archives.
+#
+# .agents/skills and the .claude/skills links are deliberately not listed: the
+# skills belong in generated sites. Only the dev-server config, which points at
+# this repository's setup, is withheld.
+
+/.gitattributes export-ignore
+/.github export-ignore
+/.claude/launch.json export-ignore
+/packages export-ignore
+/wrangler.jsonc export-ignore
