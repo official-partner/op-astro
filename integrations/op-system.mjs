@@ -139,7 +139,8 @@ export default function opSystem(site) {
         const lang = String(site.locale || "fr").split("-")[0];
         const t = lang === "en" ? EN : FR;
         const branch = process.env.WORKERS_CI_BRANCH || git("branch --show-current", root) || "main";
-        const commit = (process.env.WORKERS_CI_COMMIT_SHA || git("rev-parse HEAD", root)).slice(0, 7);
+        const sha = [process.env.WORKERS_CI_COMMIT_SHA, git("rev-parse HEAD", root)].find((s) => /^[0-9a-f]{7,40}$/.test(s || ""));
+        const commit = sha ? sha.slice(0, 7) : "";
         const today = new Date().toISOString().slice(0, 10);
 
         // the pages, as they were built
