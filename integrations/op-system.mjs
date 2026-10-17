@@ -84,6 +84,7 @@ const TOKENS_FR = {
   "base-duration": "Durée de base", "slow-duration": "Durée lente", "open-duration": "Durée d’ouverture",
   "button-size": "Taille des boutons", "button-size-small": "Taille des boutons, petite", "button-gap": "Espace entre les boutons",
   "icon-size": "Taille des icônes", "logo-width": "Largeur du logo", "tag-height": "Hauteur des étiquettes",
+  "loader-duration": "Durée du chargement", "page-leave-duration": "Sortie de page", "page-arrive-duration": "Arrivée de page",
   "ease-smooth": "Doux", "ease-osmo": "Osmo", "ease-rebound": "Rebond", "ease-spring": "Ressort", "ease-arrive": "Arrivée",
   "ease-leave": "Départ", "ease-travel": "Trajet", "ease-flip": "Bascule", "ease-in-out": "Entrée et sortie",
   "ease-out": "Sortie", "ease-in": "Entrée",

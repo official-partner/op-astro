@@ -12,8 +12,13 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   `op.config.json`. Nothing of it runs in the browser: OP System adds its own bridge to the pages through its proxy.
   Its `motion` says what OP System can show of the site's motion: `{ loader: { name } | null, transition: { name,
   kind: "view-transitions" } | null }`, each `null` unless op.config.json turns it on (`loader`, `transitions`);
-  OP System replays the loading screen (« Chargement ») by loading a page with `?op-loader`, and the transition shows
-  when moving between pages.
+  OP System replays the loading screen (« Écran de chargement », in its pages list) by loading the home page with
+  `?op-loader`, and the transition shows when moving between pages. Beside it: the tints the themes use (each
+  colour's `derived`, with the CSS it is written with), the layout grid (`grid`: `--site-margin`, `--site-gutter`, and
+  `--site-columns` per screen when the site names them, else 12, 8 and 4), the curves (`eases`, from `--ease-*`), the
+  libraries the site loads (`libraries`: its packages, the GSAP plugins it imports or loads from a CDN, Astro's
+  router), its favicon (`favicon`). OP System's settings list the libraries and the favicon (Technique) and turn a
+  change into a request to Claude.
 - `op.config.json`: the project's id, name, client, studio and description, its staging link if it has one,
   `brandColor` (the ground of the favicon until the site has its logo's mark; OP's ink by default), `systemPages`
   (the team's pages, shown under Système in OP System), `designWidth` (the width the design is drawn at, when values
