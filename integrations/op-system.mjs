@@ -198,15 +198,24 @@ export default function opSystem(site) {
         ];
         const rem = (names) => names.map((name) => [name, remOf(vars.get(name))]).filter(([, v]) => v !== null).map(([name, value]) => ({
           name, label: label(name), type: "length", value, css: "{v}rem", unitLabel: "rem", min: 0, max: 100, step: 0.0625, editable: true }));
+        // a token in rem, or a fluid one (its two ends): radii, borders, the other sizes of the site's own (a button's
+        // height, a logo's width), each in the first collection it fits
+        const taken = new Set([...type, ...space].map((v) => v.name.replace(/-(min|max)$/, "")));
+        const own = (test) => [...vars.keys()].filter((n) => !/-(min|max)$/.test(n) && !taken.has(n) && test(n))
+          .flatMap((n) => { taken.add(n); return num(vars.get(`${n}-min`)) !== null ? fluid(n, label(n), "size") : rem([n]); });
+        const radius = own((n) => /^--radius-/.test(n));
+        const border = own((n) => /^--(border|focus)-width$/.test(n));
+        const ofStyle = (n) => STYLES.some(([, token]) => n.startsWith(`${token}-`));
+        const size = own((n) => !ofStyle(n) && !/^--(viewport|line-height|letter-spacing|focus-offset)/.test(n) && (remOf(vars.get(n)) !== null || num(vars.get(`${n}-min`)) !== null));
         const motion = [...vars].filter(([n, v]) => msOf(v) !== null && /duration/.test(n)).map(([name, v]) => ({
           name, label: label(name), type: "time", value: msOf(v), css: "{v}ms", unitLabel: "ms", min: 0, max: 2000, step: 10, editable: true }));
         const collections = [
           { id: "colors", name: t.colors, kind: "color", variables: colors },
           { id: "type", name: t.type, kind: "type", variables: type },
           { id: "space", name: t.space, kind: "space", variables: space },
-          { id: "radius", name: t.radius, kind: "radius", variables: rem(["--radius-small", "--radius-main"]) },
-          { id: "border", name: t.border, kind: "border", variables: rem(["--border-width", "--focus-width"]) },
-          { id: "size", name: t.size, kind: "size", variables: rem(["--max-width-small", "--nav-height"]) },
+          { id: "radius", name: t.radius, kind: "radius", variables: radius },
+          { id: "border", name: t.border, kind: "border", variables: border },
+          { id: "size", name: t.size, kind: "size", variables: size },
           { id: "motion", name: t.motion, kind: "motion", variables: motion },
         ].filter((c) => c.variables.length);
         const astroConfig = await read("astro.config.mjs");
