@@ -1,0 +1,9 @@
+{
+  "id": "op-astro",
+  "name": "Gabarit Lumos pour Astro",
+  "client": "",
+  "studio": "Official Partner",
+  "description": "Le point de départ d’un site en Lumos pour Astro, relu dans OP System.",
+  "staging": "",
+  "live": false
+}

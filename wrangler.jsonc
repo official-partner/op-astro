@@ -1,6 +1,9 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "lumos-for-astro",
+  // The Worker's name: the project's id (op.config.json), in lowercase letters, digits and dashes. It is in every
+  // address Cloudflare gives the site: <name>.<account>.workers.dev, and <branch>-<name>.<account>.workers.dev for a
+  // branch's preview (the review branch: review-<name>...).
+  "name": "op-astro",
   "compatibility_date": "2026-08-13",
 
   // The built site. There is no `main`, so this deploys as an assets-only
@@ -10,14 +13,12 @@
     "not_found_handling": "404-page",
   },
 
-  // The domain the Worker answers on. `custom_domain` makes Cloudflare create
-  // and manage the DNS record for it, so the zone needs to be in this account.
-  "routes": [
-    {
-      "pattern": "preview.lumosframework.com",
-      "custom_domain": true,
-    },
-  ],
+  // The workers.dev address until the client's domain is added (in Cloudflare's dashboard, when the site goes live),
+  // and a preview address for each branch other than main. Cloudflare marks the previews noindex on workers.dev; the
+  // build marks every page noindex until op.config.json says "live": true.
+  "workers_dev": true,
+  "preview_urls": true,
+  "previews": {},
 
   "observability": {
     "enabled": true,

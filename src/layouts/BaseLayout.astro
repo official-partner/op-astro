@@ -5,6 +5,7 @@ import SkipLink from "@/components/global/SkipLink.astro";
 import Nav from "@/components/global/Nav.astro";
 import Footer from "@/components/global/Footer.astro";
 import type { SeoProps } from "@/types.ts";
+import { SITE_LOCALE } from "@/consts.ts";
 
 type Props = SeoProps & {
   /** Theme for the whole page. `inherit` leaves the root defaults in place. */
@@ -21,7 +22,7 @@ const { theme = "inherit", overlap = false, ...seo } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en" class:list={[theme !== "inherit" && `theme-${theme}`]}>
+<html lang={SITE_LOCALE} class:list={[theme !== "inherit" && `theme-${theme}`]}>
   <head>
     <BaseHead {...seo} />
     <slot name="head" />

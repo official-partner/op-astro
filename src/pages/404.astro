@@ -9,21 +9,21 @@ import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
 ---
 
 <Layout
-  title="Page not found"
-  description="The page you're looking for doesn't exist."
+  title="Page introuvable"
+  description="Cette page n’existe pas."
   overlap={true}
 >
   <Section paddingTop="navoverlap" paddingBottom="navoverlap" class="flex-grow">
     <ContentWrapper centered={true}>
       <Heading variant="h3" tag="h1" maxWidth={17}
-        >This page doesn't exist</Heading
+        >Cette page n’existe pas</Heading
       >
       <Paragraph variant="large" maxWidth={36}
-        >The page you're looking for may have moved, or the link that brought
-        you here might be out of date.</Paragraph
+        >Elle a peut-être changé d’adresse, ou le lien qui vous a mené ici
+        n’est plus à jour.</Paragraph
       >
       <ButtonWrapper>
-        <Button element="link" href="/">Back to home</Button>
+        <Button element="link" href="/">Retour à l’accueil</Button>
       </ButtonWrapper>
     </ContentWrapper>
   </Section>

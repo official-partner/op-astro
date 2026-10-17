@@ -1,8 +1,9 @@
 // @ts-check
 import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
-import { SITE_URL } from "./src/consts.ts";
+import { SITE_NAME, SITE_URL, SITE_LOCALE } from "./src/consts.ts";
 import { isNoindexRoute } from "./src/utils/seo.ts";
+import opSystem from "./integrations/op-system.mjs";
 
 export default defineConfig({
   site: SITE_URL,
@@ -10,6 +11,8 @@ export default defineConfig({
     sitemap({
       filter: (page) => !isNoindexRoute(new URL(page).pathname),
     }),
+    // site.json for OP System, beside the pages (integrations/op-system.mjs)
+    opSystem({ siteName: SITE_NAME, siteUrl: SITE_URL, locale: SITE_LOCALE }),
   ],
   fonts: [
     {

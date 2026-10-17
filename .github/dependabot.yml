@@ -1,10 +1,13 @@
 version: 2
 
+# Astro, its integrations and Wrangler, once a month, on the review branch: an update is seen in OP System before it
+# reaches the live site (main), like any other change.
 updates:
   - package-ecosystem: npm
     directory: "/"
+    target-branch: review
     schedule:
-      interval: weekly
+      interval: monthly
     allow:
       - dependency-name: astro
       - dependency-name: "@astrojs/*"
