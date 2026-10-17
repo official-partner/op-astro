@@ -74,10 +74,13 @@ const { render = true, overlap = false } = Astro.props;
 </noscript>
 
 <script>
-  const nav = document.querySelector<HTMLElement>(".nav_wrap");
-  const toggle = nav?.querySelector<HTMLButtonElement>(".nav_toggle");
+  import { onPage } from "@/utils/page.ts";
 
-  if (nav && toggle) {
+  onPage((signal) => {
+    const nav = document.querySelector<HTMLElement>(".nav_wrap");
+    const toggle = nav?.querySelector<HTMLButtonElement>(".nav_toggle");
+    if (!nav || !toggle) return;
+
     const setOpen = (open: boolean) => {
       nav.classList.toggle("open", open);
       toggle.setAttribute("aria-expanded", String(open));
@@ -91,25 +94,36 @@ const { render = true, overlap = false } = Astro.props;
       link.addEventListener("click", () => setOpen(false));
     });
 
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && nav.classList.contains("open")) {
-        setOpen(false);
-        toggle.focus();
-      }
-    });
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Escape" && nav.classList.contains("open")) {
+          setOpen(false);
+          toggle.focus();
+        }
+      },
+      { signal },
+    );
 
-    document.addEventListener("click", (event) => {
-      const target = event.target;
-      if (!nav.classList.contains("open") || !(target instanceof Node)) return;
-      if (!nav.contains(target)) setOpen(false);
-    });
+    document.addEventListener(
+      "click",
+      (event) => {
+        const target = event.target;
+        if (!nav.classList.contains("open") || !(target instanceof Node))
+          return;
+        if (!nav.contains(target)) setOpen(false);
+      },
+      { signal },
+    );
 
-    window
-      .matchMedia("(width >= 48rem)")
-      .addEventListener("change", (event) => {
+    window.matchMedia("(width >= 48rem)").addEventListener(
+      "change",
+      (event) => {
         if (event.matches) setOpen(false);
-      });
-  }
+      },
+      { signal },
+    );
+  });
 </script>
 
 <style is:global>
@@ -124,6 +138,8 @@ const { render = true, overlap = false } = Astro.props;
       background-color: var(--background);
       color: var(--text);
       border-bottom: var(--border-width) solid var(--border);
+      /* Holds still while the page changes (PageTransitions) */
+      view-transition-name: site-nav;
 
       &.overlap {
         position: fixed;

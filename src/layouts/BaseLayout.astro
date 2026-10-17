@@ -4,8 +4,11 @@ import BaseHead from "@/components/utility/BaseHead.astro";
 import SkipLink from "@/components/global/SkipLink.astro";
 import Nav from "@/components/global/Nav.astro";
 import Footer from "@/components/global/Footer.astro";
+import Loader from "@/components/system/Loader.astro";
+import PageTransitions from "@/components/system/PageTransitions.astro";
 import type { SeoProps } from "@/types.ts";
 import { SITE_LOCALE } from "@/consts.ts";
+import config from "../../op.config.json";
 
 type Props = SeoProps & {
   /** Theme for the whole page. `inherit` leaves the root defaults in place. */
@@ -19,15 +22,24 @@ type Props = SeoProps & {
 };
 
 const { theme = "inherit", overlap = false, ...seo } = Astro.props;
+
+/* The loading screen and the page transitions, each off until op.config.json turns it on */
+const { loader = false, transitions = false } = config as {
+  loader?: boolean;
+  transitions?: boolean;
+};
 ---
 
 <!doctype html>
 <html lang={SITE_LOCALE} class:list={[theme !== "inherit" && `theme-${theme}`]}>
   <head>
     <BaseHead {...seo} />
+    <Loader part="head" render={loader} />
+    <PageTransitions render={transitions} />
     <slot name="head" />
   </head>
   <body>
+    <Loader part="cover" render={loader} />
     <SkipLink />
     <Nav overlap={overlap} />
     <main id="main" tabindex="-1">

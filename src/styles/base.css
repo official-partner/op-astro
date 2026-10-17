@@ -44,6 +44,14 @@
   --open-duration: 240ms;
   --open-ease: var(--ease-smooth);
 
+  /* Page motion: the loading screen leaving, a page leaving and the next one arriving */
+  --loader-duration: 600ms;
+  --loader-ease: var(--ease-osmo);
+  --page-leave-duration: 320ms;
+  --page-leave-ease: var(--ease-smooth);
+  --page-arrive-duration: 560ms;
+  --page-arrive-ease: var(--ease-osmo);
+
   /* Eases */
   --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-osmo: cubic-bezier(0.625, 0.05, 0, 1);

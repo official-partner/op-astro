@@ -64,6 +64,31 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   (SITE_NAME) on OP's ink, which `prebuild` keeps up to date when the name or `brandColor` changes. A favicon or a
   social image made by hand is never replaced by the build.
 
+## Loading screen and page transitions
+- Both are off in the starter. In op.config.json, `"loader": true` turns on the loading screen
+  (`src/components/system/Loader.astro`) and `"transitions": true` the page transitions
+  (`src/components/system/PageTransitions.astro`, Astro's `<ClientRouter />`: a page change no longer reloads the
+  page). The next build carries them; OP System reads them from site.json (`motion`): its « Chargement » replays the
+  loading screen, and the transition shows when moving between pages. Turn one on only when the team asks for it, and
+  log it in PROJECT.md.
+- The loading screen covers the page from its first paint (its styles and a short script inline in the head, before
+  the stylesheets), holds until the fonts are loaded and the first image in view is decoded (600 ms at least, 2.5 s at
+  most: `MIN` and `MAX` in its script), then leaves. Once per tab session; `?op-loader` in the address plays it every
+  time (OP System's replay). With reduced motion it does not play, unless asked with `?op-loader` (then it cuts).
+  Without JS it never shows; if its script fails, its CSS takes it away after 3.5 s. While it covers the page,
+  `<html>` has `data-loader="play"`, then `"leave"` as it goes: a page's opening waits for `op:loader-leave` on
+  `document` when that attribute says `play`.
+- For a client, restyle it in place: the cover's markup and CSS in Loader.astro (its ground is the page's
+  `--background`, a theme class on `.loader_wrap` changes it; the mark is `src/assets/logo/mark.svg`, else the
+  favicon), its timing in `src/styles/base.css` (`--loader-duration`, `--loader-ease`). The transition: its keyframes
+  in PageTransitions.astro, its timing in base.css (`--page-leave-duration`, `--page-leave-ease`,
+  `--page-arrive-duration`, `--page-arrive-ease`). The durations show in OP System's Variables, under Mouvement.
+- With the transitions on, a module script runs once per visit, not once per page. A component's script goes in
+  `onPage((signal) => { … })` (`src/utils/page.ts`), never at the top level or on `DOMContentLoaded`; `signal` goes on
+  its listeners to `document`, `window` or a media query, and stops its timers and observers. Every component's script
+  does it already. After a page change, focus goes to `<main>` and Astro announces the page's title. A link that must
+  load the page in full: `data-astro-reload`.
+
 ## The components page
 - `src/pages/composantes.astro` (« Composantes », under Système in OP System) shows the components made for this site,
   never Lumos's base ones: every file of `src/components/content/` and `src/components/section/` is listed by

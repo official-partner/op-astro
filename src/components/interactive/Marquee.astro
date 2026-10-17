@@ -107,30 +107,36 @@ const locals = `--_count: ${count}`;
 }
 
 <script>
-  for (const marquee of document.querySelectorAll<HTMLElement>(
-    ".marquee_wrap",
-  )) {
-    const toggle = marquee.querySelector<HTMLButtonElement>(
-      "[data-marquee-toggle]",
-    );
-    if (!toggle) continue;
+  import { onPage } from "@/utils/page.ts";
 
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  onPage((signal) => {
+    for (const marquee of document.querySelectorAll<HTMLElement>(
+      ".marquee_wrap",
+    )) {
+      const toggle = marquee.querySelector<HTMLButtonElement>(
+        "[data-marquee-toggle]",
+      );
+      if (!toggle) continue;
 
-    const setPlaying = (playing: boolean) => {
-      marquee.dataset.state = playing ? "playing" : "paused";
-      toggle.setAttribute("aria-pressed", String(playing));
-      toggle.setAttribute("aria-label", playing ? "Pause" : "Play");
-    };
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 
-    /* Anyone who asked for less motion gets it still, and can start it. */
-    setPlaying(!reduced.matches);
-    reduced.addEventListener("change", () => setPlaying(!reduced.matches));
+      const setPlaying = (playing: boolean) => {
+        marquee.dataset.state = playing ? "playing" : "paused";
+        toggle.setAttribute("aria-pressed", String(playing));
+        toggle.setAttribute("aria-label", playing ? "Pause" : "Play");
+      };
 
-    toggle.addEventListener("click", () => {
-      setPlaying(marquee.dataset.state !== "playing");
-    });
-  }
+      /* Anyone who asked for less motion gets it still, and can start it. */
+      setPlaying(!reduced.matches);
+      reduced.addEventListener("change", () => setPlaying(!reduced.matches), {
+        signal,
+      });
+
+      toggle.addEventListener("click", () => {
+        setPlaying(marquee.dataset.state !== "playing");
+      });
+    }
+  });
 </script>
 
 <style is:global>
