@@ -74,6 +74,9 @@ const ROLES_FR = {
 /* the starter's tokens in words (a token of the site's own keeps its name) */
 const TOKENS_FR = {
   light: "Clair", dark: "Foncé", brand: "Marque", "brand-text": "Texte sur la marque",
+  canvas: "Toile", sunken: "Creux", surface: "Surface", ink: "Encre", "ink-2": "Encre 2", "ink-3": "Encre 3",
+  "grey-dark": "Gris foncé", "grey-light": "Gris pâle", accent: "Accent", "accent-light": "Accent pâle",
+  "accent-text": "Texte sur l’accent",
   "section-space-small": "Section, petite", "section-space-medium": "Section, moyenne", "section-space-large": "Section, grande",
   "section-space-nav-overlap": "Section sous le menu", "site-margin": "Marge du site", "site-gutter": "Gouttière",
   "radius-small": "Rayon, petit", "radius-main": "Rayon", "border-width": "Épaisseur des lignes", "focus-width": "Contour du focus",
@@ -286,7 +289,11 @@ export default function opSystem(site) {
           collections,
           styles: STYLES.map(([id, token]) => ({ id, label: STYLE_LABELS[id] || words(id), class: `text-style-${id}`, size: token, sample: t.sample })),
           roles: roleNames.map((id) => ({ id, label: lang === "en" ? words(id) : (ROLES_FR[id] || words(id)), name: `--${id}` })),
-          fonts: families.map(([family, cssVar]) => ({ family, stack: `${cssVar ? `var(${cssVar}, ${family})` : family}, system-ui, sans-serif`, weights: weights.length ? weights : [400], use: t.site })),
+          // no font of its own (OP's starter: the system's): the family --primary-family names
+          fonts: families.length
+            ? families.map(([family, cssVar]) => ({ family, stack: `${cssVar ? `var(${cssVar}, ${family})` : family}, system-ui, sans-serif`, weights: weights.length ? weights : [400], use: t.site }))
+            : vars.has("--primary-family") ? [{ family: (vars.get("--primary-family").split(",").map((x) => x.trim().replace(/^["']|["']$/g, "")).find((x) => !/^(-apple-system|BlinkMacSystemFont|system-ui|var\()/.test(x)) || "System"),
+                stack: "var(--primary-family)", weights: [400, 500, 700].filter((w) => [...vars.values()].some((v) => v === String(w))), use: t.site }] : [],
         };
         // each role's colour variable: a role that takes another role's (--button-text-hover: var(--background)) takes
         // that role's colour in the same theme, then :root's (a theme sets only what it changes)
