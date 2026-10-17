@@ -157,8 +157,10 @@ export default function opSystem(site) {
           for (const s of html.matchAll(/<link rel="stylesheet" href="\/?([^"]+\.css)"/g)) sheets.add(s[1]);
           if (route === "./") inline = [...html.matchAll(/<style>([^<]*)<\/style>/g)].map((s) => s[1]).filter((css) => /@font-face|--font-/.test(css)).join("\n");
           const components = /example-components|composantes|components/.test(route);
+          // a page of the team's (a test page, a style sheet): op.config.json's systemPages, « * » for any characters
+          const internal = components || (conf.systemPages || []).some((g) => new RegExp(`^${String(g).replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`).test(route));
           const id = route === "./" ? (lang === "en" ? "home" : "accueil") : route.replace(/\//g, "-");
-          pages.push(Object.assign({ id, title: own || id, path: route, group: components ? t.system : t.site },
+          pages.push(Object.assign({ id, title: own || id, path: route, group: internal ? t.system : t.site },
             components ? { role: "components" } : { seo: { title: full, description, slug: route === "./" ? "" : route, index } }));
         }
         // the home page first, then as the site lists them

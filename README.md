@@ -10,8 +10,9 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   op-system's README, site.json). The pages come from the built HTML; the Web System from `src/styles/base.css` (each
   fluid token as its value at 320 px and at 1440 px, each colour, each theme's roles); the project from
   `op.config.json`. Nothing of it runs in the browser: OP System adds its own bridge to the pages through its proxy.
-- `op.config.json`: the project's id, name, client, studio and description, its staging link if it has one, and
-  `live` (false until the launch: every build is kept out of search engines until then, `dist/_headers`).
+- `op.config.json`: the project's id, name, client, studio and description, its staging link if it has one,
+  `systemPages` (the team's pages, shown under Système in OP System) and `live` (false until the launch: every build
+  is kept out of search engines until then, `dist/_headers`).
 - `wrangler.jsonc`: an assets-only Worker on Cloudflare, its workers.dev address, and a preview address for every
   branch but `main` (Worker Previews). `main` is the live site; `review` is the one OP System shows.
 - `CLAUDE.md`: how Claude works here (the review branch, publishing only when asked, OP System's queue, the checks).

@@ -32,12 +32,14 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
 ## OP System
 - After each build, `integrations/op-system.mjs` writes `dist/site.json`: the project (op.config.json), the pages (their
   title and description, from the built HTML), the screens, the Web System (the tokens of `src/styles/base.css`, a
-  fluid value as its two ends, at 320 and 1440 px) and the themes (their roles, as colour variables). OP System reads
+  fluid value as its two ends, at `--viewport-min` and `--viewport-max`; the `.text-style-*` classes) and the themes
+  (their roles, as colour variables). OP System reads
   it through its proxy; it adds its own bridge to the pages, never this site. The build's last line says what it found
   (`site.json: N pages, N variables, N themes`): check it after a change to the pages or the tokens.
 - A new page: a file in `src/pages/`, its title and description given to the layout. It shows in OP System at the next
   build of `review`. A page kept out of search engines: `NOINDEX_ROUTES` in src/consts.ts. The components page
-  (`example-components`) is the system's: OP System shows it under Système.
+  (`example-components`) and the team's own pages (op.config.json `systemPages`, « * » for any characters: a test page,
+  a style sheet) are the system's: OP System shows them under Système. Keep those out of search engines too.
 - A new token: in `src/styles/base.css`, as Lumos names them (`--x-min` and `--x-max` for a fluid one, a hex for a
   colour in `:root`, a theme's roles in its `.theme-*` class). Edits made in OP System's Variables come back as
   requests: change the token here, never `dist/`.
