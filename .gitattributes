@@ -7,8 +7,7 @@
 # skills belong in generated sites. Only the dev-server config, which points at
 # this repository's setup, is withheld.
 
-/.gitattributes export-ignore
-/.github export-ignore
+# OP's starter (Oct 17): a site copied from it keeps its Worker's settings (wrangler.jsonc) and its CI (.github), an
+# archive as much as a clone or « Use this template ».
 /.claude/launch.json export-ignore
 /packages export-ignore
-/wrangler.jsonc export-ignore

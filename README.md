@@ -56,3 +56,5 @@ skill. What OP changed in Lumos's own files, so an upgrade keeps it:
   `src/pages/example-components.astro`: their words in French.
 - `wrangler.jsonc`: no custom domain, workers.dev and Worker Previews.
 - `.github/`: Lumos's publishing workflows and README assets removed; Dependabot on `review`, monthly.
+- `.gitattributes`: `wrangler.jsonc`, `.github` and `.gitattributes` kept in an archive of the starter (a site copied from
+  it needs them).
