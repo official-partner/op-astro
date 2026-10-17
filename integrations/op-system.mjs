@@ -205,7 +205,8 @@ export default function opSystem(site) {
           .flatMap((n) => { taken.add(n); return num(vars.get(`${n}-min`)) !== null ? fluid(n, label(n), "size") : rem([n]); });
         const radius = own((n) => /^--radius-/.test(n));
         const border = own((n) => /^--(border|focus)-width$/.test(n));
-        const ofStyle = (n) => STYLES.some(([, token]) => n.startsWith(`${token}-`));
+        const STYLE_PARTS = /-(line-height|letter-spacing|text-transform|margin-top|margin-bottom|font-family|font-weight|text-wrap)$/;
+        const ofStyle = (n) => STYLE_PARTS.test(n) && STYLES.some(([, token]) => n.startsWith(`${token}-`));
         const size = own((n) => !ofStyle(n) && !/^--(viewport|line-height|letter-spacing|focus-offset)/.test(n) && (remOf(vars.get(n)) !== null || num(vars.get(`${n}-min`)) !== null));
         const motion = [...vars].filter(([n, v]) => msOf(v) !== null && /duration/.test(n)).map(([name, v]) => ({
           name, label: label(name), type: "time", value: msOf(v), css: "{v}ms", unitLabel: "ms", min: 0, max: 2000, step: 10, editable: true }));
