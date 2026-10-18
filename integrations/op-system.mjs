@@ -8,7 +8,8 @@
 // browser: the review's bridge is added by OP System's proxy, never by this site.
 //
 // A build is kept out of search engines (dist/_headers says noindex) until op.config.json says the site is live
-// ("live": true), and always on a branch other than main (a preview).
+// ("live": true), and always on a branch other than main (a preview). Every build gets the secure headers
+// (SECURE_HEADERS), and every build fails when dist/ holds a secret key (SECRETS): nothing is deployed then.
 import { readFile, writeFile, readdir } from "node:fs/promises";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -164,6 +165,68 @@ async function htmlFiles(dir, base = dir) {
 }
 
 const git = (cmd, cwd) => { try { return execSync(`git ${cmd}`, { cwd, stdio: ["ignore", "pipe", "ignore"] }).toString().trim(); } catch { return ""; } };
+
+/* the headers every file of the site is served with (dist/_headers, every build): no guessing a file's type, the
+   address sent to other sites without its path, no camera, microphone or location, no framing by another site, HTTPS
+   only for a year. HSTS without includeSubDomains or preload: the client's other subdomains are not this site's to
+   decide. OP System's proxy removes the frame and HSTS headers, so the review still shows in the app. A header the
+   site's own public/_headers names (a value, or « ! Name » to drop it) is left to it. */
+const SECURE_HEADERS = [
+  ["X-Content-Type-Options", "nosniff"],
+  ["Referrer-Policy", "strict-origin-when-cross-origin"],
+  ["Permissions-Policy", "camera=(), microphone=(), geolocation=()"],
+  ["X-Frame-Options", "SAMEORIGIN"],
+  ["Strict-Transport-Security", "max-age=31536000"],
+];
+
+/* the keys that must never reach dist/ (anyone can read what is published): the build fails on one, naming the file
+   and the kind, never the value. Each pattern is anchored on the key's own prefix; a free-form one (re_, sk-) must mix
+   digits, lower and upper case, as a generated key does and a word does not */
+const MIXED = "(?=[A-Za-z0-9_]*[0-9])(?=[A-Za-z0-9_]*[a-z])(?=[A-Za-z0-9_]*[A-Z])";
+const SECRETS = [
+  ["a private key", /-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----/g],
+  ["an AWS access key", /(?<![A-Za-z0-9/+=])AKIA[0-9A-Z]{16}(?![A-Za-z0-9/+=])/g],
+  ["a GitHub token", /(?<![A-Za-z0-9_])(?:gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{22,})/g],
+  ["a Stripe secret key", /(?<![A-Za-z0-9_])[sr]k_live_[A-Za-z0-9]{16,}/g],
+  ["a Slack token", /(?<![A-Za-z0-9_])xox[baprs]-[A-Za-z0-9-]{10,}/g],
+  ["an Anthropic key", /(?<![A-Za-z0-9_-])sk-ant-[A-Za-z0-9_-]{20,}/g],
+  ["an OpenAI key", new RegExp(`(?<![A-Za-z0-9_-])sk-(?:proj-[A-Za-z0-9_-]{20,}|${MIXED}[A-Za-z0-9]{32,}(?![A-Za-z0-9_-]))`, "g")],
+  ["a Resend key", new RegExp(`(?<![A-Za-z0-9_])re_${MIXED}[A-Za-z0-9_]{20,}(?![A-Za-z0-9_])`, "g")],
+  ["a Supabase secret key", /(?<![A-Za-z0-9_])sb_secret_[A-Za-z0-9_-]{20,}/g],
+  // a JWT whose payload gives the service role (Supabase's key that bypasses its row rules; the anon key is public)
+  ["a Supabase service_role key", /(?<![A-Za-z0-9_-])eyJ[A-Za-z0-9_-]{8,}\.(eyJ[A-Za-z0-9_-]{8,})\.[A-Za-z0-9_-]{8,}/g,
+    (m) => { try { return /"role"\s*:\s*"service_role"/.test(Buffer.from(m[1], "base64url").toString("utf8")); } catch { return false; } }],
+];
+/* a browser key is public by design: said, not fatal (restrict it to the site's domain in Google's console) */
+const NOTICES = [["a Google API key", /(?<![A-Za-z0-9_-])AIza[0-9A-Za-z_-]{35}(?![A-Za-z0-9_-])/g]];
+const SCANNED = /\.(html?|m?js|cjs|css|json|txt|xml|map|svg|webmanifest)$|^_headers$|^_redirects$|^\.env/;
+
+async function builtFiles(dir, base = dir) {
+  const out = [];
+  for (const e of await readdir(dir, { withFileTypes: true })) {
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) out.push(...await builtFiles(full, base));
+    else if (SCANNED.test(e.name)) out.push(path.relative(base, full).split(path.sep).join("/"));
+  }
+  return out.sort();
+}
+
+/* every text file of dist/ against SECRETS and NOTICES: [{ file, line, kind }] of each, and how many files were read */
+async function scanSecrets(out) {
+  const files = await builtFiles(out);
+  const found = [], notices = [];
+  for (const file of files) {
+    const text = await readFile(path.join(out, file), "utf8").catch(() => "");
+    const lineOf = (i) => text.slice(0, i).split("\n").length;
+    for (const [list, into] of [[SECRETS, found], [NOTICES, notices]]) {
+      for (const [kind, re, keep] of list) {
+        for (const m of text.matchAll(re)) if (!keep || keep(m)) into.push({ file, line: lineOf(m.index), kind });
+      }
+    }
+  }
+  return { files: files.length, found, notices };
+}
+const where = (f) => `dist/${f.file}, line ${f.line}: ${f.kind}`;
 
 /**
  * @param {{ siteName: string, siteUrl: string, locale: string }} site src/consts.ts's SITE_NAME, SITE_URL, SITE_LOCALE
@@ -448,12 +511,28 @@ export default function opSystem(site) {
         if (grid) manifest.grid = JSON.parse(JSON.stringify(grid));
         if (icon) manifest.favicon = icon;
         await writeFile(path.join(out, "site.json"), JSON.stringify(manifest, null, 1) + "\n");
-        // out of search engines until the site is live, and always on a branch other than main
+        // out of search engines until the site is live, and always on a branch other than main; the secure headers on
+        // every build, but those the site's own _headers names (public/_headers, copied into dist/ by the build)
         const indexed = branch === "main" && conf.live === true;
-        if (!indexed) {
-          const own = await readFile(path.join(out, "_headers"), "utf8").catch(() => "");
-          await writeFile(path.join(out, "_headers"), "/*\n  X-Robots-Tag: noindex, nofollow\n" + (own ? "\n" + own : ""));
+        const siteHeaders = await readFile(path.join(out, "_headers"), "utf8").catch(() => "");
+        const named = new Set([...siteHeaders.matchAll(/^[ \t]+(?:!\s*)?([A-Za-z0-9-]+)\s*(?::|$)/gm)].map((m) => m[1].toLowerCase()));
+        const rules = [...(indexed ? [] : [["X-Robots-Tag", "noindex, nofollow"]]), ...SECURE_HEADERS.filter(([n]) => !named.has(n.toLowerCase()))];
+        if (rules.length) await writeFile(path.join(out, "_headers"), "/*\n" + rules.map(([n, v]) => `  ${n}: ${v}\n`).join("") + (siteHeaders ? "\n" + siteHeaders : ""));
+
+        // no secret key in what is published: the build fails (so Cloudflare deploys nothing), naming the file and the
+        // kind, never the value
+        const scan = await scanSecrets(out);
+        scan.notices.forEach((f) => logger.warn(`${where(f)} (public by design: check it is restricted to the site's domain)`));
+        if (scan.found.length) {
+          const error = new Error(`secret scan: ${scan.found.length === 1 ? "a key" : `${scan.found.length} keys`} found in dist/, the build stops and nothing is deployed.\n`
+            + scan.found.map((f) => `  ${where(f)}`).join("\n"));
+          error.hint = "A key never goes in the site's files (src/, public/, op.config.json): anyone can read what is published. Take it out; "
+            + "a key the site needs lives in Cloudflare (the Worker's Variables and Secrets), read by server code only. "
+            + "A key that was ever committed or pushed is revoked and replaced.";
+          error.stack = "";   // Astro prints the message and the hint, no stack: the file and the kind are what matter
+          throw error;
         }
+        logger.info(`secret scan: ${scan.files} files, no key${scan.notices.length ? `, ${scan.notices.length} notice${scan.notices.length > 1 ? "s" : ""}` : ""}`);
         logger.info(`site.json: ${pages.length} pages, ${collections.reduce((n, c) => n + c.variables.length, 0)} variables, ${themeList.length} themes (branch ${branch}${indexed ? "" : ", noindex"})`);
       },
     },

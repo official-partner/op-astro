@@ -15,6 +15,10 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
 - The site's copy: plain, written like a person: no slogans, no rhythmic triplets, no exclamation marks, no em dashes.
   The client's copy is kept word for word unless it has an error; flag errors in PROJECT.md.
 - Log every decision in PROJECT.md with the date and who asked.
+- Craft (Sam, Oct 17): design and motion follow OP's craft, the Craft section of the OP System connector's guides and
+  its guides `direction` and `critique` (`get_guide`), or OP's skills op-design-direction, op-motion and op-critique
+  when the session has them. Anything that builds or changes a page, a section or a component follows it; a new page
+  gets a critique pass (`get_guide("critique")`) before the team sees it.
 
 ## Branches: review, then live
 - `main` is the live site. Cloudflare builds and deploys it on every push: never push work to `main` directly.
@@ -22,12 +26,15 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   (`review-<name>.<account>.workers.dev`, `<name>` being `name` in wrangler.jsonc). Work goes there: on `review`, or on
   a branch of its own merged into `review`.
 - `review` goes to `main` (the site goes live, or a change reaches the live site) only when someone asks in so many
-  words: « publie », « mets en ligne », « publish ». Then: `git checkout main && git pull --rebase && git merge --ff-only
-  review && git push`, and say what went live.
+  words: « publie », « mets en ligne », « publish ». The team's « Mettre en ligne » in OP System is that ask: it comes
+  from the queue as a request of kind `publish` (a change reaches the live site) or `launch` (the site goes live).
+- Publish: `git checkout main && git pull --rebase && git merge --ff-only origin/review && git push`, never forced. If
+  it is not a fast-forward (`main` has a commit `review` lacks), stop, change nothing and say so. Then say what went
+  live (from the queue: `add_journal`, one `reply`, `finish_work`).
 - Before the launch, op.config.json says `"live": false` and every build tells search engines to stay out
-  (`dist/_headers`, noindex). At the launch, with the team: the client's domain added to the Worker in Cloudflare's
-  dashboard, `SITE_URL` in src/consts.ts, `"live": true` in op.config.json, all in one commit on `review`, then
-  published.
+  (`dist/_headers`, noindex). The launch (a request of kind `launch` carries `domain`, the client's domain the team
+  added to the Worker in Cloudflare's dashboard): on `review`, `SITE_URL` in src/consts.ts to `https://<domain>` and
+  `"live": true` in op.config.json, `npm run check` and `npm run build`, one commit, push `review`; then publish.
 
 ## OP System
 - After each build, `integrations/op-system.mjs` writes `dist/site.json`: the project (op.config.json), the pages (their
@@ -47,7 +54,14 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   that means: `git checkout review && git pull --rebase`, the change in `src/`, `npm run check` and `npm run build`
   (both clean, the site.json line as expected), a line in PROJECT.md, commit, `git push` (Cloudflare builds `review`
   in about a minute), then `add_journal` for each change, `settle_comment` for each comment, one `reply` per request,
-  and `finish_work` with `published: true`. Never `main` from the queue.
+  and `finish_work` with `published: true`. Never `main` from the queue, except a request of kind `publish` or `launch`
+  (Branches, above).
+- A request of kind `setup` prepares a site OP System just made (« Un nouveau site »: Cloudflare's Deploy button copied
+  this starter into the studio's GitHub, made the Worker and wrote its name in wrangler.jsonc). On `main`:
+  op.config.json (`id`, `name`, `client`, `studio`, `description`), src/consts.ts (`SITE_NAME`, `SITE_DESCRIPTION`,
+  `SITE_LOCALE`), `name` in wrangler.jsonc checked against the Worker's (set to it if it differs); `npm ci`, `npm run
+  check`, `npm run build`, commit, push `main`. Then the branch `review` from `main`, pushed: its preview,
+  `review-<worker>.<account>.workers.dev`, is what OP System shows. The only push to `main` that is not a publish.
 
 ## The look, the logo and the favicon
 - The starter wears OP System's look (README.md, What this repository adds): a new site replaces the swatches and the
@@ -96,6 +110,17 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   `<ComponentSample file="content/HeroBlog.astro" note="…"><HeroBlog …sample props /></ComponentSample>` inside
   `<ComponentList>`, with the client's copy or a plausible stand-in, never lorem ipsum. A component without one shows
   under « Sans exemple ».
+
+## Security (every build, `integrations/op-system.mjs`)
+- The build fails when `dist/` holds a secret key (a private key; an AWS, GitHub, Stripe live, Slack, OpenAI,
+  Anthropic, Resend or Supabase secret key; a service_role JWT), naming the file and the kind, never the value:
+  Cloudflare then deploys nothing. Never commit a key or put one in `src/`, `public/` or op.config.json: a key the site
+  needs lives in Cloudflare (the Worker's Variables and Secrets), read by server code only. A Google API key only warns
+  (a browser key, public by design: restricted to the site's domain).
+- `dist/_headers` gives every file nosniff, a referrer policy, no camera, microphone or location, frames from the same
+  site only and HSTS for a year (no subdomains). A page that needs one otherwise (a map asking for the location, a site
+  framed elsewhere): that header in `public/_headers`, which the build then leaves to it. OP System's proxy drops the
+  frame and HSTS headers for the review.
 
 ## Build and check
 - `npm ci` once, then `npm run dev` (http://localhost:4321), `npm run check` (types), `npm run build` (`dist/` and its

@@ -18,7 +18,8 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   `--site-columns` per screen when the site names them, else 12, 8 and 4), the curves (`eases`, from `--ease-*`), the
   libraries the site loads (`libraries`: its packages, the GSAP plugins it imports or loads from a CDN, Astro's
   router), its favicon (`favicon`). OP System's settings list the libraries and the favicon (Technique) and turn a
-  change into a request to Claude.
+  change into a request to Claude. The same integration writes `dist/_headers` and stops a build that holds a secret
+  key (Security, below; Oct 17, 2026, Sam).
 - `op.config.json`: the project's id, name, client, studio and description, its staging link if it has one,
   `brandColor` (the ground of the favicon until the site has its logo's mark; OP's ink by default), `systemPages`
   (the team's pages, shown under Système in OP System), `designWidth` (the width the design is drawn at, when values
@@ -52,11 +53,33 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
 
 ## Start a site
 
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/official-partner/op-astro)
+
+The button works once this repository is public: Cloudflare's Deploy button only copies a public repository
+(Cloudflare's docs, Deploy buttons, Limitations). Until then, start a site by hand (below).
+
+From OP System, the first way (Oct 17, 2026; Sam):
+
+1. OP System, « Un nouveau site »: the app opens Cloudflare's Deploy button for this repository. On Cloudflare's page,
+   the person names the new repository and the Worker after the project (its id, in lowercase letters, digits and
+   dashes: `client-web`). Cloudflare copies the starter into the studio's GitHub as a new repository, writes the
+   Worker's name in its `wrangler.jsonc`, sets up Workers Builds and deploys `main` a first time. Its build command
+   comes from package.json's `build` script (`npm run build`); with no `deploy` script, the deploy command is
+   `npx wrangler deploy`; a branch other than `main` is built with `npx wrangler preview`.
+2. OP System links the site to the project and asks the person's Claude to prepare it (a request of kind `setup`:
+   CLAUDE.md, OP System): op.config.json and src/consts.ts filled in, the Worker's name checked, `npm ci`,
+   `npm run check`, `npm run build`, a commit on `main`, then the branch `review` from it, both pushed. Its preview
+   (`review-<name>.<account>.workers.dev`) is the address OP System shows. If the push of `review` gives no preview,
+   turn on « Enable Preview Builds » in the Worker's Settings › Build › Branch control.
+
+By hand:
+
 1. GitHub: on this repository, « Use this template » › « Create a new repository », in `official-partner`, named after
    the client (`client-web`, private). Or ask Claude to copy it into an empty repository.
 2. Claude, in a session with the new repository: the project's id and names in `op.config.json`, the Worker's `name`
-   in `wrangler.jsonc` (the id), `SITE_NAME` and `SITE_DESCRIPTION` in `src/consts.ts` (the favicon follows the name at the next build); `npm ci`, `npm run check`,
-   `npm run build`; a commit on `main`, then the branch `review` from it, both pushed.
+   in `wrangler.jsonc` (the id), `SITE_NAME` and `SITE_DESCRIPTION` in `src/consts.ts` (the favicon follows the name at
+   the next build); `npm ci`, `npm run check`, `npm run build`; a commit on `main`, then the branch `review` from it,
+   both pushed.
 3. Cloudflare (Workers & Pages › Create › Import a repository): the repository, build command `npm run build`, deploy
    command `npx wrangler deploy`. Then the Worker's Settings › Build › Branch control: « Enable Preview Builds » (the
    preview command stays `npx wrangler preview`). Push to `review` once: its address appears under the Worker's
@@ -73,7 +96,28 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
 | `npm run check`   | Type-checks every `.astro` file                  |
 | `npm run format`  | Formats the project with Prettier                |
 
-Node 22.19 or newer is required.
+Node 22.19 or newer is required (Cloudflare's build image runs Node 24 by default). `npm run build` runs `prebuild`
+first (`scripts/favicon.mjs --if-missing`: the icons from the repository's own files, no network and no secret; without
+`sharp` it skips the rasters and says so). There is no `deploy` script on purpose: Cloudflare deploys with
+`npx wrangler deploy`, and nobody deploys the live site by typing `npm run deploy`. Wrangler is 4.135 or newer, which
+`npx wrangler preview` needs.
+
+## Security
+
+Every build serves the site with secure headers (`dist/_headers`, written by `integrations/op-system.mjs`):
+`X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(),
+microphone=(), geolocation=()`, `X-Frame-Options: SAMEORIGIN` and `Strict-Transport-Security: max-age=31536000`
+(without `includeSubDomains` or `preload`, so the client's other subdomains are not bound by this site). OP System's
+proxy drops the frame and HSTS headers, so the review still shows in the app. A site that needs one of them otherwise
+names that header in `public/_headers` (a value, or `! Name` to drop it), and the build leaves it to the site.
+
+Every build is checked for secret keys: after the build, the text files of `dist/` (HTML, JS, CSS, JSON, XML, text,
+source maps, SVG, `_headers`, `_redirects`, any `.env` file) are scanned for private key blocks, AWS access keys,
+GitHub tokens, Stripe live secret and restricted keys, Slack tokens, OpenAI, Anthropic, Resend and Supabase secret keys,
+and JWTs that carry Supabase's `service_role`. One found fails the build, naming the file, the line and the kind, never
+the value, so Cloudflare deploys nothing. A Google API key only warns (a browser key is public by design; restrict it to
+the site's domain). A key the site needs lives in Cloudflare, in the Worker's Variables and Secrets, never in the
+repository.
 
 ## Lumos for Astro
 

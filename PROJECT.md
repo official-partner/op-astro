@@ -2,6 +2,13 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-17, Sam (« je te fais confiance pour les décisions »): a new site starts from OP System's « Un nouveau site »
+  (Cloudflare's Deploy button on this repository, which must be public for it; by hand until then), then a request of
+  kind `setup` to Claude. The team's « Mettre en ligne » in OP System is the ask to publish (requests `publish` and
+  `launch`, the only queue work that reaches `main`). Every build serves secure headers and fails when `dist/` holds a
+  secret key, so a key never reaches the published site. Design and motion follow OP's craft (the connector's guides
+  `direction` and `critique`, or OP's skills). Wrangler 4.135 at least, for `wrangler preview`.
+
 - 2026-10-17, Sam (« un loading screen par projet et un langage de transition entre les pages, comme Barba, intégré
   dans l'UX de l'app »): every site has a loading screen and page transitions ready, both off until the team turns
   them on in op.config.json (`loader`, `transitions`), so OP System can show and replay them. The loading screen wears
