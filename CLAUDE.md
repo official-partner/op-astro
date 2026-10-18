@@ -30,13 +30,16 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
 - `review` goes to `main` (the site goes live, or a change reaches the live site) only when someone asks in so many
   words: « publie », « mets en ligne », « publish ». The team's « Mettre en ligne » in OP System is that ask: it comes
   from the queue as a request of kind `publish` (a change reaches the live site) or `launch` (the site goes live).
-- Publish: `git checkout main && git pull --rebase && git merge --ff-only origin/review && git push`, never forced. If
-  it is not a fast-forward (`main` has a commit `review` lacks), stop, change nothing and say so. Then say what went
-  live (from the queue: `add_journal`, one `reply`, `finish_work`).
+- Since Oct 18, OP System's « Mettre en ligne » does it itself, through its GitHub App, when the App is installed on
+  this repository: `main` moved to the version the team saw on the staging, a fast-forward only; the launch writes
+  `"domain"` and `"live": true` in op.config.json on `review` first. No request reaches Claude then.
+- A request of kind `publish` or `launch` means the App could not: do it as the OP System connector's
+  `get_guide("astro")` says (Live), the one source of these steps: the commits only (no clone, no npm, no build), the
+  version the request names (`versions.review`), a fast-forward only, never forced; if `main` has a commit `review`
+  lacks, stop, change nothing and say so in plain words. Then `add_journal`, one `reply` in one sentence, `finish_work`.
+  Cloudflare builds `main` in about a minute and OP System checks the site itself: do not wait for it.
 - Before the launch, op.config.json says `"live": false` and every build tells search engines to stay out
-  (`dist/_headers`, noindex). The launch (a request of kind `launch` carries `domain`, the client's domain the team
-  added to the Worker in Cloudflare's dashboard): on `review`, `SITE_URL` in src/consts.ts to `https://<domain>` and
-  `"live": true` in op.config.json, `npm run check` and `npm run build`, one commit, push `review`; then publish.
+  (`dist/_headers`, noindex); `SITE_URL` (src/consts.ts) reads op.config.json's `domain`, a stand-in until it has one.
 
 ## OP System
 - After each build, `integrations/op-system.mjs` writes `dist/site.json`: the project (op.config.json), the pages (their

@@ -23,8 +23,9 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
 - `op.config.json`: the project's id, name, client, studio and description, its staging link if it has one,
   `brandColor` (the ground of the favicon until the site has its logo's mark; OP's ink by default), `systemPages`
   (the team's pages, shown under Système in OP System), `designWidth` (the width the design is drawn at, when values
-  follow the screen's width; 1440 by default), `live` (false until the launch: every build is kept out of search
-  engines until then, `dist/_headers`), `loader` and `transitions` (the loading screen and the page transitions, both
+  follow the screen's width; 1440 by default), `domain` (the client's domain, empty until the launch: `SITE_URL` reads
+  it) and `live` (false until the launch: every build is kept out of search engines until then, `dist/_headers`; OP
+  System's « Lancer le site » sets both), `loader` and `transitions` (the loading screen and the page transitions, both
   false until the team turns them on: CLAUDE.md, Loading screen and page transitions).
 - A loading screen and page transitions, ready to turn on and to restyle per client (Oct 17, 2026; Sam: « un loading
   screen par projet et un langage de transition entre les pages (comme Barba), intégré dans l'UX de l'app »):

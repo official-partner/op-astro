@@ -2,6 +2,12 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-18, Sam (« est-ce que ça pourrait être plus rapide… aussi seamless que Webflow », then « go pour tout »): OP
+  System's « Mettre en ligne » puts the site live itself through its GitHub App (main moved to the version seen on the
+  staging, a fast-forward only), with a bar to the site itself; a request to Claude only when the App is not on the
+  repository, done from the connector's guide (`get_guide("astro")`, Live), the one source of those steps. The launch
+  writes `domain` and `live` in op.config.json, and `SITE_URL` reads `domain` from it.
+
 - 2026-10-18, Sam: `npm run shot` (scripts/shot.mjs) takes the built pages as full-page PNGs at the widths asked, with
   no browser downloaded, and CLAUDE.md (Check what you changed) says which pages to look at by what changed, at the
   comment's width and at 390, before a change is called done. A session had lost three turns on its own screenshots
