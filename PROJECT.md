@@ -2,6 +2,11 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-18, Sam: `npm run shot` (scripts/shot.mjs) takes the built pages as full-page PNGs at the widths asked, with
+  no browser downloaded, and CLAUDE.md (Check what you changed) says which pages to look at by what changed, at the
+  comment's width and at 390, before a change is called done. A session had lost three turns on its own screenshots
+  (Playwright missing, a wrong first picture, a window too tall) and had not looked at the phone width.
+
 - 2026-10-17, Sam (« je te fais confiance pour les décisions »): a new site starts from OP System's « Un nouveau site »
   (Cloudflare's Deploy button on this repository, which must be public for it; by hand until then), then a request of
   kind `setup` to Claude. The team's « Mettre en ligne » in OP System is the ask to publish (requests `publish` and

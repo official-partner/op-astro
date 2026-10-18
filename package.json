@@ -14,7 +14,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "format": "prettier --write .",
-    "favicon": "node scripts/favicon.mjs"
+    "favicon": "node scripts/favicon.mjs",
+    "shot": "node scripts/shot.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
@@ -23,6 +24,7 @@
     "typescript": "^6.0.3"
   },
   "devDependencies": {
+    "playwright-core": "^1.64.1",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "wrangler": "^4.135.0"

@@ -15,6 +15,8 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
 - The site's copy: plain, written like a person: no slogans, no rhythmic triplets, no exclamation marks, no em dashes.
   The client's copy is kept word for word unless it has an error; flag errors in PROJECT.md.
 - Log every decision in PROJECT.md with the date and who asked.
+- Grep a long file (PROJECT.md, README.md, base.css, a large component) before reading it whole; read the part the
+  change touches.
 - Craft (Sam, Oct 17): design and motion follow OP's craft, the Craft section of the OP System connector's guides and
   its guides `direction` and `critique` (`get_guide`), or OP's skills op-design-direction, op-motion and op-critique
   when the session has them. Anything that builds or changes a page, a section or a component follows it; a new page
@@ -52,10 +54,10 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   requests: change the token here, never `dist/`.
 - Requests from OP System's queue come through the OP System connector: read `get_guide("queue")` and follow it. Here
   that means: `git checkout review && git pull --rebase`, the change in `src/`, `npm run check` and `npm run build`
-  (both clean, the site.json line as expected), a line in PROJECT.md, commit, `git push` (Cloudflare builds `review`
-  in about a minute), then `add_journal` for each change, `settle_comment` for each comment, one `reply` per request,
-  and `finish_work` with `published: true`. Never `main` from the queue, except a request of kind `publish` or `launch`
-  (Branches, above).
+  (both clean, the site.json line as expected), the pages looked at (Check what you changed), a line in PROJECT.md,
+  commit, `git push` (Cloudflare builds `review` in about a minute), then `add_journal` for each change,
+  `settle_comment` for each comment, one `reply` per request, and `finish_work` with `published: true`. Never `main`
+  from the queue, except a request of kind `publish` or `launch` (Branches, above).
 - A request of kind `setup` prepares a site OP System just made (« Un nouveau site »: Cloudflare's Deploy button copied
   this starter into the studio's GitHub, made the Worker and wrote its name in wrangler.jsonc). On `main`:
   op.config.json (`id`, `name`, `client`, `studio`, `description`), src/consts.ts (`SITE_NAME`, `SITE_DESCRIPTION`,
@@ -125,9 +127,27 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
 ## Build and check
 - `npm ci` once, then `npm run dev` (http://localhost:4321), `npm run check` (types), `npm run build` (`dist/` and its
   site.json). Node 22.19 or newer.
-- A page or a component changed: `npm run build`, then open the page built (`npm run preview`) at 1440 and 390 px.
+- A page or a component changed: look at it (Check what you changed, below).
 - Content lives in files by default: in the page, or in an Astro content collection (`src/content/`). A CMS (Sanity)
   only when the client must edit the site alone, decided with the team and logged in PROJECT.md.
+
+## Check what you changed
+- `npm run shot -- <page...> [width...]` (Sam, Oct 18) takes each page at each width as a full-page PNG,
+  `shots/<page>-<width>.png` (git-ignored): `accueil` (or `/`) for the home, another page by its route (`a-propos`,
+  `coachs-fitness`), `404`, or `all`; 1440 and 390 when no width is given. It builds first when `dist/` is older than
+  the sources (`--build` forces it), serves `dist/` itself, asks for reduced motion (the reveals in their final state)
+  and waits for the fonts, the loading screen and the lazy images. It fails on a page missing from `dist/` or an error
+  in the console, and prints them. About a second a shot. `--parts` adds the page in parts 1800 px high
+  (`<page>-<width>-<n>.png`): a long PNG is shrunk when it is read, its parts are not.
+- After a change: the page at the comment's width (else 1440) and at 390, `npm run shot -- coachs-fitness 1300 390`.
+- Which pages, by what changed: a page's own section or copy, that page; a shared component, the nav, the footer, a
+  token or a theme, the home and two other pages that show it, plus `composantes`; the layout (`src/layouts/`,
+  `BaseHead`, the loading screen, the transitions), `404` too.
+- Look at the PNGs (Read them; the parts for a detail) before saying it is done, and say in the reply which pages, at
+  which widths, were looked at.
+- No browser is downloaded: `SHOT_BROWSER` (a Chrome or Chromium executable), else Playwright's browsers already
+  installed (`PLAYWRIGHT_BROWSERS_PATH`: /opt/pw-browsers in Claude's cloud sessions), else Google Chrome. Without any,
+  it says what to install.
 
 ## Lumos
 - Lumos for Astro is not Lumos for Webflow: its conventions are LUMOS.md's. New CSS is the last resort (LUMOS.md, New

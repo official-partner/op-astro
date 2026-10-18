@@ -1,6 +1,9 @@
 # build output
 dist/
 
+# pictures of the pages (npm run shot)
+shots/
+
 # generated types
 .astro/
 

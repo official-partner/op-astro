@@ -95,6 +95,7 @@ By hand:
 | `npm run preview` | Serves the built site                            |
 | `npm run check`   | Type-checks every `.astro` file                  |
 | `npm run format`  | Formats the project with Prettier                |
+| `npm run shot`    | Full-page PNGs of built pages, in `shots/`       |
 
 Node 22.19 or newer is required (Cloudflare's build image runs Node 24 by default). `npm run build` runs `prebuild`
 first (`scripts/favicon.mjs --if-missing`: the icons from the repository's own files, no network and no secret; without
