@@ -2,6 +2,10 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-20, Sam (OP System's Modifier in full, phase 1, Oct 19): a site marks its lists of content where it uses
+  them (`data-op-list`, `data-op-source`, `data-op-item` on `<Grid>` or `<Accordion>` and their cards or items), so
+  the team and the client can duplicate, delete and move items in OP System; never a layout, the nav or the footer;
+  a `<Slider>` once its script reads its slides again (CLAUDE.md, Lists for OP System's Modifier).
 - 2026-10-18, Sam (« est-ce que ça pourrait être plus rapide… aussi seamless que Webflow », then « go pour tout »): OP
   System's « Mettre en ligne » puts the site live itself through its GitHub App (main moved to the version seen on the
   staging, a fast-forward only), with a bar to the site itself; a request to Claude only when the App is not on the

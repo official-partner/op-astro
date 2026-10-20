@@ -108,6 +108,22 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   does it already. After a page change, focus goes to `<main>` and Astro announces the page's title. A link that must
   load the page in full: `data-astro-reload`.
 
+## Lists for OP System's Modifier
+- OP System's tool Modifier lets the team and the client duplicate, delete and move a list's items on the review
+  (op-system's README, Lists, Oct 20). It only touches the lists the site marks, never guessed: mark a list of
+  content where it is used, never in the base components. On the list, `data-op-list="<name>"` and
+  `data-op-source="<where the items come from>"` (`astro:<collection>` for a content collection, `page` for items
+  written in the page, a file's path for a data file); on each item, `data-op-item` (empty, or the entry's id). The
+  items are the list's direct children. Optional: `data-op-min` (1 by default: the last item is never deleted),
+  `data-op-max`, `data-op-label` (its name in the Journal).
+- `<Grid>` and `<Accordion>` pass these attributes to their root: `<Grid data-op-list="coachs"
+  data-op-source="astro:coachs">`, with `data-op-item` on each `<Card>` or `<AccordionItem>`.
+- Mark lists of content only (cards, team members, questions, testimonials, offers). Never a layout or the site's
+  frame: tabs, a marquee, the nav, the footer. A `<Slider>` is not marked until its script reads its slides again
+  after a change (a duplicated slide would not slide).
+- What Modifier changed is published in OP System and comes back as requests from its queue: carry it into the
+  source (the collection's entry, the page, the file) as the request says.
+
 ## The components page
 - `src/pages/composantes.astro` (« Composantes », under Système in OP System) shows the components made for this site,
   never Lumos's base ones: every file of `src/components/content/` and `src/components/section/` is listed by
