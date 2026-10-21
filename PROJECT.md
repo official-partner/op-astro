@@ -2,6 +2,11 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-21, Sam (Oct 20, 19:59: Modifier, round 2, lists' `op:list`): `<Slider>` and `<Accordion>` read their items
+  again on OP System's `op:list` (a copy, a deletion, a move, their undo and redo), so a duplicated slide slides and a
+  copied question opens alone; `<Slider>` passes the list markers to its `.slider_list` and may now be marked. Tabs stay
+  unmarked (a tab is a link and a panel, two lists); the starter has no filter. A component whose script reads its
+  items or lays them out in JS listens to `op:list` (CLAUDE.md, Lists for OP System's Modifier).
 - 2026-10-20, Sam (OP System's Modifier in full, phase 1, Oct 19): a site marks its lists of content where it uses
   them (`data-op-list`, `data-op-source`, `data-op-item` on `<Grid>` or `<Accordion>` and their cards or items), so
   the team and the client can duplicate, delete and move items in OP System; never a layout, the nav or the footer;

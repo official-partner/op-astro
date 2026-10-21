@@ -83,6 +83,12 @@ const items = (
     if (accordions.length > 0) {
       sync();
 
+      // OP System's Modifier duplicated, deleted or moved an item (op:list): a copy is a <details> of its own, so it
+      // opens and closes by itself; sync gives it the preview and design states of its neighbours.
+      for (const accordion of accordions) {
+        accordion.addEventListener("op:list", sync, { signal });
+      }
+
       const watcher = new MutationObserver(sync);
       const settings = { attributes: true, attributeFilter: ["class"] };
 

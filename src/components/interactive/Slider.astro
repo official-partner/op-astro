@@ -70,6 +70,15 @@ const visible =
     .join("; ") || undefined;
 
 const slides = await slotContent(Astro.slots);
+
+// OP System's list markers (data-op-list, data-op-source, data-op-min, data-op-max, data-op-label) belong on the list
+// whose children are the slides, not on the wrap (CLAUDE.md, Lists for OP System's Modifier).
+const listAttrs = Object.fromEntries(
+  Object.entries(rest).filter(([name]) => name.startsWith("data-op-")),
+);
+const wrapAttrs = Object.fromEntries(
+  Object.entries(rest).filter(([name]) => !name.startsWith("data-op-")),
+);
 ---
 
 {
@@ -77,9 +86,15 @@ const slides = await slotContent(Astro.slots);
     <div
       class:list={["slider_wrap", variant !== "bleed" && variant, className]}
       style={visible}
-      {...rest}
+      {...wrapAttrs}
     >
-      <div class="slider_list" role="group" aria-label={label} tabindex="0">
+      <div
+        class="slider_list"
+        role="group"
+        aria-label={label}
+        tabindex="0"
+        {...listAttrs}
+      >
         <Fragment set:html={slides} />
       </div>
 
@@ -122,18 +137,25 @@ const slides = await slotContent(Astro.slots);
       ];
       if (!list) continue;
 
-      const slides = [...list.children] as HTMLElement[];
-      if (slides.length === 0) continue;
+      let slides: HTMLElement[] = [];
 
-      slides.forEach((slide, i) => {
-        slide.setAttribute("role", "group");
-        slide.setAttribute("aria-label", `${i + 1} of ${slides.length}`);
-      });
+      // The slides, read at load and again on op:list (OP System's Modifier duplicated, deleted or moved one).
+      const read = () => {
+        slides = [...list.children] as HTMLElement[];
+        slides.forEach((slide, i) => {
+          slide.setAttribute("role", "group");
+          slide.setAttribute("aria-label", `${i + 1} of ${slides.length}`);
+        });
+      };
+
+      read();
+      if (slides.length === 0) continue;
 
       const reduced = matchMedia("(prefers-reduced-motion: reduce)");
       const behavior = () => (reduced.matches ? "auto" : "smooth");
 
       const stride = () => {
+        if (slides.length === 0) return 0;
         const first = slides[0].getBoundingClientRect();
         if (slides.length < 2) return first.width;
         return slides[1].getBoundingClientRect().left - first.left;
@@ -284,6 +306,14 @@ const slides = await slotContent(Astro.slots);
       signal.addEventListener("abort", () => resize.disconnect());
 
       addEventListener("load", sync, { signal });
+      slider.addEventListener(
+        "op:list",
+        () => {
+          read();
+          sync();
+        },
+        { signal },
+      );
       sync();
     }
   });

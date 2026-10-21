@@ -117,10 +117,17 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   items are the list's direct children. Optional: `data-op-min` (1 by default: the last item is never deleted),
   `data-op-max`, `data-op-label` (its name in the Journal).
 - `<Grid>` and `<Accordion>` pass these attributes to their root: `<Grid data-op-list="coachs"
-  data-op-source="astro:coachs">`, with `data-op-item` on each `<Card>` or `<AccordionItem>`.
-- Mark lists of content only (cards, team members, questions, testimonials, offers). Never a layout or the site's
-  frame: tabs, a marquee, the nav, the footer. A `<Slider>` is not marked until its script reads its slides again
-  after a change (a duplicated slide would not slide).
+  data-op-source="astro:coachs">`, with `data-op-item` on each `<Card>` or `<AccordionItem>`. `<Slider>` passes them
+  to its list of slides (`.slider_list`), with `data-op-item` on each slide (Oct 21).
+- Mark lists of content only (cards, team members, questions, testimonials, offers), a slider's slides included.
+  Never a layout or the site's frame: tabs (a tab is a link and a panel, two lists), a marquee, the nav, the footer.
+- After any change to a list (a copy, a deletion, a move, their undo and redo), the bridge dispatches `op:list` on the
+  list (it bubbles; detail `{ list, action, index, cause }`; a copy's ids are already its own). A script that reads
+  a list's items once, or lays them out in JS (a slider's slides and dots, a filter, a count, a position by index, a
+  ScrollTrigger), listens to it on its own root inside `onPage((signal) => …)`, `{ signal }`, and reads its items
+  again: the smallest change that works, never a page reload. One that binds each item binds the new ones there, or
+  listens once on its root (a copy carries `data-script-initialized` from its original: set up what has no listener).
+  `<Slider>` and `<Accordion>` do it (Oct 21); a new component of the kind does it in the same commit.
 - What Modifier changed is published in OP System and comes back as requests from its queue: carry it into the
   source (the collection's entry, the page, the file) as the request says.
 
