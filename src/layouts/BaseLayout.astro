@@ -35,7 +35,7 @@ const own = Object.keys(
 const has = (name: string) => own.some((f) => f.endsWith(`/${name}.astro`));
 const finish = finishes(config);
 const loader =
-  finish.loader === "custom" && !has("LoaderCustom") ? "mark" : finish.loader;
+  finish.loader === "custom" && !has("LoaderCustom") ? "logo" : finish.loader;
 const transition =
   finish.transition === "custom" && !has("TransitionCustom")
     ? "slide"

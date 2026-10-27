@@ -5,9 +5,10 @@
  * (src/components/system/LoaderCustom.astro, TransitionCustom.astro). Read by the layout and by OP System's
  * integration (integrations/op-system.mjs), which announces them in site.json `motion`.
  *
- * Older keys still read: `"loader": true` is the mark, `"transitions": true` the short slide.
+ * Older keys still read: `"loader": true` is the logo (Oct 27, Sam: the site's logo revealed on the brand's ground; the
+ * square mark of the favicon is never the default), `"transitions": true` the short slide.
  */
-export const LOADER_PRESETS = ["mark", "counter", "curtain"] as const;
+export const LOADER_PRESETS = ["logo", "mark", "counter", "curtain"] as const;
 export const TRANSITION_PRESETS = ["fade", "slide", "curtain"] as const;
 export const SCROLL_INTENSITIES = ["light", "medium", "strong"] as const;
 
@@ -40,7 +41,7 @@ const pick = <T extends string>(
 };
 
 export function finishes(config: Record<string, unknown>): Finishes {
-  const loader = pick<LoaderPreset>(config.loader, LOADER_PRESETS, "mark");
+  const loader = pick<LoaderPreset>(config.loader, LOADER_PRESETS, "logo");
   const transition =
     pick<TransitionPreset>(config.transition, TRANSITION_PRESETS, "slide") ??
     (config.transitions === true ? "slide" : null);

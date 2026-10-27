@@ -477,7 +477,7 @@ export default function opSystem(site) {
         // the finishing touches (op.config.json; src/utils/finishes.ts): a "custom" one is the site's own file
         const finish = finishes(conf);
         const ownFile = (name) => files.some((f) => f.endsWith(path.join("src", "components", "system", `${name}.astro`)));
-        if (finish.loader === "custom" && !ownFile("LoaderCustom")) finish.loader = "mark";
+        if (finish.loader === "custom" && !ownFile("LoaderCustom")) finish.loader = "logo";
         if (finish.transition === "custom" && !ownFile("TransitionCustom")) finish.transition = "slide";
         // Lenis is loaded only where the smooth scroll is on, or where another of the site's scripts imports it
         const lenisElsewhere = files.some((f, i) => !f.endsWith("SmoothScroll.astro") && !f.endsWith("smooth-scroll.ts") && /from ["']lenis["']|import\(["']lenis["']\)/.test(texts[i]));

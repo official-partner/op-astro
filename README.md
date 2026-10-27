@@ -29,12 +29,14 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   follow the screen's width; 1440 by default), `domain` (the client's domain, empty until the launch: `SITE_URL` reads
   it) and `live` (false until the launch: every build is kept out of search engines until then, `dist/_headers`; OP
   System's « Lancer le site » sets both), `loader`, `transition` and `smoothScroll` (the finishing touches, each
-  false or a preset until the team turns it on: CLAUDE.md, The finishing touches).
+  false or a preset; `loaderTheme`, the theme the logo loader's ground takes until the team turns it on: CLAUDE.md, The finishing touches).
 - The finishing touches, each ready to turn on with a preset and to restyle per client (Oct 17, 2026; Sam: « un loading
   screen par projet et un langage de transition entre les pages (comme Barba), intégré dans l'UX de l'app »; presets
   and the smooth scroll Oct 27, 2026, Sam): `src/components/system/Loader.astro` (from the first paint until the fonts
   and the first image in view are ready, 600 ms to 2.5 s, once per tab session, `?op-loader` to replay it: the site's
-  mark, a count to 100, or a curtain in the brand's colour), `src/components/system/PageTransitions.astro` (Astro's
+  logo rising on the brand's ground, then the ground lifting away (the default since Oct 27, 2026, Sam: « prends le
+  logo du site en SVG et anime-le », not the favicon's square mark), the site's square mark, a count to 100, or a
+  curtain in the brand's colour), `src/components/system/PageTransitions.astro` (Astro's
   `<ClientRouter />`, never Barba: a fade, a short slide, or a curtain that covers the page while the next one loads;
   a crossfade or a cut with reduced motion) and `src/components/system/SmoothScroll.astro` (Lenis 1.3, MIT, loaded
   only where it runs: never with reduced motion, not on a touch screen unless asked; `src/utils/smooth-scroll.ts` for
@@ -103,7 +105,7 @@ By hand:
 | `npm run preview` | Serves the built site                            |
 | `npm run check`   | Type-checks every `.astro` file                  |
 | `npm run format`  | Formats the project with Prettier                |
-| `npm run shot`    | Full-page PNGs of built pages, in `shots/`       |
+| `npm run shot`    | Full-page PNGs of built pages, in `shots/` (`--loader`: the loading screen frame by frame) |
 
 Node 22.19 or newer is required (Cloudflare's build image runs Node 24 by default). `npm run build` runs `prebuild`
 first (`scripts/favicon.mjs --if-missing`: the icons from the repository's own files, no network and no secret; without
