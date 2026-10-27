@@ -2,6 +2,14 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-27, Sam (night plan, Bloc 8d: « optimiser les documents pour Claude, sans perdre l'info importante »;
+  decided by Claude overnight, Sam asleep): CLAUDE.md says each rule once and without its history: the dates and who
+  asked left the rules whose date does not serve them (their history is in this file), « How to build with Lumos » and
+  « Lumos for Astro is not Lumos for Webflow » point to AGENTS.md, which every session loads with CLAUDE.md and says
+  both, and the pointer to op-system's README follows its move to `docs/` (`docs/bridge.md`, `op:reveal`). No rule
+  changed: a script found every rule-like line of CLAUDE.md and AGENTS.md before in the two after (op-system's night
+  report). AGENTS.md is Lumos's own file, as its authors publish it: unchanged.
+
 - 2026-10-27, Sam (Oct 26: Lenis, page transitions with three simple presets or one Claude makes from an idea, a
   loading screen, each per project; decided by Claude overnight, Sam asleep): the finishing touches are op.config.json
   keys, each `false` or a preset: `loader` mark, counter or curtain (`true` stays the mark), `transition` fade, slide or

@@ -3,8 +3,7 @@
 This repository is a website built by a studio with Lumos for Astro and reviewed in OP System
 (https://app.officialpartner.work). It starts as a copy of Official Partner's starter, `official-partner/op-astro`
 (README.md, Start a site). The site's own decisions are in PROJECT.md: search it before changing anything it may
-cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agents/skills/` (loaded from
-`.claude/skills/`).
+cover. How to build with Lumos: AGENTS.md, below.
 
 ## Working here
 - Answer in the studio's language (French at Official Partner). Code, comments and the docs are in English; the site's
@@ -17,7 +16,7 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
 - Log every decision in PROJECT.md with the date and who asked.
 - Grep a long file (PROJECT.md, README.md, base.css, a large component) before reading it whole; read the part the
   change touches.
-- Craft (Sam, Oct 17): design and motion follow OP's craft, the Craft section of the OP System connector's guides and
+- Craft: design and motion follow OP's craft, the Craft section of the OP System connector's guides and
   its guides `direction` and `critique` (`get_guide`), or OP's skills op-design-direction, op-motion and op-critique
   when the session has them. Anything that builds or changes a page, a section or a component follows it; a new page
   gets a critique pass (`get_guide("critique")`) before the team sees it.
@@ -30,8 +29,8 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
 - `review` goes to `main` (the site goes live, or a change reaches the live site) only when someone asks in so many
   words: « publie », « mets en ligne », « publish ». The team's « Mettre en ligne » in OP System is that ask: it comes
   from the queue as a request of kind `publish` (a change reaches the live site) or `launch` (the site goes live).
-- Since Oct 18, OP System's « Mettre en ligne » does it itself, through its GitHub App, when the App is installed on
-  this repository: `main` moved to the version the team saw on the staging, a fast-forward only; the launch writes
+- OP System's « Mettre en ligne » does it itself, through its GitHub App, when the App is installed on this
+  repository: `main` moved to the version the team saw on the staging, a fast-forward only; the launch writes
   `"domain"` and `"live": true` in op.config.json on `review` first. No request reaches Claude then.
 - A request of kind `publish` or `launch` means the App could not: do it as the OP System connector's
   `get_guide("astro")` says (Live), the one source of these steps: the commits only (no clone, no npm, no build), the
@@ -84,9 +83,8 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   social image made by hand is never replaced by the build.
 
 ## The finishing touches: loading screen, page transitions, smooth scroll
-- All three are off in the starter (Oct 27, 2026; Sam asked on Oct 26 for Lenis, page transitions with three simple
-  presets or one Claude makes, and a loading screen, each turned on per project). Each is one key of op.config.json,
-  `false` or a preset, read by `src/utils/finishes.ts`:
+- All three are off in the starter, each turned on per project. Each is one key of op.config.json, `false` or a
+  preset, read by `src/utils/finishes.ts`:
   - `"loader"`: `"mark"` (the site's mark on the page's ground), `"counter"` (a count to 100 at the foot of the screen,
     a line filling under it), `"curtain"` (the brand's ground, `.theme-brand`, lifting away whole), `"custom"`;
     `true` is `"mark"` (src/components/system/Loader.astro);
@@ -140,7 +138,7 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   its listeners to `document`, `window` or a media query, and stops its timers and observers. Every component's script
   does it already. After a page change, focus goes to `<main>` and Astro announces the page's title. A link that must
   load the page in full: `data-astro-reload`.
-- OP System's review points at an element in a slide with `op:reveal` (op-system README, The bridge): the starter's
+- OP System's review points at an element in a slide with `op:reveal` (op-system's `docs/bridge.md`): the starter's
   Slider goes to the slide that holds it (`src/utils/op-reveal.ts`). A component of the site's that hides content (a
   carousel, custom tabs) does the same on its own root.
 
@@ -171,7 +169,7 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   only when the client must edit the site alone, decided with the team and logged in PROJECT.md.
 
 ## Check what you changed
-- `npm run shot -- <page...> [width...]` (Sam, Oct 18) takes each page at each width as a full-page PNG,
+- `npm run shot -- <page...> [width...]` takes each page at each width as a full-page PNG,
   `shots/<page>-<width>.png` (git-ignored): `accueil` (or `/`) for the home, another page by its route (`a-propos`,
   `coachs-fitness`), `404`, or `all`; 1440 and 390 when no width is given. It builds first when `dist/` is older than
   the sources (`--build` forces it), serves `dist/` itself, asks for reduced motion (the reveals in their final state)
@@ -189,8 +187,7 @@ cover. How to build with Lumos: AGENTS.md and LUMOS.md, and the skills in `.agen
   it says what to install.
 
 ## Lumos
-- Lumos for Astro is not Lumos for Webflow: its conventions are LUMOS.md's. New CSS is the last resort (LUMOS.md, New
-  style checklist).
+- New CSS is the last resort (LUMOS.md, New style checklist).
 - Lumos for Astro is MIT, © 2026 Timothy Ricks (LICENSE): keep LICENSE as it is. An upgrade of Lumos goes through the
   `lumos-upgrade-version` skill.
 
