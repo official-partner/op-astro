@@ -2,6 +2,17 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-27, Sam (Oct 26: Lenis, page transitions with three simple presets or one Claude makes from an idea, a
+  loading screen, each per project; decided by Claude overnight, Sam asleep): the finishing touches are op.config.json
+  keys, each `false` or a preset: `loader` mark, counter or curtain (`true` stays the mark), `transition` fade, slide or
+  curtain on Astro's own router (never Barba, which would fight it; `transitions: true` stays the slide),
+  `smoothScroll` light, medium or strong (Lenis, loaded only where it runs: not with reduced motion, not on a touch
+  screen unless `smoothScrollTouch`), and `custom` for the site's own file Claude makes. site.json announces each with
+  the presets the site has, so OP System's « Expérience » can show, replay and ask for them. The curtain wears
+  `.theme-brand`; the counter counts toward 90 while the page loads, then to 100. site.json no longer announces a
+  transition only because PageTransitions.astro holds `<ClientRouter />`: the built pages say whether the router is on,
+  and Lenis is listed among the libraries only where it runs. The Slider answers OP System's `op:reveal`.
+
 - 2026-10-18, Sam (« est-ce que ça pourrait être plus rapide… aussi seamless que Webflow », then « go pour tout »): OP
   System's « Mettre en ligne » puts the site live itself through its GitHub App (main moved to the version seen on the
   staging, a fast-forward only), with a bar to the site itself; a request to Claude only when the App is not on the

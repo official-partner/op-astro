@@ -1,0 +1,98 @@
+---
+import type { ScrollIntensity } from "@/utils/finishes.ts";
+import { SCROLL_LERP } from "@/utils/finishes.ts";
+
+interface Props {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+  /** How long the page glides after the wheel: `light` stays close to the browser's own scroll, `strong` glides longest. */
+  intensity?: ScrollIntensity;
+  /** Smooth a touch screen's scroll too. Off by default: a phone keeps its own scroll. */
+  touch?: boolean;
+}
+
+const { render = true, intensity = "medium", touch = false } = Astro.props;
+---
+
+{
+  render && (
+    <meta
+      name="op-smooth-scroll"
+      content={String(SCROLL_LERP[intensity])}
+      data-touch={touch ? "true" : undefined}
+    />
+  )
+}
+
+<script>
+  import { syncLenis } from "@/utils/smooth-scroll.ts";
+
+  /* The smooth scroll (op.config.json "smoothScroll"; Lenis, MIT): the wheel's scroll glides at the site's intensity
+     (Lenis's lerp, in the meta above) while the browser's own scroll stays underneath (find in page, anchors, the
+     keyboard). Never with reduced motion (it stops when the setting changes) and, unless the site asks for it, never
+     on a touch screen, where Lenis is not even loaded. Once per visit: with Astro's router it lives across pages,
+     stopped while a page changes and measured again after. */
+  const meta = () =>
+    document.querySelector<HTMLMetaElement>('meta[name="op-smooth-scroll"]');
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+  const touchOnly = matchMedia("(hover: none) and (pointer: coarse)");
+  let stop: (() => void) | null = null;
+  let starting = false;
+
+  const wanted = () => {
+    const m = meta();
+    if (!m || reduce.matches) return false;
+    return !touchOnly.matches || m.dataset.touch === "true";
+  };
+
+  const start = async () => {
+    if (stop || starting || !wanted()) return;
+    starting = true;
+    const { default: Lenis } = await import("lenis");
+    starting = false;
+    if (stop || !wanted()) return;
+    const lerp = Number(meta()?.content) || 0.1;
+    const lenis = new Lenis({
+      lerp,
+      syncTouch: meta()?.dataset.touch === "true",
+      autoRaf: false,
+      stopInertiaOnNavigate: true,
+    });
+    stop = syncLenis(lenis);
+  };
+
+  const check = () => {
+    if (wanted()) start();
+    else if (stop) {
+      stop();
+      stop = null;
+    }
+  };
+
+  reduce.addEventListener("change", check);
+  touchOnly.addEventListener("change", check);
+  document.addEventListener("astro:after-swap", check);
+  start();
+</script>
+
+<style is:global>
+  @layer components {
+    /* Lenis's own rules (lenis/dist/lenis.css), for the classes it puts on <html> */
+    html.lenis,
+    html.lenis body {
+      height: auto;
+    }
+
+    .lenis:not(.lenis-autoToggle).lenis-stopped {
+      overflow: clip;
+    }
+
+    .lenis [data-lenis-prevent] {
+      overscroll-behavior: contain;
+    }
+
+    .lenis.lenis-smooth iframe {
+      pointer-events: none;
+    }
+  }
+</style>

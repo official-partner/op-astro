@@ -107,6 +107,7 @@ const slides = await slotContent(Astro.slots);
 
 <script>
   import { onPage } from "@/utils/page.ts";
+  import { revealSlides } from "@/utils/op-reveal.ts";
 
   const THRESHOLD = 4;
 
@@ -276,6 +277,9 @@ const slides = await slotContent(Astro.slots);
         },
         { passive: true },
       );
+
+      // OP System's review points at an element in a slide (op:reveal): the row goes to that slide
+      revealSlides(slider, list, signal);
 
       slider.classList.add("is-ready");
 

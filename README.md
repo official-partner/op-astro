@@ -10,10 +10,13 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   op-system's README, site.json). The pages come from the built HTML; the Web System from `src/styles/base.css` (each
   fluid token as its value at 320 px and at 1440 px, each colour, each theme's roles); the project from
   `op.config.json`. Nothing of it runs in the browser: OP System adds its own bridge to the pages through its proxy.
-  Its `motion` says what OP System can show of the site's motion: `{ loader: { name } | null, transition: { name,
-  kind: "view-transitions" } | null }`, each `null` unless op.config.json turns it on (`loader`, `transitions`);
-  OP System replays the loading screen (« Écran de chargement », in its pages list) by loading the home page with
-  `?op-loader`, and the transition shows when moving between pages. Beside it: the tints the themes use (each
+  Its `motion` says what OP System can show of the site's finishing touches (Oct 27, 2026): `{ loader: { name,
+  preset } | null, transition: { name, kind: "view-transitions", preset } | null, smoothScroll: { name, library:
+  "lenis", intensity, touch } | null, presets: { loader, transition, smoothScroll } }`, each `null` unless
+  op.config.json turns it on (`loader`, `transition`, `smoothScroll`; the transition also when the built pages carry
+  Astro's router), `presets` what the site has (the starter's three of each, and `custom` when the site has its own
+  file). OP System's « Expérience » shows them and replays them: the loading screen by loading the home page with
+  `?op-loader`, the transition by following a link of the page, the smooth scroll with `op:glide`. Beside it: the tints the themes use (each
   colour's `derived`, with the CSS it is written with), the layout grid (`grid`: `--site-margin`, `--site-gutter`, and
   `--site-columns` per screen when the site names them, else 12, 8 and 4), the curves (`eases`, from `--ease-*`), the
   libraries the site loads (`libraries`: its packages, the GSAP plugins it imports or loads from a CDN, Astro's
@@ -25,15 +28,19 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   (the team's pages, shown under Système in OP System), `designWidth` (the width the design is drawn at, when values
   follow the screen's width; 1440 by default), `domain` (the client's domain, empty until the launch: `SITE_URL` reads
   it) and `live` (false until the launch: every build is kept out of search engines until then, `dist/_headers`; OP
-  System's « Lancer le site » sets both), `loader` and `transitions` (the loading screen and the page transitions, both
-  false until the team turns them on: CLAUDE.md, Loading screen and page transitions).
-- A loading screen and page transitions, ready to turn on and to restyle per client (Oct 17, 2026; Sam: « un loading
-  screen par projet et un langage de transition entre les pages (comme Barba), intégré dans l'UX de l'app »):
-  `src/components/system/Loader.astro` (the site's mark on the page's ground, from the first paint until the fonts and
-  the first image in view are ready, 600 ms to 2.5 s, once per tab session, `?op-loader` to replay it) and
-  `src/components/system/PageTransitions.astro` (Astro's `<ClientRouter />`: the page leaves lifting a little, the
-  next one rises into place, on `--page-leave-*` and `--page-arrive-*`; a crossfade with reduced motion). Every
-  script of the components runs again after a page change through `src/utils/page.ts` (`onPage`).
+  System's « Lancer le site » sets both), `loader`, `transition` and `smoothScroll` (the finishing touches, each
+  false or a preset until the team turns it on: CLAUDE.md, The finishing touches).
+- The finishing touches, each ready to turn on with a preset and to restyle per client (Oct 17, 2026; Sam: « un loading
+  screen par projet et un langage de transition entre les pages (comme Barba), intégré dans l'UX de l'app »; presets
+  and the smooth scroll Oct 27, 2026, Sam): `src/components/system/Loader.astro` (from the first paint until the fonts
+  and the first image in view are ready, 600 ms to 2.5 s, once per tab session, `?op-loader` to replay it: the site's
+  mark, a count to 100, or a curtain in the brand's colour), `src/components/system/PageTransitions.astro` (Astro's
+  `<ClientRouter />`, never Barba: a fade, a short slide, or a curtain that covers the page while the next one loads;
+  a crossfade or a cut with reduced motion) and `src/components/system/SmoothScroll.astro` (Lenis 1.3, MIT, loaded
+  only where it runs: never with reduced motion, not on a touch screen unless asked; `src/utils/smooth-scroll.ts` for
+  a script that needs it and for GSAP's ScrollTrigger). A custom loader or transition is the site's own file
+  (`LoaderCustom.astro`, `TransitionCustom.astro`) that Claude makes from the team's words. Every script of the
+  components runs again after a page change through `src/utils/page.ts` (`onPage`).
 - Tokens per screen: Lumos's fluid tokens (`--x-min`, `--x-max`) show as their two ends; a site whose values change by
   screen instead writes them in `@media (width >= Xrem) { :root { … } }` blocks of `src/styles/base.css` (a tablet's,
   then a computer's), and each shows per screen in OP System, its screens' widths taken from those blocks.
@@ -133,8 +140,11 @@ skill. What OP changed in Lumos's own files, so an upgrade keeps it:
   `--primary-family`, until the site has its fonts).
 - `src/consts.ts`: French placeholders, `SITE_LOCALE` fr-CA, the components page (`/composantes`) out of search
   engines.
-- `src/layouts/BaseLayout.astro`: `lang` from `SITE_LOCALE`; the loading screen (`Loader`, its head part and its
-  cover) and `PageTransitions`, each rendered only when op.config.json turns it on.
+- `src/layouts/BaseLayout.astro`: `lang` from `SITE_LOCALE`; the finishing touches (`Loader`, its head part and its
+  cover; `PageTransitions`, its head part and its curtain; `SmoothScroll`), each rendered only when op.config.json
+  turns it on, and `data-page-transition` on `<html>` for the transition's preset.
+- `Slider`: it answers OP System's `op:reveal` (`src/utils/op-reveal.ts`): the review points at an element in a slide,
+  the row goes to that slide (Oct 27, 2026).
 - The scripts of `Nav`, `Footer`, `Form`, `Range`, `Accordion`, `Dropdown`, `Marquee`, `Modal`, `Slider` and `Tabs`:
   their body in `onPage((signal) => { … })` (`src/utils/page.ts`, added), so they run again after a page change when
   the transitions are on, `signal` on their listeners to `document`, `window` and media queries, their observers and

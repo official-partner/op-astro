@@ -1,12 +1,28 @@
 ---
 import { ClientRouter } from "astro:transitions";
+import type { TransitionPreset } from "@/utils/finishes.ts";
 
 interface Props {
   /** Set to `false` to omit the component. */
   render?: boolean;
+  /** `head`: Astro's router and the transition's styles and scripts. `body`: the curtain, first in the body (`curtain` only). */
+  part: "head" | "body";
+  /** The transition: a crossfade (`fade`), the page lifting away as the next one rises (`slide`), a curtain in the brand's colour (`curtain`), or the site's own (`custom`: src/components/system/TransitionCustom.astro). */
+  preset?: TransitionPreset;
 }
 
-const { render = true } = Astro.props;
+const { render = true, part, preset: asked = "slide" } = Astro.props;
+
+/* The site's own transition (op.config.json "transition": "custom"), made by Claude from the team's words: its styles
+   and scripts in TransitionCustom.astro, scoped to html[data-page-transition="custom"]. Missing, the slide stands in. */
+const [Custom] = Object.values(
+  import.meta.glob<{ default: (props: object) => unknown }>(
+    "/src/components/system/TransitionCustom.astro",
+    { eager: true },
+  ),
+).map((m) => m.default);
+const preset: TransitionPreset =
+  asked === "custom" && !Custom ? "slide" : asked;
 
 /* After a page change, focus goes to the new page's content, as the skip link does (unless the address names a place
    in the page); Astro's router announces the page's title */
@@ -20,18 +36,95 @@ document.addEventListener("astro:after-swap", () => {
 ---
 
 {
-  render && (
+  render && part === "head" && (
     <Fragment>
       <ClientRouter />
       <script is:inline set:html={SCRIPT} />
+      {preset === "custom" && Custom && <Custom />}
     </Fragment>
   )
 }
 
+{
+  render && part === "body" && preset === "curtain" && (
+    <div
+      class="page-curtain_wrap theme-brand"
+      transition:persist="page-curtain"
+      aria-hidden="true"
+    />
+  )
+}
+
+<script>
+  import type { TransitionBeforePreparationEvent } from "astro:transitions/client";
+
+  /* The curtain (op.config.json "transition": "curtain"): a link followed, the brand's ground rises over the page on
+     the leave's timing while the next page loads; the page is swapped under it, at its top; then the curtain lifts
+     away on the arrival's timing. Back and forward cut to the page, as reduced motion does. */
+  const root = document.documentElement;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+  const token = (name: string) =>
+    getComputedStyle(root).getPropertyValue(name).trim();
+  const ms = (name: string) => {
+    const value = token(name);
+    const n = parseFloat(value) || 0;
+    return /ms$/.test(value) ? n : /s$/.test(value) ? n * 1000 : n;
+  };
+  const curtain = () =>
+    document.querySelector<HTMLElement>(".page-curtain_wrap");
+  let covered = false;
+
+  /* From where it is (a curtain asked again mid-way carries on), to `to`, then held there by its own style */
+  const move = async (
+    el: HTMLElement,
+    to: string,
+    step: "leave" | "arrive",
+  ) => {
+    const from = getComputedStyle(el).translate;
+    el.getAnimations().forEach((a) => a.cancel());
+    const motion = el.animate([{ translate: from }, { translate: to }], {
+      duration: ms(`--page-${step}-duration`),
+      easing: token(`--page-${step}-ease`) || "ease",
+      fill: "forwards",
+    });
+    try {
+      await motion.finished;
+      el.style.translate = to;
+      motion.cancel();
+    } catch {
+      /* cancelled: another move took over */
+    }
+  };
+
+  document.addEventListener("astro:before-preparation", (event) => {
+    const prep = event as TransitionBeforePreparationEvent;
+    const el = curtain();
+    if (root.dataset.pageTransition !== "curtain" || !el) return;
+    if (reduce.matches || prep.navigationType === "traverse") return;
+    const load = prep.loader;
+    prep.loader = async () => {
+      covered = true;
+      el.style.visibility = "visible";
+      await Promise.all([move(el, "0 0", "leave"), load()]);
+    };
+  });
+
+  document.addEventListener("astro:after-swap", () => {
+    const el = curtain();
+    if (!covered || !el) return;
+    covered = false;
+    move(el, "0 -100%", "arrive").then(() => {
+      if (covered) return;
+      el.style.visibility = "";
+      el.style.translate = "";
+    });
+  });
+</script>
+
 <style is:global>
   @layer components {
-    /* A page change: the page leaves, lifting a little, then the next one rises into place; the nav holds still.
-       Back mirrors it. Only while Astro's router changes the page (data-astro-transition). */
+    /* Only while Astro's router changes the page (data-astro-transition); back mirrors the way things travel. The nav
+       holds still (its own view-transition-name). */
     html[data-astro-transition] {
       --_page-shift: 1;
     }
@@ -54,42 +147,117 @@ document.addEventListener("astro:after-swap", () => {
       overflow: clip;
     }
 
-    html[data-astro-transition]::view-transition-old(root) {
-      mix-blend-mode: normal;
-      animation: page-leave var(--page-leave-duration) var(--page-leave-ease)
-        both;
-    }
+    @media (prefers-reduced-motion: no-preference) {
+      /* slide: the page leaves, lifting a little, then the next one rises into place */
+      html[data-page-transition="slide"][data-astro-transition]::view-transition-old(
+          root
+        ) {
+        mix-blend-mode: normal;
+        animation: page-leave var(--page-leave-duration) var(--page-leave-ease)
+          both;
+      }
 
-    html[data-astro-transition]::view-transition-new(root) {
-      mix-blend-mode: normal;
-      animation: page-arrive var(--page-arrive-duration) var(--page-arrive-ease)
-        calc(var(--page-leave-duration) / 4) both;
-    }
+      html[data-page-transition="slide"][data-astro-transition]::view-transition-new(
+          root
+        ) {
+        mix-blend-mode: normal;
+        animation: page-arrive var(--page-arrive-duration)
+          var(--page-arrive-ease) calc(var(--page-leave-duration) / 4) both;
+      }
 
-    /* Browsers without view transitions: Astro's fallback plays the same on the page's content */
-    html[data-astro-transition-fallback="old"] body > :is(main, footer) {
-      animation: page-leave var(--page-leave-duration) var(--page-leave-ease)
-        both;
-    }
+      /* fade: the page fades out, the next one fades in; nothing travels */
+      html[data-page-transition="fade"][data-astro-transition]::view-transition-old(
+          root
+        ) {
+        mix-blend-mode: normal;
+        animation: page-fade-out var(--page-leave-duration)
+          var(--page-leave-ease) both;
+      }
 
-    html[data-astro-transition-fallback="new"] body > :is(main, footer) {
-      animation: page-arrive var(--page-arrive-duration) var(--page-arrive-ease)
-        both;
+      html[data-page-transition="fade"][data-astro-transition]::view-transition-new(
+          root
+        ) {
+        mix-blend-mode: normal;
+        animation: page-fade-in var(--page-arrive-duration)
+          var(--page-arrive-ease) calc(var(--page-leave-duration) / 2) both;
+      }
+
+      /* Browsers without view transitions: Astro's fallback plays the same on the page's content */
+      html[data-page-transition="slide"][data-astro-transition-fallback="old"]
+        body
+        > :is(main, footer) {
+        animation: page-leave var(--page-leave-duration) var(--page-leave-ease)
+          both;
+      }
+
+      html[data-page-transition="slide"][data-astro-transition-fallback="new"]
+        body
+        > :is(main, footer) {
+        animation: page-arrive var(--page-arrive-duration)
+          var(--page-arrive-ease) both;
+      }
+
+      html[data-page-transition="fade"][data-astro-transition-fallback="old"]
+        body
+        > :is(main, footer) {
+        animation: page-fade-out var(--page-leave-duration)
+          var(--page-leave-ease) both;
+      }
+
+      html[data-page-transition="fade"][data-astro-transition-fallback="new"]
+        body
+        > :is(main, footer) {
+        animation: page-fade-in var(--page-arrive-duration)
+          var(--page-arrive-ease) both;
+      }
     }
 
     /* Reduced motion: a short crossfade, nothing travels */
     @media (prefers-reduced-motion: reduce) {
-      html[data-astro-transition]::view-transition-group(*) {
+      html:is(
+          [data-page-transition="slide"],
+          [data-page-transition="fade"]
+        )[data-astro-transition]::view-transition-group(*) {
         animation: none;
       }
 
-      html[data-astro-transition]::view-transition-old(root) {
+      html:is(
+          [data-page-transition="slide"],
+          [data-page-transition="fade"]
+        )[data-astro-transition]::view-transition-old(root) {
         animation: page-fade-out var(--hover-duration) linear both;
       }
 
-      html[data-astro-transition]::view-transition-new(root) {
+      html:is(
+          [data-page-transition="slide"],
+          [data-page-transition="fade"]
+        )[data-astro-transition]::view-transition-new(root) {
         animation: page-fade-in var(--hover-duration) linear both;
       }
+    }
+
+    /* curtain: the page is swapped under the curtain at once (its script moves it); without it, a cut */
+    html[data-page-transition="curtain"][data-astro-transition]::view-transition-group(
+        *
+      ),
+    html[data-page-transition="curtain"][data-astro-transition]::view-transition-old(
+        *
+      ),
+    html[data-page-transition="curtain"][data-astro-transition]::view-transition-new(
+        *
+      ) {
+      animation: none;
+    }
+
+    .page-curtain_wrap {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background-color: var(--background);
+      translate: 0 100%;
+      visibility: hidden;
+      pointer-events: none;
+      view-transition-name: page-curtain;
     }
 
     @keyframes page-leave {

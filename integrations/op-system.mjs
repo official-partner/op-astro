@@ -14,6 +14,7 @@ import { readFile, writeFile, readdir } from "node:fs/promises";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { finishes, LOADER_PRESETS, TRANSITION_PRESETS, SCROLL_INTENSITIES } from "../src/utils/finishes.ts";
 
 const FR = {
   home: "Accueil",
@@ -255,6 +256,7 @@ export default function opSystem(site) {
         const sheets = new Set();
         let inline = "";   // the home page's own <style> that loads the fonts and names them (Astro's <Font>)
         const scriptSrcs = new Set();   // every <script src> of the pages (a library from a CDN)
+        let routedPages = false;   // a page that changes without a load (Astro's router, as built)
         let icon = "";   // the home page's favicon
         for (const file of await htmlFiles(out)) {
           if (/(^|\/)404\.html$/.test(file)) continue;
@@ -267,6 +269,7 @@ export default function opSystem(site) {
           for (const s of html.matchAll(/<link rel="stylesheet" href="\/?([^"]+\.css)"/g)) sheets.add(s[1]);
           if (route === "./") inline = [...html.matchAll(/<style>([^<]*)<\/style>/g)].map((s) => s[1]).filter((css) => /@font-face|--font-/.test(css)).join("\n");
           for (const m of html.matchAll(/<script[^>]+src="([^"]+)"/g)) scriptSrcs.add(m[1]);
+          if (/<meta name="astro-view-transitions-enabled"/.test(html)) routedPages = true;
           if (route === "./") {   // the home page's favicon, its SVG first
             const icons = [...html.matchAll(/<link\b[^>]*>/g)].map((m) => m[0]).filter((l) => /rel="(?:shortcut )?icon"/.test(l)).map((l) => (/href="([^"]+)"/.exec(l) || [])[1]).filter(Boolean);
             icon = (icons.find((x) => /\.svg(\?|$)/.test(x)) || icons[0] || "").replace(/^\//, "");
@@ -468,8 +471,21 @@ export default function opSystem(site) {
         const deps = Object.assign({}, pkg.dependencies || {}, pkg.devDependencies || {});
         const libs = new Map();
         const lib = (id, version) => { if (!libs.has(id) || (version && !libs.get(id).version)) libs.set(id, Object.assign({ id }, version ? { version } : {})); };
-        Object.entries(PACKAGES).forEach(([name, id]) => { if (deps[name]) lib(id, String(deps[name]).replace(/^[^\d]*/, "")); });
-        const code = (await Promise.all((await sourceFiles(path.join(root, "src"))).map((f) => readFile(f, "utf8").catch(() => "")))).join("\n");
+        const files = await sourceFiles(path.join(root, "src"));
+        const texts = await Promise.all(files.map((f) => readFile(f, "utf8").catch(() => "")));
+        const code = texts.join("\n");
+        // the finishing touches (op.config.json; src/utils/finishes.ts): a "custom" one is the site's own file
+        const finish = finishes(conf);
+        const ownFile = (name) => files.some((f) => f.endsWith(path.join("src", "components", "system", `${name}.astro`)));
+        if (finish.loader === "custom" && !ownFile("LoaderCustom")) finish.loader = "mark";
+        if (finish.transition === "custom" && !ownFile("TransitionCustom")) finish.transition = "slide";
+        // Lenis is loaded only where the smooth scroll is on, or where another of the site's scripts imports it
+        const lenisElsewhere = files.some((f, i) => !f.endsWith("SmoothScroll.astro") && !f.endsWith("smooth-scroll.ts") && /from ["']lenis["']|import\(["']lenis["']\)/.test(texts[i]));
+        Object.entries(PACKAGES).forEach(([name, id]) => {
+          if (!deps[name]) return;
+          if (id === "lenis" && !finish.smoothScroll && !lenisElsewhere) return;
+          lib(id, String(deps[name]).replace(/^[^\d]*/, ""));
+        });
         for (const m of code.matchAll(/gsap\/(?:dist\/)?(\w+)/g)) if (GSAP_PLUGINS[m[1]]) lib(GSAP_PLUGINS[m[1]]);
         for (const src of [...scriptSrcs, ...[...code.matchAll(/https:\/\/[^"'\s]+\.js/g)].map((m) => m[0])]) {
           const g = /gsap(?:@|\/)(\d+\.\d+\.\d+)?.*?\/(\w+?)(?:\.min)?\.js/.exec(src);
@@ -477,14 +493,25 @@ export default function opSystem(site) {
           Object.entries({ lenis: "lenis", barba: "barba", swiper: "swiper", embla: "embla", lottie: "lottie", "three.": "three" }).forEach(([word, id]) => { if (src.toLowerCase().includes(word)) lib(id); });
         }
         if (libs.size && [...libs.keys()].some((id) => Object.values(GSAP_PLUGINS).includes(id))) lib("gsap");
-        const routed = /<ClientRouter\b|<ViewTransitions\b/.test(code);
+        // Astro's router as the pages were built (the starter's PageTransitions holds it whether it is on or not)
+        const routed = routedPages;
         if (routed) lib("view-transitions");
         const libraries = [...libs.values()];
-        // the loading screen and the page transitions (op.config.json loader and transitions: the starter's Loader and
-        // Astro's router): OP System replays the one (?op-loader) and names the other
+        // the finishing touches (Oct 27; op.config.json loader, transition, smoothScroll): OP System's « Expérience »
+        // shows each, its preset, the presets the site has (its own, "custom", when it has the file), and replays them:
+        // the loading screen with ?op-loader, the transition by following a link, the smooth scroll with op:glide
+        const en = lang === "en";
         const motionOf = {
-          loader: conf.loader === true ? { name: lang === "en" ? "Loading screen" : "Écran de chargement" } : null,
-          transition: conf.transitions === true || routed ? { name: lang === "en" ? "Page transition" : "Transition entre les pages", kind: "view-transitions" } : null,
+          loader: finish.loader ? { name: en ? "Loading screen" : "Écran de chargement", preset: finish.loader } : null,
+          transition: finish.transition || routed ? { name: en ? "Page transition" : "Transition entre les pages", kind: "view-transitions",
+            preset: finish.transition || "custom" } : null,
+          smoothScroll: finish.smoothScroll ? { name: en ? "Smooth scroll" : "Défilement fluide", library: "lenis",
+            intensity: finish.smoothScroll.intensity, touch: finish.smoothScroll.touch } : null,
+          presets: {
+            loader: [...LOADER_PRESETS, ...(ownFile("LoaderCustom") ? ["custom"] : [])],
+            transition: [...TRANSITION_PRESETS, ...(ownFile("TransitionCustom") ? ["custom"] : [])],
+            smoothScroll: [...SCROLL_INTENSITIES],
+          },
         };
 
         let domain = "";

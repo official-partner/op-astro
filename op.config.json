@@ -8,7 +8,8 @@
   "domain": "",
   "live": false,
   "loader": false,
-  "transitions": false,
+  "transition": false,
+  "smoothScroll": false,
   "brandColor": "#141413",
   "systemPages": [
     "composantes"

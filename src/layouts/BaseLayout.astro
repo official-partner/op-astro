@@ -6,8 +6,10 @@ import Nav from "@/components/global/Nav.astro";
 import Footer from "@/components/global/Footer.astro";
 import Loader from "@/components/system/Loader.astro";
 import PageTransitions from "@/components/system/PageTransitions.astro";
+import SmoothScroll from "@/components/system/SmoothScroll.astro";
 import type { SeoProps } from "@/types.ts";
 import { SITE_LOCALE } from "@/consts.ts";
+import { finishes } from "@/utils/finishes.ts";
 import config from "../../op.config.json";
 
 type Props = SeoProps & {
@@ -23,23 +25,47 @@ type Props = SeoProps & {
 
 const { theme = "inherit", overlap = false, ...seo } = Astro.props;
 
-/* The loading screen and the page transitions, each off until op.config.json turns it on */
-const { loader = false, transitions = false } = config as {
-  loader?: boolean;
-  transitions?: boolean;
-};
+/* The finishing touches, each off until op.config.json turns it on (src/utils/finishes.ts): the loading screen, the
+   transition between pages, the smooth scroll. A "custom" one without its file stands in as its first preset. */
+const own = Object.keys(
+  import.meta.glob(
+    "/src/components/system/{LoaderCustom,TransitionCustom}.astro",
+  ),
+);
+const has = (name: string) => own.some((f) => f.endsWith(`/${name}.astro`));
+const finish = finishes(config);
+const loader =
+  finish.loader === "custom" && !has("LoaderCustom") ? "mark" : finish.loader;
+const transition =
+  finish.transition === "custom" && !has("TransitionCustom")
+    ? "slide"
+    : finish.transition;
+const { smoothScroll } = finish;
 ---
 
 <!doctype html>
-<html lang={SITE_LOCALE} class:list={[theme !== "inherit" && `theme-${theme}`]}>
+<html
+  lang={SITE_LOCALE}
+  class:list={[theme !== "inherit" && `theme-${theme}`]}
+  data-page-transition={transition ?? undefined}
+>
   <head>
     <BaseHead {...seo} />
-    <Loader part="head" render={loader} />
-    <PageTransitions render={transitions} />
+    {loader && <Loader part="head" preset={loader} />}
+    {transition && <PageTransitions part="head" preset={transition} />}
+    {
+      smoothScroll && (
+        <SmoothScroll
+          intensity={smoothScroll.intensity}
+          touch={smoothScroll.touch}
+        />
+      )
+    }
     <slot name="head" />
   </head>
   <body>
-    <Loader part="cover" render={loader} />
+    {loader && <Loader part="cover" preset={loader} />}
+    {transition && <PageTransitions part="body" preset={transition} />}
     <SkipLink />
     <Nav overlap={overlap} />
     <main id="main" tabindex="-1">
