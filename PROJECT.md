@@ -2,6 +2,13 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-27, Sam (15:28: « le nouveau site Astro peut créer ses propres global classes… pour la scalabilité »; OP's
+  skills rewritten for Lumos for Astro the same day, op-system's docs/DECISIONS.md): a site's own global classes live
+  in `src/styles/project.css`, imported in the patterns layer after Lumos's `patterns.css`, so a component's own CSS and
+  the utilities still win over them and an upgrade of Lumos never touches them; each has a one-line comment that the
+  build gives OP System (site.json `system.classes`: the components' classes by prefix, then the global ones, the
+  project's first with their comment and their uses). Empty in the starter.
+
 - 2026-10-27, Sam (night plan, Bloc 8d: « optimiser les documents pour Claude, sans perdre l'info importante »;
   decided by Claude overnight, Sam asleep): CLAUDE.md says each rule once and without its history: the dates and who
   asked left the rules whose date does not serve them (their history is in this file), « How to build with Lumos » and

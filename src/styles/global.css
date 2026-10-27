@@ -4,4 +4,5 @@
 
 @import "./base.css" layer(base);
 @import "./patterns.css" layer(patterns);
+@import "./project.css" layer(patterns);
 @import "./utilities.css" layer(utilities);

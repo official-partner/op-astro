@@ -258,6 +258,9 @@ export default function opSystem(site) {
         const scriptSrcs = new Set();   // every <script src> of the pages (a library from a CDN)
         let routedPages = false;   // a page that changes without a load (Astro's router, as built)
         let icon = "";   // the home page's favicon
+        // the classes the site's pages use (not the system's own pages): how many times, on how many pages (Web System,
+        // Classes; op-system's op-global-classes skill). Astro's scoped classes (astro-…) left out
+        const classUse = new Map();
         for (const file of await htmlFiles(out)) {
           if (/(^|\/)404\.html$/.test(file)) continue;
           const html = await readFile(path.join(out, file), "utf8");
@@ -277,6 +280,16 @@ export default function opSystem(site) {
           const components = /example-components|composantes|components/.test(route);
           // a page of the team's (a test page, a style sheet): op.config.json's systemPages, « * » for any characters
           const internal = components || (conf.systemPages || []).some((g) => new RegExp(`^${String(g).replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`).test(route));
+          if (!internal) {
+            const seen = new Set();
+            for (const m of html.matchAll(/\sclass="([^"]*)"/g)) for (const c of m[1].split(/\s+/)) {
+              if (!c || /^astro-/.test(c)) continue;
+              const u = classUse.get(c) || { uses: 0, pages: 0 };
+              u.uses += 1;
+              if (!seen.has(c)) { seen.add(c); u.pages += 1; }
+              classUse.set(c, u);
+            }
+          }
           const id = route === "./" ? (lang === "en" ? "home" : "accueil") : route.replace(/\//g, "-");
           pages.push(Object.assign({ id, title: own || id, path: route, group: internal ? t.system : t.site },
             components ? { role: "components" } : { seo: { title: full, description, slug: route === "./" ? "" : route, index } }));
@@ -369,6 +382,32 @@ export default function opSystem(site) {
         const families = [...astroConfig.matchAll(/name:\s*"([^"]+)"([\s\S]*?)(?=name:\s*"|$)/g)].map((m) => [m[1], (/cssVariable:\s*"(--[\w-]+)"/.exec(m[2]) || [])[1]]);
         const weights = [...new Set([...astroConfig.matchAll(/weight:\s*"?(\d+)/g)].map((m) => Number(m[1])))].sort((a, b) => a - b);
         const roleNames = themes.length ? themes[0].roles.map(([n]) => n.slice(2)) : [];
+        // the classes: each component's by its prefix (the part before its first underscore), then the global ones the
+        // pages use: the project's own first (src/styles/project.css, each with the comment above it, even when no page
+        // uses it yet), then Lumos's patterns and utilities and the text styles and themes
+        const projectCss = await read("src/styles/project.css");
+        const ownClasses = new Map();
+        for (const m of projectCss.matchAll(/(?:\/\*\s*([^*]*?)\s*\*\/\s*)?\.([a-z][a-z0-9-]*)\s*[,{:]/g)) {
+          if (!ownClasses.has(m[2])) ownClasses.set(m[2], m[1] && m[1].length < 240 ? m[1].replace(/\s+/g, " ") : "");
+        }
+        const globalCss = [css, projectCss, ...await Promise.all(["src/styles/patterns.css", "src/styles/utilities.css"].map(read))].join("\n");
+        const globals = new Set([...globalCss.matchAll(/\.([a-z][a-z0-9-]*)(?=[\s,{:.>+~)\[])/g)].map((m) => m[1]).filter((c) => !c.includes("_")));
+        const prefixes = new Map();
+        for (const [c, u] of classUse) {
+          const i = c.indexOf("_");
+          if (i < 1) continue;
+          const pre = c.slice(0, i);
+          const x = prefixes.get(pre) || { prefix: pre, classes: 0, uses: 0, pages: 0 };
+          x.classes += 1; x.uses += u.uses; x.pages = Math.max(x.pages, u.pages);
+          prefixes.set(pre, x);
+        }
+        const classes = {
+          components: [...prefixes.values()].sort((a, b) => b.uses - a.uses).slice(0, 80),
+          utilities: [
+            ...[...ownClasses].map(([c, note]) => Object.assign({ class: c, uses: (classUse.get(c) || {}).uses || 0, pages: (classUse.get(c) || {}).pages || 0, own: true }, note ? { note } : {})),
+            ...[...classUse].filter(([c]) => globals.has(c) && !ownClasses.has(c)).sort((a, b) => b[1].uses - a[1].uses).slice(0, 80).map(([c, u]) => ({ class: c, uses: u.uses, pages: u.pages })),
+          ],
+        };
         const system = {
           // no page of its own in the site: OP System draws the Web System with its own page, from this file
           page: "app",
@@ -381,6 +420,7 @@ export default function opSystem(site) {
           collections,
           styles: STYLES.map(([id, token]) => ({ id, label: STYLE_LABELS[id] || words(id), class: `text-style-${id}`, size: token, sample: t.sample })),
           roles: roleNames.map((id) => ({ id, label: lang === "en" ? words(id) : (ROLES_FR[id] || words(id)), name: `--${id}` })),
+          classes,
           // no font of its own (OP's starter: the system's): the family --primary-family names
           fonts: families.length
             ? families.map(([family, cssVar]) => ({ family, stack: `${cssVar ? `var(${cssVar}, ${family})` : family}, system-ui, sans-serif`, weights: weights.length ? weights : [400], use: t.site }))

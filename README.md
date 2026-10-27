@@ -20,7 +20,9 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   colour's `derived`, with the CSS it is written with), the layout grid (`grid`: `--site-margin`, `--site-gutter`, and
   `--site-columns` per screen when the site names them, else 12, 8 and 4), the curves (`eases`, from `--ease-*`), the
   libraries the site loads (`libraries`: its packages, the GSAP plugins it imports or loads from a CDN, Astro's
-  router), its favicon (`favicon`). OP System's settings list the libraries and the favicon (Technique) and turn a
+  router), its favicon (`favicon`), the classes the pages use (`system.classes`, Oct 27, 2026: each component's by
+  its prefix, then the global ones, the project's own of `src/styles/project.css` first with the comment above each).
+  OP System's settings list the libraries and the favicon (Technique) and turn a
   change into a request to Claude. The same integration writes `dist/_headers` and stops a build that holds a secret
   key (Security, below; Oct 17, 2026, Sam).
 - `op.config.json`: the project's id, name, client, studio and description, its staging link if it has one,
@@ -48,6 +50,10 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   then a computer's), and each shows per screen in OP System, its screens' widths taken from those blocks.
 - `wrangler.jsonc`: an assets-only Worker on Cloudflare, its workers.dev address, and a preview address for every
   branch but `main` (Worker Previews). `main` is the live site; `review` is the one OP System shows.
+- `src/styles/project.css` (Oct 27, 2026; Sam: « le même gap entre une image et son texte partout devient une classe
+  globale »): the project's own global classes, a treatment several components share written once, in the patterns
+  layer after Lumos's `patterns.css` (which a project never edits); each with a one-line comment that OP System's Web
+  System shows. Empty in the starter. When one is made: OP's skill op-global-classes (`get_skill`).
 - `CLAUDE.md`: how Claude works here (the review branch, publishing only when asked, OP System's queue, the checks).
 - French by default: `SITE_LOCALE` fr-CA, the page's `lang`, the menu, the 404 page and the skip link.
 - OP System's look until the client's (Oct 17, 2026; Sam: « aucune trace de Lumos, à part pour donner le crédit… tout

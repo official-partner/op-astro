@@ -1,0 +1,5 @@
+/* The project's own global classes (OP's op-global-classes skill): a treatment several of this site's components share,
+   two declarations or more seen in three places, written once here and put beside a component's own class. Each class
+   has a one-line comment above it that says its job: OP System's Web System shows that line under Classes. Values from
+   the tokens of base.css only; no px, no raw colour. Lumos's patterns.css and utilities.css are never edited for a
+   project. Empty in the starter. */

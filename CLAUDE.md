@@ -213,6 +213,12 @@ cover. How to build with Lumos: AGENTS.md, below.
 
 ## Lumos
 - New CSS is the last resort (LUMOS.md, New style checklist).
+- A treatment several of the site's components share (two declarations or more seen in three places: the same gap
+  between an image and its caption, a rule with its space) is one of the project's global classes, in
+  `src/styles/project.css` (the patterns layer), named for its job (no `_`, no `u-`, no `is-`), a one-line comment above
+  it, its values from base.css's tokens; never a copy of the same rules in two components, never an edit of Lumos's
+  `patterns.css` or `utilities.css`. OP's skill op-global-classes (`get_skill`) says when and how; site.json's
+  `system.classes` shows each with its uses in OP System's Web System. Log each in PROJECT.md and DESIGN.md.
 - Lumos for Astro is MIT, © 2026 Timothy Ricks (LICENSE): keep LICENSE as it is. An upgrade of Lumos goes through the
   `lumos-upgrade-version` skill.
 
