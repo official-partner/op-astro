@@ -30,3 +30,6 @@ pnpm-debug.log*
 
 # local agent settings
 .claude/settings.local.json
+
+# wrangler dev state and a live build's deploy redirect (integrations/op-live.mjs)
+.wrangler/
