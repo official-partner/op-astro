@@ -1,0 +1,43 @@
+---
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/wrapper/Section.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import Grid from "@/components/wrapper/Grid.astro";
+import Card from "@/components/item/Card.astro";
+import { getItems, LIVE } from "@/utils/content";
+
+const team = await getItems("team");
+---
+
+<Layout
+  title="Test du contenu"
+  description="Une collection lue en direct sur le staging, depuis la copie de travail d’OP."
+>
+  {/* Intro */}
+  <Section>
+    <ContentWrapper>
+      <Heading variant="h3" tag="h1">Équipe</Heading>
+      <Paragraph class="color-faded" data-op-test="mode"
+        >{LIVE ? "Lu en direct sur le staging" : "Lu dans les fichiers du site"}</Paragraph
+      >
+    </ContentWrapper>
+  </Section>
+  {/* Team */}
+  <Section paddingTop="none">
+    <Grid small={2} medium={3} data-op-list="team" data-op-source="astro:team">
+      {
+        team.map(({ id, data }) => (
+          <Card
+            data-op-item={id}
+            variant="stacked"
+            image={data.photo}
+            heading={data.name}
+            text={data.role}
+          />
+        ))
+      }
+    </Grid>
+  </Section>
+</Layout>

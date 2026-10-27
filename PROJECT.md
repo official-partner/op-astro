@@ -2,6 +2,16 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-27, Sam (the design of « Contenu » live: a working copy in OP's database, the review branch rendered on demand
+  reading it, the files staying the source; branch `live-staging-spike`, a spike, not merged): on the staging
+  (`OP_LIVE=1`, or Cloudflare's build of `review`: `WORKERS_CI_BRANCH`) the site is built with `@astrojs/cloudflare`
+  14.3.4 (pinned: 14.4 asks for Astro 7.4) and every page but the 404 is rendered by the Worker
+  (integrations/op-live.mjs); pages read a collection through `getItems()`/`getItem()` (src/utils/content.ts): the live
+  collection `<name>Live` (src/live.config.ts, the schema of src/content.config.ts, its pictures as paths or URLs) on
+  the staging, the committed files anywhere else and whenever OP does not answer. Without OP_LIVE the build is static
+  and its pages identical to main's. A sample collection `team` and its page `test-contenu` (out of search engines,
+  under Système) prove it. Measured in the spike's report.
+
 - 2026-10-27, Sam (15:28: « le nouveau site Astro peut créer ses propres global classes… pour la scalabilité »; OP's
   skills rewritten for Lumos for Astro the same day, op-system's docs/DECISIONS.md): a site's own global classes live
   in `src/styles/project.css`, imported in the patterns layer after Lumos's `patterns.css`, so a component's own CSS and

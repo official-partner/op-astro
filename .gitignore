@@ -1,5 +1,7 @@
 # build output
 dist/
+# the staging's static build, read for site.json (integrations/op-live.mjs)
+.op-static/
 
 # pictures of the pages (npm run shot)
 shots/
