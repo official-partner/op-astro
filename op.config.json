@@ -12,6 +12,7 @@
   "smoothScroll": false,
   "brandColor": "#141413",
   "systemPages": [
-    "composantes"
+    "composantes",
+    "test-contenu"
   ]
 }

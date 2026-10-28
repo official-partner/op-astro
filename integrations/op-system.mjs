@@ -172,7 +172,7 @@ const git = (cmd, cwd) => { try { return execSync(`git ${cmd}`, { cwd, stdio: ["
    only for a year. HSTS without includeSubDomains or preload: the client's other subdomains are not this site's to
    decide. OP System's proxy removes the frame and HSTS headers, so the review still shows in the app. A header the
    site's own public/_headers names (a value, or « ! Name » to drop it) is left to it. */
-const SECURE_HEADERS = [
+export const SECURE_HEADERS = [
   ["X-Content-Type-Options", "nosniff"],
   ["Referrer-Policy", "strict-origin-when-cross-origin"],
   ["Permissions-Policy", "camera=(), microphone=(), geolocation=()"],
@@ -230,7 +230,9 @@ async function scanSecrets(out) {
 const where = (f) => `dist/${f.file}, line ${f.line}: ${f.kind}`;
 
 /**
- * @param {{ siteName: string, siteUrl: string, locale: string }} site src/consts.ts's SITE_NAME, SITE_URL, SITE_LOCALE
+ * @param {{ siteName: string, siteUrl: string, locale: string, pagesDir?: string }} site src/consts.ts's SITE_NAME,
+ *   SITE_URL, SITE_LOCALE; pagesDir: where the pages' HTML is read from when it is not beside site.json (the staging
+ *   rendered on demand: integrations/op-live.mjs builds them statically there first)
  */
 export default function opSystem(site) {
   let root = "";
@@ -261,9 +263,10 @@ export default function opSystem(site) {
         // the classes the site's pages use (not the system's own pages): how many times, on how many pages (Web System,
         // Classes; op-system's op-global-classes skill). Astro's scoped classes (astro-…) left out
         const classUse = new Map();
-        for (const file of await htmlFiles(out)) {
+        const htmlDir = site.pagesDir ? path.join(root, site.pagesDir) : out;
+        for (const file of await htmlFiles(htmlDir)) {
           if (/(^|\/)404\.html$/.test(file)) continue;
-          const html = await readFile(path.join(out, file), "utf8");
+          const html = await readFile(path.join(htmlDir, file), "utf8");
           const route = file === "index.html" ? "./" : file.replace(/(\/index)?\.html$/, "");
           const full = ((/<title>([^<]*)<\/title>/.exec(html) || [])[1] || "").replace(/&amp;/g, "&").replace(/&#39;/g, "’").trim();
           const own = full.endsWith(` | ${siteName}`) ? full.slice(0, -(siteName.length + 3)) : (route === "./" ? t.home : full);
@@ -599,6 +602,10 @@ export default function opSystem(site) {
         // "favicon": "site", written at a redo's setup), scripts/favicon.mjs's (its stamp in favicon.svg), or made by hand
         const svgIcon = await read("public/favicon.svg");
         manifest.faviconFrom = conf.favicon === "site" ? "site" : !svgIcon || /favicon\.mjs:/.test(svgIcon) ? "generated" : "hand";
+        // the staging renders on demand and reads OP's working copy (op-live.mjs): OP System says a save shows at once.
+        // The live build writes site.json from its inner static pass (OP_LIVE_INNER), so that one counts as live too.
+        const liveBuild = process.env.OP_LIVE_INNER === "1" || (process.env.OP_LIVE ? process.env.OP_LIVE === "1" : process.env.WORKERS_CI_BRANCH === "review");
+        if (liveBuild) manifest.content = { live: true };
         await writeFile(path.join(out, "site.json"), JSON.stringify(manifest, null, 1) + "\n");
         // out of search engines until the site is live, and always on a branch other than main; the secure headers on
         // every build, but those the site's own _headers names (public/_headers, copied into dist/ by the build)

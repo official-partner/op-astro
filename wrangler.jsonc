@@ -20,6 +20,11 @@
   "preview_urls": true,
   "previews": {},
 
+  // The staging (branch review) reads OP's working copy of the collections with the Worker's secrets OP_CONTENT_URL and
+  // OP_CONTENT_TOKEN (CLAUDE.md, Content). Variables set in Cloudflare's dashboard (OP_PROJECT, OP_CONTENT_TTL) are kept
+  // when main deploys, since they are not written here.
+  "keep_vars": true,
+
   "observability": {
     "enabled": true,
   },
