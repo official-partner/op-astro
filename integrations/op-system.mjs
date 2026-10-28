@@ -580,6 +580,10 @@ export default function opSystem(site) {
         };
         if (grid) manifest.grid = JSON.parse(JSON.stringify(grid));
         if (icon) manifest.favicon = icon;
+        // the staging renders on demand and reads OP's working copy (op-live.mjs): OP System says a save shows at once.
+        // The live build writes site.json from its inner static pass (OP_LIVE_INNER), so that one counts as live too.
+        const liveBuild = process.env.OP_LIVE_INNER === "1" || (process.env.OP_LIVE ? process.env.OP_LIVE === "1" : process.env.WORKERS_CI_BRANCH === "review");
+        if (liveBuild) manifest.content = { live: true };
         await writeFile(path.join(out, "site.json"), JSON.stringify(manifest, null, 1) + "\n");
         // out of search engines until the site is live, and always on a branch other than main; the secure headers on
         // every build, but those the site's own _headers names (public/_headers, copied into dist/ by the build)
