@@ -2,6 +2,23 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-27, Sam (« Contenu » wave 1, GO; from the spike `live-staging-spike`, its report in op-system): the staging is
+  live. Cloudflare's build of `review` (`WORKERS_CI_BRANCH`, or `OP_LIVE=1`) uses `@astrojs/cloudflare` 14.3.4 (pinned:
+  14.4 asks for Astro 7.4; Astro stays 7.3.8 so main's output and Sani's version stay as they are; both move together
+  later) and renders every page but the 404 on demand (integrations/op-live.mjs); main and every other branch build
+  static, their files byte for byte as before (checked against main: index, 404, CSS, _headers, robots, sitemap).
+  Pages read collections through `getItems()`/`getItem()` (src/utils/content.ts): OP's working copy on the staging
+  (src/live.config.ts, made from content.config.ts's own `collections`, so a collection the app adds needs no other
+  edit), the files elsewhere and whenever OP does not answer in 1.5 s; visible items only, sorted by `order`. Answers
+  kept 2 s, read again at once on `?op-v` or `x-op-content-version`; a failure remembered 5 s; a wrong version costs
+  one read; an item the schema refuses shows its file. Pictures in OP's storage only from `OP_STORAGE_ORIGINS`, with
+  their size so nothing is fetched at render. The staging's pages get the static files' headers (noindex, the secure
+  headers) and no-store. `<When>` (src/components/system/When.astro) for a field that may be empty, `data-op-when` and
+  `data-op-field` for OP's bridge. The sample collection `team` (every field optional but `name`, `visible`, `order`,
+  labels in French), its card `CardTeam` and the page `test-contenu` (out of search engines, under Système).
+  Sam, 21:25: the app writes content.config.ts and the folders itself when the team adds a collection or a field, so
+  content.config.ts keeps the simple form its parser reads and nothing else goes in it. `keep_vars` in wrangler.jsonc.
+
 - 2026-10-27, Sam (15:28: « le nouveau site Astro peut créer ses propres global classes… pour la scalabilité »; OP's
   skills rewritten for Lumos for Astro the same day, op-system's docs/DECISIONS.md): a site's own global classes live
   in `src/styles/project.css`, imported in the patterns layer after Lumos's `patterns.css`, so a component's own CSS and

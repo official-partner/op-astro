@@ -1,0 +1,61 @@
+---
+import type { HTMLTag } from "astro/types";
+import { slotContent } from "@/utils/slots.ts";
+
+interface Props {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+  /** The field's name in the collection's schema: `role`. */
+  field: string;
+  /** The field's value: the element shows only when it is there. */
+  value: unknown;
+  /** The element rendered around the children. */
+  as?: HTMLTag;
+  /** Classes of the rendered element. */
+  class?: string;
+  [attribute: string]: unknown;
+}
+
+const {
+  render = true,
+  field,
+  value,
+  as: Tag = "div",
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* there: a text with something in it, a list with something in it, a picture, a number, true, a date, an object with
+   something in it. Not there: undefined, null, "", "   ", [], false. */
+const present = (v: unknown): boolean => {
+  if (v === undefined || v === null || v === false) return false;
+  if (typeof v === "string") return v.trim() !== "";
+  if (typeof v === "number") return Number.isFinite(v);
+  if (Array.isArray(v)) return v.some(present);
+  if (v instanceof Date) return !isNaN(+v);
+  if (typeof v === "object") {
+    if ("src" in v) return present((v as { src: unknown }).src);
+    return Object.values(v).some(present);
+  }
+  return true;
+};
+
+const shown = render && present(value);
+const content = shown ? await slotContent(Astro.slots) : "";
+const otherwise =
+  render && !shown ? await slotContent(Astro.slots, "else") : "";
+---
+
+{
+  content ? (
+    <Tag class={className} data-op-when={field} {...rest}>
+      <Fragment set:html={content} />
+    </Tag>
+  ) : (
+    otherwise && (
+      <Tag class={className} data-op-when={field} data-op-empty="" {...rest}>
+        <Fragment set:html={otherwise} />
+      </Tag>
+    )
+  )
+}

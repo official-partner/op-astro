@@ -1,0 +1,165 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Img from "@/components/media/Img.astro";
+import When from "@/components/system/When.astro";
+import { img, type Picture } from "@/utils/content";
+
+type Props = HTMLAttributes<"article"> & {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+  /** The person, as the `team` collection gives it: only the name is sure to be there. */
+  person: {
+    name: string;
+    role?: string;
+    bio?: string;
+    photo?: Picture;
+    specialties?: string[];
+  };
+  /** Heading level. */
+  headingTag?: "h2" | "h3" | "h4";
+};
+
+const {
+  render = true,
+  person,
+  headingTag: Heading = "h3",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const { name, role, bio, photo, specialties } = person ?? {};
+const initials = (name ?? "")
+  .split(/\s+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((w) => w[0]!.toUpperCase())
+  .join("");
+---
+
+{
+  render && name && (
+    <article class:list={["card-team_wrap", className]} {...rest}>
+      <When field="photo" value={photo} class="card-team_visual">
+        {photo && <Img {...img(photo)} alt={name} />}
+        <span
+          slot="else"
+          class="card-team_initials text-style-h3"
+          aria-hidden="true"
+        >
+          {initials}
+        </span>
+      </When>
+      <div class="card-team_content">
+        <Heading class="card-team_name text-style-h5" data-op-field="name">
+          {name}
+        </Heading>
+        <When
+          field="role"
+          value={role}
+          as="p"
+          class="card-team_role"
+          data-op-field="role"
+        >
+          {role}
+        </When>
+        <When
+          field="bio"
+          value={bio}
+          as="p"
+          class="card-team_bio text-style-small"
+          data-op-field="bio"
+        >
+          {bio}
+        </When>
+        <When
+          field="specialties"
+          value={specialties}
+          as="ul"
+          class="card-team_tags"
+          aria-label="Spécialités"
+        >
+          {specialties
+            ?.filter((s) => s?.trim())
+            .map((s) => (
+              <li class="card-team_tag">{s}</li>
+            ))}
+        </When>
+      </div>
+    </article>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .card-team_wrap {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      min-width: 0;
+    }
+
+    .card-team_visual {
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 4 / 5;
+      border-radius: var(--radius-main);
+      overflow: clip;
+      background-color: var(--background-2);
+
+      > .image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .card-team_initials {
+      margin: 0;
+      color: var(--text-2);
+    }
+
+    .card-team_content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      min-width: 0;
+    }
+
+    .card-team_name {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .card-team_role {
+      color: var(--text-2);
+      overflow-wrap: anywhere;
+    }
+
+    .card-team_bio {
+      max-width: 48ch;
+      margin: var(--space-2) 0 0;
+      overflow-wrap: anywhere;
+    }
+
+    .card-team_tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+      margin: var(--space-2) 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .card-team_tag {
+      padding: 0.25em 0.75em;
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-round);
+      color: var(--text-2);
+      font-size: var(--text-small);
+      overflow-wrap: anywhere;
+    }
+  }
+</style>

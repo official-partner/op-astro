@@ -67,6 +67,51 @@ cover. How to build with Lumos: AGENTS.md, below.
   check`, `npm run build`, commit, push `main`. Then the branch `review` from `main`, pushed: its preview,
   `review-<worker>.<account>.workers.dev`, is what OP System shows. The only push to `main` that is not a publish.
 
+## Content: the collections, Contenu and the live staging
+- A site's editable content is its Astro content collections: one folder per collection in `src/content/<name>/`, one
+  file per item named by its slug (the item's id), JSON (Markdown when the item has a text of its own). OP System's
+  « Contenu » edits them, and the team creates collections and fields there too: the app writes
+  `src/content.config.ts` and the folders itself, through OP's GitHub App, on `review`.
+- `src/content.config.ts` keeps the simple form the app reads and writes: one `defineCollection` per collection with a
+  `glob()` loader, its `schema` a `z.object({ ... })` (or `({ image }) => z.object(...)` when it has a picture) with a
+  `.describe("…")` on each field and on the object, `export const collections = { ... }`. Names are code (English
+  camelCase), labels are words for people in the client's language. Nothing else goes in it: no helper, no exported
+  schema, no import but `astro:content`, `astro/loaders`, `astro/zod`. The live machinery lives elsewhere and picks a
+  collection up by itself.
+- Fields: every one optional (`.optional()`) but the name (`name`, `title` or `question`: the item's title), and the
+  slug is the file's name, so an item with a page always has both. `visible: z.boolean().default(true)` hides an item
+  everywhere; `order: z.number().optional()` sorts them (Contenu writes 1, 2, 3; an item without one comes last).
+- A page reads a collection through `getItems("<name>")` and `getItem("<name>", id)` (`src/utils/content.ts`), never
+  `getCollection`: the visible items, in their order, `{ id, data }` the same way on every build. A picture field gives
+  a `Picture`: pass it to `<Img {...img(data.photo)} alt="…" />`. A collection added to content.config.ts works by its
+  name at once, on the files and on the staging, with nothing written anywhere else.
+- A field shown in a page: `data-op-field="<field>"` on the element that holds its text; a field that may be empty (all
+  but the name) inside `<When field="<field>" value={data.<field>} as="p" class="…">` (`src/components/system/When.astro`),
+  which renders the element only when the value is there (a text not blank, a list not empty, a picture, a number, true)
+  and marks it `data-op-when="<field>"` for OP's bridge; its `else` slot (marked `data-op-empty`) holds what shows in
+  its place, when the layout needs one (the initials of `CardTeam` without a photo). A list of items is marked
+  `data-op-list="<name>" data-op-source="astro:<name>"` and each item `data-op-item={id}` (op-system's `docs/bridge.md`, Lists).
+  `src/components/content/CardTeam.astro` on `src/pages/test-contenu.astro` is the sample: a new site keeps it as the
+  model, or removes the `team` collection, its files, its pictures, the card, the page and its entries in consts.ts and
+  op.config.json together.
+- The staging is live: Cloudflare's build of `review` (`WORKERS_CI_BRANCH`, or `OP_LIVE=1` by hand) renders every page
+  but the 404 on demand in the Worker (`@astrojs/cloudflare` 14.3.4, pinned for Astro 7.3; `integrations/op-live.mjs`),
+  and `getItems` reads OP's working copy of each collection (`src/live.config.ts`, made from content.config.ts's own
+  schemas; `src/utils/content-loader.ts`): `GET <OP_CONTENT_URL>?p=<project>&c=<collection>` with
+  `Authorization: Bearer <OP_CONTENT_TOKEN>`, kept 2 s (`OP_CONTENT_TTL`), read again at once when the request names a
+  newer version (`?op-v=<version>` or `x-op-content-version`, OP System after a save). An error, a timeout (1.5 s) or no
+  `OP_CONTENT_URL`: the committed files (a failure is remembered 5 s). An item the schema refuses: its committed file.
+  A picture not committed yet is a URL in OP's storage, shown only from a host of `OP_STORAGE_ORIGINS` (build time,
+  default `https://*.supabase.co`). `main` and every other branch build static, as before.
+- The Worker's secrets on Cloudflare (Settings › Variables and Secrets, type Secret; they apply to the review
+  preview): `OP_CONTENT_URL` (OP's content address) and `OP_CONTENT_TOKEN` (the project's read token, given by OP
+  System). Optional variables: `OP_PROJECT` (default op.config.json's `id`), `OP_CONTENT_TTL` (ms). Never in the
+  repository, op.config.json or `src/`. The staging's pages carry the static files' headers (noindex always, the secure
+  headers) and `Cache-Control: private, no-store` (src/middleware.ts).
+- Check a change to this machinery: `npm run check`, `npm run build` (static: the pages as before) and `OP_LIVE=1 npm
+  run build` (the Worker in `dist/server`, site.json read from a static build in `.op-static`); to see the staging
+  locally, `npx wrangler dev` after the live build, with `--var OP_CONTENT_URL:<a stand-in>`.
+
 ## The look, the logo and the favicon
 - The starter wears OP System's look (README.md, What this repository adds): a new site replaces the swatches and the
   themes of `src/styles/base.css` with the client's (same token names), and `src/pages/index.astro` with its own home
@@ -189,7 +234,8 @@ cover. How to build with Lumos: AGENTS.md, below.
 - `npm ci` once, then `npm run dev` (http://localhost:4321), `npm run check` (types), `npm run build` (`dist/` and its
   site.json). Node 22.19 or newer.
 - A page or a component changed: look at it (Check what you changed, below).
-- Content lives in files by default: in the page, or in an Astro content collection (`src/content/`). A CMS (Sanity)
+- Content lives in files by default: in the page, or in an Astro content collection (`src/content/`, Content above)
+  when people edit it in Contenu. A CMS (Sanity)
   only when the client must edit the site alone, decided with the team and logged in PROJECT.md.
 
 ## Check what you changed
