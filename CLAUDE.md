@@ -81,6 +81,27 @@ cover. How to build with Lumos: AGENTS.md, below.
   made by hand, `og-image.jpg`), look at the result, commit them with the mark. A site with no logo yet: its initial
   (SITE_NAME) on OP's ink, which `prebuild` keeps up to date when the name or `brandColor` changes. A favicon or a
   social image made by hand is never replaced by the build.
+- A site redone keeps the current site's icons (Oct 27, Sam): at a « same » or « redo » project's setup OP System
+  copies them from the export into `public/` on `review` (favicon.ico, apple-touch-icon.png, favicon.svg when the site
+  has one, else the starter's favicon.svg goes) and writes `"favicon": "site"` in op.config.json; `scripts/favicon.mjs`
+  then never writes those three files, and BaseHead links favicon.svg only when it is there. Webflow's default « W » is
+  never taken: the starter's stays. site.json says where the favicon comes from (`faviconFrom`: site, generated, hand).
+
+## The current site's SEO and addresses (a redo)
+- An old SEO value is the client's content, kept word for word (read_export part seo, OP System's connector): a page's
+  title as its layout's `seoTitle` (the whole title, the site's name not added), its description; an item's in its
+  collection's fields `seoTitle`, `seoDescription`, `ogImage`, spread from `seoFields(image)` (src/utils/seo-fields.ts)
+  into the schema of a collection whose items have a page. A value plainly bad is told to the team as a decision,
+  never rewritten silently.
+- Every old address stays: one that changes gets a 301 in op.config.json `redirects` (`{ "/old": "/new" }`); the build
+  writes them in `dist/_redirects` after `public/_redirects`, and warns on a redirect to no page. The current site's
+  addresses (part seo, `addresses`) go in op.config.json `addresses`: the build warns on each that is neither a page
+  nor redirected.
+- The verification metas (Google Search Console and the like) go in op.config.json `verification`
+  (`{ "google-site-verification": "…" }`): BaseHead writes them on every page.
+- Done without asking, and listed: one h1 per page, the language declared, the sitemap and robots.txt (the starter's),
+  the canonical address (BaseHead), the share tags from the fields, basic structured data (the person or the company,
+  the site), the site out of search engines until its launch (`live: false`).
 
 ## The finishing touches: loading screen, page transitions, smooth scroll
 - All three are off in the starter, each turned on per project. Each is one key of op.config.json, `false` or a

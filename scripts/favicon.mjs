@@ -193,6 +193,7 @@ async function inputs() {
     colour,
     art,
     key,
+    site: conf.favicon === "site",
     from: markFile
       ? "src/assets/logo/mark.svg"
       : `« ${initialOf(name) || "·"} » on ${colour}`,
@@ -200,7 +201,7 @@ async function inputs() {
 }
 
 async function main() {
-  const { colour, art, key, from } = await inputs();
+  const { colour, art, key, from, site } = await inputs();
   let sharp = null;
   try {
     sharp = (await import("sharp")).default;
@@ -211,16 +212,19 @@ async function main() {
   const file = (name) => path.join(PUBLIC, name);
   const current = await read(file("favicon.svg"));
   const stamp = (/favicon\.mjs:([0-9a-f]+)/.exec(current) || [])[1];
-  const handMade = Boolean(current) && !stamp;
-  const stale = !current || (stamp && stamp !== key);
+  // the current site's icons, kept (op.config.json "favicon": "site", written by OP System at a redo's setup:
+  // op-system's worker/icons.js): favicon.ico, apple-touch-icon.png and favicon.svg are theirs, never written here,
+  // even by npm run favicon; a missing favicon.svg stays missing (BaseHead links it only when it is there)
+  const handMade = site || (Boolean(current) && !stamp);
+  const stale = !site && (!current || (stamp && stamp !== key));
   const writes = [];
 
   // the tab's icon and its rasters: together, from the mark; a favicon.svg made by hand stays, its rasters drawn from it
   const ownSvg = svgOf(art, { colour, rounded: true, stamp: key });
-  const keep = ifMissing && handMade;
+  const keep = (ifMissing || site) && handMade;
   const roundSvg = keep ? current : ownSvg;
   const squareSvg = keep ? current : svgOf(art, { colour, rounded: false });
-  const all = !ifMissing || (stale && !handMade);
+  const all = !site && (!ifMissing || (stale && !handMade));
   if (all) {
     await writeFile(file("favicon.svg"), ownSvg);
     writes.push("favicon.svg");
@@ -233,14 +237,14 @@ async function main() {
       "favicon: sharp is not installed, so favicon.ico, apple-touch-icon.png and og-image.jpg were not written",
     );
   } else {
-    if (all || !(await exists(file("favicon.ico")))) {
+    if (all || (!site && !(await exists(file("favicon.ico"))))) {
       await writeFile(
         file("favicon.ico"),
         ico(await raster(roundSvg, 32).png().toBuffer()),
       );
       writes.push("favicon.ico");
     }
-    if (all || !(await exists(file("apple-touch-icon.png")))) {
+    if (all || (!site && !(await exists(file("apple-touch-icon.png"))))) {
       await raster(squareSvg, 180)
         .flatten({ background: colour })
         .png()
@@ -275,7 +279,7 @@ async function main() {
   }
   if (writes.length || !ifMissing)
     console.log(
-      `favicon: ${writes.join(", ") || "nothing to write"} (from ${from}${keep ? "; favicon.svg made by hand, kept" : ""})`,
+      `favicon: ${writes.join(", ") || "nothing to write"} (${site ? "the current site's icons kept: op.config.json favicon \"site\"" : `from ${from}${keep ? "; favicon.svg made by hand, kept" : ""}`})`,
     );
 }
 

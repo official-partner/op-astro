@@ -18,12 +18,16 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   file). OP System's « Expérience » shows them and replays them: the loading screen by loading the home page with
   `?op-loader`, the transition by following a link of the page, the smooth scroll with `op:glide`. Beside it: the tints the themes use (each
   colour's `derived`, with the CSS it is written with), the layout grid (`grid`: `--site-margin`, `--site-gutter`, and
-  `--site-columns` per screen when the site names them, else 12, 8 and 4), the curves (`eases`, from `--ease-*`), the
+  `--site-columns` per screen, the grid's only name: the starter declares 4, 8 and 12 beside the margin and the gutter;
+  a site without it has `columns: null` and OP System says it declares no grid, and the build warns when a
+  `grid-template-columns: repeat(var(--x), …)` lays a page out on another variable than --site-columns, Oct 27), the curves (`eases`, from `--ease-*`), the
   libraries the site loads (`libraries`: its packages, the GSAP plugins it imports or loads from a CDN, Astro's
-  router), its favicon (`favicon`), the classes the pages use (`system.classes`, Oct 27, 2026: each component's by
+  router), its favicon (`favicon`, and `faviconFrom`: site, generated or hand, Oct 27), the classes the pages use (`system.classes`, Oct 27, 2026: each component's by
   its prefix, then the global ones, the project's own of `src/styles/project.css` first with the comment above each).
   OP System's settings list the libraries and the favicon (Technique) and turn a
-  change into a request to Claude. The same integration writes `dist/_headers` and stops a build that holds a secret
+  change into a request to Claude. The same integration writes `dist/_redirects` from op.config.json `redirects` (a
+  redo's old addresses, 301; it warns on op.config.json `addresses` that lead nowhere: CLAUDE.md, The current site's
+  SEO and addresses) and `dist/_headers` and stops a build that holds a secret
   key (Security, below; Oct 17, 2026, Sam).
 - `op.config.json`: the project's id, name, client, studio and description, its staging link if it has one,
   `brandColor` (the ground of the favicon until the site has its logo's mark; OP's ink by default), `systemPages`

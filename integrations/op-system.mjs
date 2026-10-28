@@ -118,12 +118,12 @@ const GSAP_PLUGINS = { ScrollTrigger: "scrolltrigger", Flip: "flip", SplitText: 
   TextPlugin: "text", ScrollSmoother: "scrollsmoother" };
 const PACKAGES = { gsap: "gsap", lenis: "lenis", "@studio-freight/lenis": "lenis", "@barba/core": "barba", swiper: "swiper",
   "embla-carousel": "embla", "lottie-web": "lottie", "@lottiefiles/dotlottie-web": "lottie", three: "three" };
-async function sourceFiles(dir) {
+async function sourceFiles(dir, kind = /\.(astro|ts|js|mjs|tsx|jsx)$/) {
   const out = [];
   for (const e of await readdir(dir, { withFileTypes: true }).catch(() => [])) {
     const full = path.join(dir, e.name);
-    if (e.isDirectory()) out.push(...await sourceFiles(full));
-    else if (/\.(astro|ts|js|mjs|tsx|jsx)$/.test(e.name)) out.push(full);
+    if (e.isDirectory()) out.push(...await sourceFiles(full, kind));
+    else if (kind.test(e.name)) out.push(full);
   }
   return out;
 }
@@ -474,14 +474,17 @@ export default function opSystem(site) {
         });
 
         // the layout grid OP System draws over the pages (its « Grille »): the site's margin and gutter, its columns on
-        // each screen (--site-columns when the site names them, else 12, 8 and 4), as wide as its main width at most
-        const cols = (mode, fallback) => num(at(mode, "--site-columns")) || fallback;
+        // each screen (--site-columns, the grid's only name), as wide as its main width at most. A site that does not
+        // declare --site-columns has `columns: null`, and OP System says so rather than draw columns the site does not
+        // have (Oct 27, Sam: Amélie Haeck's grid of 7 shown as 12, 8 and 4)
+        const cols = (mode) => num(at(mode, "--site-columns"));
+        const declared = [
+          { media: `(min-width: ${desktopAt}rem)`, count: cols("desktop") },
+          { media: `(min-width: ${tabletAt}rem)`, count: cols("tablet") },
+          { count: cols("mobile") },
+        ];
         const grid = vars.has("--site-margin") ? {
-          columns: [
-            { media: `(min-width: ${desktopAt}rem)`, count: cols("desktop", 12) },
-            { media: `(min-width: ${tabletAt}rem)`, count: cols("tablet", 8) },
-            { count: cols("mobile", 4) },
-          ],
+          columns: declared.some((c) => c.count) ? declared.filter((c) => c.count) : null,
           margin: "var(--site-margin)",
           gutter: vars.has("--site-gutter") ? "var(--site-gutter)" : undefined,
           max: vars.has("--max-width-main") ? "calc(var(--max-width-main) + var(--site-margin) * 2)" : undefined,
@@ -513,6 +516,21 @@ export default function opSystem(site) {
         const lib = (id, version) => { if (!libs.has(id) || (version && !libs.get(id).version)) libs.set(id, Object.assign({ id }, version ? { version } : {})); };
         const files = await sourceFiles(path.join(root, "src"));
         const texts = await Promise.all(files.map((f) => readFile(f, "utf8").catch(() => "")));
+        // a page grid on another column variable than --site-columns: OP System's « Grille » would not see it. A component's
+        // own count (Lumos's --_cols, a variable whose name starts with _) is the component's, not the page's grid
+        const styleFiles = [...files, ...await sourceFiles(path.join(root, "src"), /\.css$/)];
+        const styleTexts = [...texts, ...await Promise.all(styleFiles.slice(files.length).map((f) => readFile(f, "utf8").catch(() => "")))];
+        const otherGrids = new Map();
+        styleFiles.forEach((f, i) => {
+          for (const m of styleTexts[i].matchAll(/grid-template-columns\s*:\s*repeat\(\s*var\((--[\w-]+)/g)) {
+            if (m[1] === "--site-columns" || m[1].startsWith("--_")) continue;
+            otherGrids.set(m[1], [...new Set([...(otherGrids.get(m[1]) || []), path.relative(root, f)])]);
+          }
+        });
+        otherGrids.forEach((where, name) => logger.warn(`grid: ${where.join(", ")} lay${where.length === 1 ? "s" : ""} the page out on ${name}, not --site-columns: `
+          + "OP System's « Grille » reads --site-columns only, the grid's one name. Rename it in base.css and where it is used."));
+        if (grid && !grid.columns) logger.warn("grid: base.css declares no --site-columns, OP System's « Grille » will say the site declares no grid. "
+          + "Declare it in :root (the phone) and in the screens' media blocks, beside --site-margin and --site-gutter.");
         const code = texts.join("\n");
         // the finishing touches (op.config.json; src/utils/finishes.ts): a "custom" one is the site's own file
         const finish = finishes(conf);
@@ -577,6 +595,10 @@ export default function opSystem(site) {
         };
         if (grid) manifest.grid = JSON.parse(JSON.stringify(grid));
         if (icon) manifest.favicon = icon;
+        // where the favicon comes from (OP System's Réglages › Technique › Favicon): the current site's (op.config.json
+        // "favicon": "site", written at a redo's setup), scripts/favicon.mjs's (its stamp in favicon.svg), or made by hand
+        const svgIcon = await read("public/favicon.svg");
+        manifest.faviconFrom = conf.favicon === "site" ? "site" : !svgIcon || /favicon\.mjs:/.test(svgIcon) ? "generated" : "hand";
         await writeFile(path.join(out, "site.json"), JSON.stringify(manifest, null, 1) + "\n");
         // out of search engines until the site is live, and always on a branch other than main; the secure headers on
         // every build, but those the site's own _headers names (public/_headers, copied into dist/ by the build)
@@ -585,6 +607,24 @@ export default function opSystem(site) {
         const named = new Set([...siteHeaders.matchAll(/^[ \t]+(?:!\s*)?([A-Za-z0-9-]+)\s*(?::|$)/gm)].map((m) => m[1].toLowerCase()));
         const rules = [...(indexed ? [] : [["X-Robots-Tag", "noindex, nofollow"]]), ...SECURE_HEADERS.filter(([n]) => !named.has(n.toLowerCase()))];
         if (rules.length) await writeFile(path.join(out, "_headers"), "/*\n" + rules.map(([n, v]) => `  ${n}: ${v}\n`).join("") + (siteHeaders ? "\n" + siteHeaders : ""));
+
+        // the current site's addresses kept (Oct 27, Sam: a redo loses nothing its site has earned): op.config.json
+        // `redirects` { "/old": "/new" } become 301s in dist/_redirects, after the site's own public/_redirects (copied
+        // into dist/ by the build); `addresses` (the current site's, read_export part seo) that are neither a page of
+        // the new site nor redirected are said, one warning
+        const norm = (a) => { const x = String(a || "").split(/[?#]/)[0].replace(/\/+$/, ""); return x.startsWith("/") ? x || "/" : `/${x}`; };
+        const routes = new Set(pages.map((pg) => norm(pg.path === "./" ? "/" : pg.path)));
+        const redirects = Object.entries(conf.redirects && typeof conf.redirects === "object" ? conf.redirects : {})
+          .filter(([from, to]) => /^\/[^\s]*$/.test(from) && typeof to === "string" && /^(\/[^\s]*|https:\/\/[^\s]+)$/.test(to));
+        if (redirects.length) {
+          const siteRedirects = await readFile(path.join(out, "_redirects"), "utf8").catch(() => "");
+          redirects.filter(([, to]) => to.startsWith("/") && !routes.has(norm(to))).forEach(([from, to]) => logger.warn(`redirects: ${from} goes to ${to}, which is no page of the site`));
+          redirects.filter(([from]) => routes.has(norm(from))).forEach(([from]) => logger.warn(`redirects: ${from} is a page of the site, its redirect is never reached`));
+          await writeFile(path.join(out, "_redirects"), (siteRedirects ? `${siteRedirects.replace(/\n*$/, "")}\n` : "")
+            + redirects.flatMap(([from, to]) => { const f = from === "/" ? "/" : from.replace(/\/+$/, ""); return f === "/" ? [`${f} ${to} 301`] : [`${f} ${to} 301`, `${f}/ ${to} 301`]; }).join("\n") + "\n");
+        }
+        const lost = (Array.isArray(conf.addresses) ? conf.addresses : []).filter((a) => typeof a === "string" && !routes.has(norm(a)) && !redirects.some(([from]) => norm(from) === norm(a)));
+        if (lost.length) logger.warn(`redirects: ${lost.length} of the current site's addresses lead nowhere (${lost.slice(0, 8).join(", ")}${lost.length > 8 ? ", …" : ""}): give each a page or a redirect in op.config.json redirects`);
 
         // no secret key in what is published: the build fails (so Cloudflare deploys nothing), naming the file and the
         // kind, never the value

@@ -206,6 +206,10 @@
 
   --site-width: calc(100% - var(--site-margin) * 2);
 
+  /* The layout grid's columns, one value per screen: a phone here, a tablet and a computer in the media blocks below.
+     The grid's only name: OP System's « Grille » draws it, a page's grid uses it (repeat(var(--site-columns), …)). */
+  --site-columns: 4;
+
   /* Spacing */
   --space-1: clamp(var(--space-1-min) / 16 * 1rem, ((var(--space-1-min) - ((var(--space-1-max) - var(--space-1-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--space-1-max) - var(--space-1-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--space-1-max) / 16 * 1rem);
   --space-1-min: 6;
@@ -244,6 +248,19 @@
   --section-space-nav-overlap: clamp(var(--section-space-nav-overlap-min) / 16 * 1rem, ((var(--section-space-nav-overlap-min) - ((var(--section-space-nav-overlap-max) - var(--section-space-nav-overlap-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--section-space-nav-overlap-max) - var(--section-space-nav-overlap-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--section-space-nav-overlap-max) / 16 * 1rem);
   --section-space-nav-overlap-min: 160;
   --section-space-nav-overlap-max: 224;
+}
+
+/* The grid's columns on a tablet (from 48rem) and a computer (from 64rem): Lumos's Grid breakpoints */
+@media (width >= 48rem) {
+  :root {
+    --site-columns: 8;
+  }
+}
+
+@media (width >= 64rem) {
+  :root {
+    --site-columns: 12;
+  }
 }
 
 /* Color themes */

@@ -2,6 +2,14 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-27, Sam (23:01, « vas-y », after Amélie Haeck: the « Grille » drew 12, 8 and 4 on a site of 7, the favicon
+  and the SEO of the current site lost): `--site-columns` is the grid's only name, declared per screen in base.css
+  (4, 8 and 12, Lumos's Grid breakpoints) beside the margin and the gutter; without it site.json's `grid.columns` is
+  null (OP System says the site declares no grid), and the build warns on a page grid laid on another variable. A
+  redo keeps the current site's icons (op.config.json `"favicon": "site"`, favicon.mjs leaves them), its SEO word for
+  word (`seoTitle` on a layout, `seoFields()` in a collection's schema), its verification metas (`verification`) and
+  its addresses (`redirects` written as 301s in dist/_redirects, `addresses` checked at the build).
+
 - 2026-10-27, Sam (15:28: « le nouveau site Astro peut créer ses propres global classes… pour la scalabilité »; OP's
   skills rewritten for Lumos for Astro the same day, op-system's docs/DECISIONS.md): a site's own global classes live
   in `src/styles/project.css`, imported in the patterns layer after Lumos's `patterns.css`, so a component's own CSS and

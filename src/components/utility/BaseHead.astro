@@ -2,11 +2,15 @@
 import { SITE_NAME, SITE_DESCRIPTION } from "@/consts.ts";
 import { isNoindexRoute } from "@/utils/seo.ts";
 import type { SeoProps } from "@/types.ts";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import config from "../../../op.config.json";
 
 type Props = SeoProps;
 
 const {
   title,
+  seoTitle,
   description = SITE_DESCRIPTION,
   image = "/og-image.jpg",
   type = "website",
@@ -15,7 +19,15 @@ const {
 
 const isNoindex = noindex ?? isNoindexRoute(Astro.url.pathname);
 
-const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
+// a title kept word for word (the current site's, or an item's seoTitle) is the whole title, the site's name not added
+const pageTitle = seoTitle || (title ? `${title} | ${SITE_NAME}` : SITE_NAME);
+// the current site's verification metas (op.config.json `verification`, as read_export part seo gives them): kept so
+// the client keeps their Search Console and the like at the launch
+const verification = Object.entries(((config as { verification?: Record<string, string> }).verification) || {}).filter(
+  ([name, content]) => /^[\w.:-]{1,60}$/.test(name) && typeof content === "string" && content.length < 300,
+);
+// the SVG icon is linked only when the site has one (a site whose icons came from its current site may have none)
+const hasSvgIcon = existsSync(path.join(process.cwd(), "public", "favicon.svg"));
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = new URL(image, Astro.site);
 ---
@@ -43,6 +55,7 @@ const socialImage = new URL(image, Astro.site);
 <meta name="twitter:image" content={socialImage} />
 
 <link rel="icon" href="/favicon.ico" sizes="32x32" />
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+{hasSvgIcon && <link rel="icon" type="image/svg+xml" href="/favicon.svg" />}
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+{verification.map(([name, content]) => <meta name={name} content={content} />)}
 <meta name="generator" content={Astro.generator} />
