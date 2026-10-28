@@ -7,7 +7,7 @@ One line per decision: the date, who asked, what was decided and why. The newest
   (4, 8 and 12, Lumos's Grid breakpoints) beside the margin and the gutter; without it site.json's `grid.columns` is
   null (OP System says the site declares no grid), and the build warns on a page grid laid on another variable. A
   redo keeps the current site's icons (op.config.json `"favicon": "site"`, favicon.mjs leaves them), its SEO word for
-  word (`seoTitle` on a layout, `seoFields()` in a collection's schema), its verification metas (`verification`) and
+  word (`seoTitle` on a layout, `seoTitle`, `seoDescription` and `ogImage` written in a collection's schema), its verification metas (`verification`) and
   its addresses (`redirects` written as 301s in dist/_redirects, `addresses` checked at the build).
 
 - 2026-10-27, Sam (« Contenu » wave 1, GO; from the spike `live-staging-spike`, its report in op-system): the staging is

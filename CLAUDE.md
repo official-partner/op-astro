@@ -135,8 +135,10 @@ cover. How to build with Lumos: AGENTS.md, below.
 ## The current site's SEO and addresses (a redo)
 - An old SEO value is the client's content, kept word for word (read_export part seo, OP System's connector): a page's
   title as its layout's `seoTitle` (the whole title, the site's name not added), its description; an item's in its
-  collection's fields `seoTitle`, `seoDescription`, `ogImage`, spread from `seoFields(image)` (src/utils/seo-fields.ts)
-  into the schema of a collection whose items have a page. A value plainly bad is told to the team as a decision,
+  collection's fields, written in its schema like any other (content.config.ts takes no helper: Content, above),
+  exactly `seoTitle: z.string().optional().describe("Titre pour Google")`, `seoDescription: z.string().optional()
+  .describe("Description pour Google")`, `ogImage: image().optional().describe("Image de partage")` (the names
+  Contenu shows under « Pour Google »), in a collection whose items have a page; its page gives them to its layout. A value plainly bad is told to the team as a decision,
   never rewritten silently.
 - Every old address stays: one that changes gets a 301 in op.config.json `redirects` (`{ "/old": "/new" }`); the build
   writes them in `dist/_redirects` after `public/_redirects`, and warns on a redirect to no page. The current site's
