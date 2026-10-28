@@ -59,7 +59,9 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   `data-op-field` on each field's text. The staging (`review`) is rendered on demand by the Worker and reads OP's
   working copy of the collections, so a save shows on the page in about one round trip to OP; `main` stays static.
   How it works, the Worker's two secrets and the checks: CLAUDE.md, Content. A sample: the `team` collection,
-  `src/components/content/CardTeam.astro` and the page `test-contenu` (under Système).
+  `src/components/content/CardTeam.astro` and the page `test-contenu` (under Système). A collection only for items
+  with a page of their own or the same items on several pages (Oct 28, 2026, Sam); every other list is a block of its
+  page, marked for Modifier (CLAUDE.md, Content).
 - `wrangler.jsonc`: an assets-only Worker on Cloudflare, its workers.dev address, and a preview address for every
   branch but `main` (Worker Previews). `main` is the live site; `review` is the one OP System shows.
 - `src/styles/project.css` (Oct 27, 2026; Sam: « le même gap entre une image et son texte partout devient une classe

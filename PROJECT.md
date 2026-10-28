@@ -2,6 +2,14 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-28, Sam (16:58, « je ne veux pas que mes sites soient inondés de collections »): a collection only where a
+  CMS is needed: items with a page of their own (a template, the blog's case) or the same items listed on several pages
+  and managed as data. Every other list (a section's cards, offers, values, prices, partners, logos) is a block of its
+  page, written in the page or in src/data/ and marked for OP System's Modifier (`data-op-list`, `data-op-source` the
+  file it is written in, `data-op-item`), where the team and the client duplicate, delete and move its items on the
+  canvas, as a Webflow component's slots. CLAUDE.md, Content, says it for every site made from this starter; Sani went
+  from 34 collections to 3 the same day.
+
 - 2026-10-27, Sam (23:01, « vas-y », after Amélie Haeck: the « Grille » drew 12, 8 and 4 on a site of 7, the favicon
   and the SEO of the current site lost): `--site-columns` is the grid's only name, declared per screen in base.css
   (4, 8 and 12, Lumos's Grid breakpoints) beside the margin and the gutter; without it site.json's `grid.columns` is

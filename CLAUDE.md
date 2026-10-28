@@ -72,6 +72,16 @@ cover. How to build with Lumos: AGENTS.md, below.
   file per item named by its slug (the item's id), JSON (Markdown when the item has a text of its own). OP System's
   « Contenu » edits them, and the team creates collections and fields there too: the app writes
   `src/content.config.ts` and the folders itself, through OP's GitHub App, on `review`.
+- A collection only where a CMS is needed (Sam, Oct 28): items with a page of their own (a template: a blog's
+  articles, a project's case study) or the same items listed on several pages and managed as data (questions shown on
+  two pages). Everything else is a block of its page, never a collection: a section's cards, offers, values, prices,
+  partners, logos, a team on one page. A block's list is written in the page or in a data file (`src/data/`) and
+  marked for OP System's Modifier: `data-op-list="<name>"`, `data-op-source` the file it is written in (`page`, or
+  `src/data/offers.ts`), `data-op-item` on each item (op-system's `docs/bridge.md`, Lists); the team and the client
+  duplicate, delete and move its items on the canvas, as a Webflow component's slots, with no collection to create
+  or link. Before adding a collection, say which page or pages show its items and why they need one; when in doubt,
+  a block. A site redone from Webflow brings its CMS collections that have a template page as collections, and its
+  static lists as blocks.
 - `src/content.config.ts` keeps the simple form the app reads and writes: one `defineCollection` per collection with a
   `glob()` loader, its `schema` a `z.object({ ... })` (or `({ image }) => z.object(...)` when it has a picture) with a
   `.describe("…")` on each field and on the object, `export const collections = { ... }`. Names are code (English
