@@ -113,6 +113,14 @@ cover. How to build with Lumos: AGENTS.md, below.
   `OP_CONTENT_URL`: the committed files (a failure is remembered 5 s). An item the schema refuses: its committed file.
   A picture not committed yet is a URL in OP's storage, shown only from a host of `OP_STORAGE_ORIGINS` (build time,
   default `https://*.supabase.co`). `main` and every other branch build static, as before.
+- What the staging reads is what is published (OP System, Oct 28): every change made in OP System's Contenu is a
+  draft until someone presses « Publier » there, so the client's link never shows one. OP System's own frame shows the
+  drafts: its proxy asks for each page with a header `x-op-draft` (a short proof OP signs for the project and the
+  person looking); `src/middleware.ts` renders the page within it (`src/utils/draft.ts`, AsyncLocalStorage: the
+  `nodejs_als` flag in wrangler.jsonc) and the loader hands it on with its read, keeping that answer apart, keyed by
+  the proof. OP gives the drafts only for a good proof of someone who may change the content. Never read the header
+  anywhere else, never put it in a page, a link or a cookie; a page that carries drafts is `no-store` like every page
+  of the staging.
 - The Worker's secrets on Cloudflare (Settings › Variables and Secrets, type Secret; they apply to the review
   preview): `OP_CONTENT_URL` (OP's content address) and `OP_CONTENT_TOKEN` (the project's read token, given by OP
   System). Optional variables: `OP_PROJECT` (default op.config.json's `id`), `OP_CONTENT_TTL` (ms). Never in the
