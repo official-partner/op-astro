@@ -7,6 +7,7 @@ import {
   OP_CONTENT_TTL,
 } from "astro:env/server";
 import config from "../../op.config.json";
+import { DRAFT_HEADER, currentDraft } from "./draft";
 
 /* The staging's live loader: a collection's working copy, as OP's worker gives it
    (GET <OP_CONTENT_URL>?p=<project>&c=<collection>, Authorization: Bearer <OP_CONTENT_TOKEN>
@@ -16,7 +17,10 @@ import config from "../../op.config.json";
    - No OP_CONTENT_URL, an error, a timeout (TIMEOUT) or an answer without items returns { error }: src/utils/content.ts
      then shows the committed files. A failure is remembered RETRY ms, so OP being down costs one wait, not one a page.
    - An item its collection's schema refuses is left out and named (rejected()): src/utils/content.ts shows its
-     committed file instead, so one bad item never hides the others' edits. */
+     committed file instead, so one bad item never hides the others' edits.
+   - What OP gives is what is published. A page OP System's frame asks for carries its proof (src/utils/draft.ts): it
+     is handed on as x-op-draft, OP gives the drafts too, and the answer is kept apart, keyed by that proof, so a
+     request without it never sees a draft. */
 
 type Item = { id: string; data: Record<string, unknown> };
 type Answer = { version: number; updatedAt?: string; items: Item[] };
@@ -41,6 +45,10 @@ type Kept = {
 };
 const kept = new Map<string, Kept>();
 const refused = new Map<string, Set<string>>();
+/* answers kept for a proof (OP's frame): a few, the oldest dropped first */
+const DRAFTS_KEPT = 40;
+const keyOf = (collection: string, draft: string) =>
+  draft ? `${collection}|${draft}` : collection;
 
 /* the newest version of the working copy a request named: an answer older than it is read again */
 let latest = 0;
@@ -53,11 +61,13 @@ export function seenVersion(version: number) {
 
 /** The ids of a collection's items the schema refused in OP's last answer. */
 export function rejected(collection: string): Set<string> {
-  return refused.get(collection) ?? new Set();
+  return refused.get(keyOf(collection, currentDraft())) ?? new Set();
 }
 
 function read(collection: string): Promise<Answer> {
-  const hit = kept.get(collection);
+  const draft = currentDraft();
+  const key = keyOf(collection, draft);
+  const hit = kept.get(key);
   if (hit) {
     const age = Date.now() - hit.at;
     if (
@@ -71,10 +81,12 @@ function read(collection: string): Promise<Answer> {
   url.searchParams.set("p", OP_PROJECT || config.id);
   url.searchParams.set("c", collection);
   const asked = latest;
+  const headers: Record<string, string> = OP_CONTENT_TOKEN
+    ? { authorization: `Bearer ${OP_CONTENT_TOKEN}` }
+    : {};
+  if (draft) headers[DRAFT_HEADER] = draft;
   const answer = fetch(url, {
-    headers: OP_CONTENT_TOKEN
-      ? { authorization: `Bearer ${OP_CONTENT_TOKEN}` }
-      : {},
+    headers,
     signal: AbortSignal.timeout(TIMEOUT),
   }).then(async (res) => {
     if (!res.ok)
@@ -85,7 +97,13 @@ function read(collection: string): Promise<Answer> {
     return { ...body, version: Number(body.version) || 0 };
   });
   const entry: Kept = { at: Date.now(), version: asked, answer };
-  kept.set(collection, entry);
+  kept.delete(key);
+  kept.set(key, entry);
+  if (draft) {
+    const drafts = [...kept.keys()].filter((k) => k.includes("|"));
+    for (const k of drafts.slice(0, Math.max(0, drafts.length - DRAFTS_KEPT)))
+      kept.delete(k);
+  }
   answer.then(
     (a) => {
       entry.version = a.version;
@@ -119,7 +137,7 @@ export function opContentLoader(
       if (!fine) bad.add(String(i?.id));
       return fine;
     });
-    refused.set(collection, bad);
+    refused.set(keyOf(collection, currentDraft()), bad);
     if (bad.size)
       console.warn(
         `[op] ${collection}: the schema refused ${[...bad].join(", ")}; their files are shown`,

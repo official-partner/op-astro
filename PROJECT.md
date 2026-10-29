@@ -2,6 +2,12 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-10-28, Sam (20:07 and 20:15: Contenu v2, every change a draft): the staging reads what OP publishes;
+  OP System's frame sends its draft proof (`x-op-draft`) with each page it asks for, the middleware renders the page
+  within it (src/utils/draft.ts, AsyncLocalStorage, `nodejs_als` in wrangler.jsonc) and the loader hands it on to
+  OP_CONTENT_URL, its answer kept apart by proof. A request without the proof never sees a draft (checked with
+  wrangler dev: three overlapping requests, two proofs and none, each its own answer). Nothing to set on Cloudflare.
+
 - 2026-10-28, Sam (16:58, « je ne veux pas que mes sites soient inondés de collections »): a collection only where a
   CMS is needed: items with a page of their own (a template, the blog's case) or the same items listed on several pages
   and managed as data. Every other list (a section's cards, offers, values, prices, partners, logos) is a block of its
