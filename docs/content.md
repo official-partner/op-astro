@@ -25,7 +25,10 @@ Read before adding or changing a collection, a field, a list the team edits on t
   collection up by itself.
 - Fields: every one optional (`.optional()`) but the name (`name`, `title` or `question`: the item's title), and the
   slug is the file's name, so an item with a page always has both. `visible: z.boolean().default(true)` hides an item
-  everywhere; `order: z.number().optional()` sorts them (Contenu writes 1, 2, 3; an item without one comes last).
+  everywhere; `draft: z.boolean().default(false)` keeps one on the staging only (OP System's « Draft », Nov 12: the
+  live site's build leaves it out of every list, its own page with it, until someone sets it to « On the site »;
+  `npm run dev` shows it; site.json says `content.drafts` so the app offers the state); `order: z.number().optional()`
+  sorts them (Contenu writes 1, 2, 3; an item without one comes last).
 - A page reads a collection through `getItems("<name>")` and `getItem("<name>", id)` (`src/utils/content.ts`), never
   `getCollection`: the visible items, in their order, `{ id, data }` the same way on every build. A picture field gives
   a `Picture`: pass it to `<Img {...img(data.photo)} alt="…" />`. A collection added to content.config.ts works by its

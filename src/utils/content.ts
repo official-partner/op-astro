@@ -11,7 +11,8 @@ import { PICTURE, rejected } from "./content-loader";
 /* How a page reads a collection: getItems("team"), getItem("team", "lea"). On the staging (an OP_LIVE build) it is
    the live collection, OP's working copy as Contenu and Modifier left it a moment ago; anywhere else, and on the
    staging whenever OP cannot answer, the committed files (src/content/). The same shape either way: { id, data },
-   only the visible items (`visible: false` hides one), in their `order` (an item without one last, then by id).
+   only the visible items (`visible: false` hides one; `draft: true` keeps one on the staging only), in their `order`
+   (an item without one last, then by id).
    A picture is an optimized image when its file is committed, else a picture in OP's storage ({ src, width,
    height }): give it to <Img> with img(). Any collection of src/content.config.ts works by its name, nothing to add. */
 
@@ -31,6 +32,10 @@ export type Item<C extends CollectionKey> = { id: string; data: Data<C> };
 declare const __OP_LIVE__: boolean;
 /** True on the staging's build (OP_LIVE): pages render on demand and read OP's working copy. */
 export const LIVE: boolean = __OP_LIVE__;
+/* astro.config.mjs's define: true in a build of the staging, its inner static pass too */
+declare const __OP_STAGING__: boolean;
+/** True where a draft shows: the staging, and `npm run dev`. False in the live site's build. */
+export const STAGING: boolean = __OP_STAGING__ || import.meta.env.DEV;
 
 /** <Img>'s src, width and height for a picture: `<Img {...img(data.photo)} alt="…" />`. */
 export function img(picture: Picture): {
@@ -93,8 +98,13 @@ function resolve(collection: string, value: unknown): unknown {
   return value;
 }
 
-const shown = (e: { data: object }) =>
-  (e.data as { visible?: boolean }).visible !== false;
+/* An item shows unless it is hidden (`visible: false`: nowhere) or a draft (`draft: true`) outside the staging.
+   OP System's « Draft » (Nov 12) keeps an item on the staging only, until someone sets it to « On the site »: the
+   live site's build leaves it out of every list, and its own page with it. */
+const shown = (e: { data: object }) => {
+  const d = e.data as { visible?: boolean; draft?: boolean };
+  return d.visible !== false && (STAGING || d.draft !== true);
+};
 const orderOf = (e: { data: object }) => {
   const o = (e.data as { order?: unknown }).order;
   return typeof o === "number" && Number.isFinite(o) ? o : Infinity;

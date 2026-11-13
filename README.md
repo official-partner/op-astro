@@ -54,7 +54,7 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   then a computer's), and each shows per screen in OP System, its screens' widths taken from those blocks.
 - Content edited in OP System's « Contenu » (Oct 27, 2026; Sam: « Contenu » wave 1, GO): the site's Astro content
   collections (`src/content.config.ts`, written in a form the app reads and writes, and `src/content/<name>/`), read by
-  pages through `getItems()` and `getItem()` (`src/utils/content.ts`: visible items only, in their `order`, the same
+  pages through `getItems()` and `getItem()` (`src/utils/content.ts`: visible items only, a draft on the staging only, in their `order`, the same
   shape on every build), `<When>` for a field that may be empty (`src/components/system/When.astro`, `data-op-when`),
   `data-op-field` on each field's text. The staging (`review`) is rendered on demand by the Worker and reads OP's
   working copy of the collections, so a save shows on the page in about one round trip to OP; `main` stays static.

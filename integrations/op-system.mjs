@@ -606,7 +606,9 @@ export default function opSystem(site) {
         // the staging renders on demand and reads OP's working copy (op-live.mjs): OP System says a save shows at once.
         // The live build writes site.json from its inner static pass (OP_LIVE_INNER), so that one counts as live too.
         const liveBuild = process.env.OP_LIVE_INNER === "1" || (process.env.OP_LIVE ? process.env.OP_LIVE === "1" : process.env.WORKERS_CI_BRANCH === "review");
-        if (liveBuild) manifest.content = { live: true };
+        // `drafts`: the site knows OP System's « Draft » (src/utils/content.ts: an item whose `draft` is true shows on
+        // the staging only), so the app may offer that state
+        manifest.content = Object.assign({ drafts: true }, liveBuild ? { live: true } : {});
         // the rules the site holds to stay one system (scripts/rules.mjs, npm run rules; Nov 12): on a machine the
         // build stops on a failure the team has not accepted, so no session pushes without seeing it; on Cloudflare
         // it only warns, so the review is never blocked. site.json carries the count either way. OP_RULES=warn builds

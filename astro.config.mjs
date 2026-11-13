@@ -48,7 +48,8 @@ export default defineConfig({
     opSystem({ siteName: SITE_NAME, siteUrl: SITE_URL, locale: SITE_LOCALE, pagesDir: LIVE ? STATIC_DIR : undefined }),
   ],
   vite: {
-    define: { __OP_LIVE__: JSON.stringify(LIVE) },
+    // __OP_STAGING__: the staging's build and its inner static pass (the pages site.json lists): where a draft shows
+    define: { __OP_LIVE__: JSON.stringify(LIVE), __OP_STAGING__: JSON.stringify(LIVE || process.env.OP_LIVE_INNER === "1") },
     build: { cssTarget: "safari15.4" },
   },
 });
