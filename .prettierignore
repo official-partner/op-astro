@@ -1,3 +1,7 @@
 dist
 .astro
 node_modules
+.compare
+.op-static
+shots
+scripts/lib/library.json

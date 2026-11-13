@@ -15,7 +15,11 @@
     "astro": "astro",
     "format": "prettier --write .",
     "favicon": "node scripts/favicon.mjs",
-    "shot": "node scripts/shot.mjs"
+    "shot": "node scripts/shot.mjs",
+    "rules": "node scripts/rules.mjs",
+    "measure": "node scripts/measure.mjs",
+    "widths": "node scripts/widths.mjs",
+    "compare": "node scripts/compare.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
@@ -27,6 +31,7 @@
   },
   "devDependencies": {
     "playwright-core": "^1.64.1",
+    "pngjs": "^7.0.0",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "wrangler": "^4.135.0"

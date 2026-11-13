@@ -5,6 +5,8 @@ dist/
 
 # pictures of the pages (npm run shot)
 shots/
+# the site kept as it was before a change, and what differs since (npm run compare)
+.compare/
 
 # generated types
 .astro/

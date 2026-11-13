@@ -2,6 +2,22 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-11-12, Sam (19:12, « peux tu update le starter? », after the review of how Tranter, Curveball, Sani and
+  manœuvre were built: OP's rewritten skills name checks that lived only in Tranter's repository, as Python written
+  that night): every site made from the starter has four checks. `npm run rules` (the rules of one system, on the
+  sources; the build runs it, stops on a machine and warns on Cloudflare, the count in site.json `system.rules`; a
+  failure the team accepts in review/data/rules-baseline.json), `npm run measure` (each `data-figma` element against
+  the design corrected by the system, review/README.md), `npm run widths` (nine widths: overflow, the site grid, the
+  image frames, proportion, line breaks) and `npm run compare` (HTML, pictures and what every button does, before and
+  after). What they share is scripts/lib/site.mjs, which `npm run shot` now uses too. Checked: the starter passes its
+  own rules (0), builds and type-checks clean; Tranter's home measures 92 of 92 on its target with this script as with
+  its own; Tranter's two pages pass the nine widths; a page made to break each width check breaks each; compare finds
+  nothing on Sani unchanged (56 pages of HTML, 6 pictures, 70 presses) and finds a changed word and a renamed window.
+  Found on the way: `npm run shot` missed a lazy image with `sizes="auto"` three times in four (the starter's
+  components page); it now waits for every image, whole. A text's place is measured at its first letter and the
+  middle of its first line, so no `data-cap-offset` is needed. A column number is a failure, a row number is not
+  (rows are a component's own). One new devDependency: pngjs (the pictures compared pixel by pixel).
+
 - 2026-10-28, Sam (20:07 and 20:15: Contenu v2, every change a draft): the staging reads what OP publishes;
   OP System's frame sends its draft proof (`x-op-draft`) with each page it asks for, the middleware renders the page
   within it (src/utils/draft.ts, AsyncLocalStorage, `nodejs_als` in wrangler.jsonc) and the loader hands it on to

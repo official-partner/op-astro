@@ -1,0 +1,160 @@
+{
+ "note": "The starter's library, a fingerprint per version of each file it ever shipped (white space ignored). Kept up to date in op-astro only: npm run rules -- --library.",
+ "files": {
+  "src/components/Button.astro": [
+   "265797debfafd20f"
+  ],
+  "src/components/form/Choice.astro": [
+   "a78d74f64f2704f0"
+  ],
+  "src/components/form/Fieldset.astro": [
+   "c8710e65bcd35f6c"
+  ],
+  "src/components/form/Form.astro": [
+   "f1c74d9a04a088e7",
+   "541287d7f2a9ede3"
+  ],
+  "src/components/form/Input.astro": [
+   "03e6a93f4c26ef1c"
+  ],
+  "src/components/form/Range.astro": [
+   "a0877e9925287672",
+   "2ebb5fd13a4edc1a"
+  ],
+  "src/components/form/Select.astro": [
+   "fb40a521ea8144b1"
+  ],
+  "src/components/form/Textarea.astro": [
+   "dfc28190ed394ee6"
+  ],
+  "src/components/global/Footer.astro": [
+   "b7bb9737e2005565",
+   "31e7758d0bc81932",
+   "3466757ba959b0e8",
+   "cde5f7dac814e49e"
+  ],
+  "src/components/global/Nav.astro": [
+   "e4718a7d4c802336",
+   "4260d1d52a809b4e",
+   "60e84ad93b62b4dd",
+   "6bef692e5b2340e2"
+  ],
+  "src/components/global/NavLink.astro": [
+   "15ca36931898a7c7"
+  ],
+  "src/components/global/SkipLink.astro": [
+   "4b104ac7915b35dc",
+   "c52baf9f405884c0"
+  ],
+  "src/components/interactive/Accordion.astro": [
+   "3c197f6fee67c1b0",
+   "8b82b74c6edd01f4"
+  ],
+  "src/components/interactive/AccordionItem.astro": [
+   "c5a58d90130024ce"
+  ],
+  "src/components/interactive/Dropdown.astro": [
+   "2371ba77728573cd",
+   "70568e9ebaca3f4d"
+  ],
+  "src/components/interactive/Marquee.astro": [
+   "e5288fd7cdf3d703",
+   "b7b276d31313cd22"
+  ],
+  "src/components/interactive/Modal.astro": [
+   "3f58e5fd92c4960a",
+   "9aae7691e3509f3c"
+  ],
+  "src/components/interactive/Slider.astro": [
+   "c0d2a6831fd74077",
+   "55d25c27e279b949",
+   "948ddb1530813997"
+  ],
+  "src/components/interactive/TabLink.astro": [
+   "ac30c8c34fee10f3"
+  ],
+  "src/components/interactive/Tabs.astro": [
+   "8de8dda4a644bc64",
+   "22b44daac8bac357"
+  ],
+  "src/components/item/Card.astro": [
+   "27008ac0fbd88e6f"
+  ],
+  "src/components/media/Icon.astro": [
+   "fee1050a3429dde9"
+  ],
+  "src/components/media/Img.astro": [
+   "b2f6e898f1fbdf11"
+  ],
+  "src/components/media/Overlay.astro": [
+   "78605c63756dab46"
+  ],
+  "src/components/media/Video.astro": [
+   "acb47d6a4f3eaa71"
+  ],
+  "src/components/system/ComponentList.astro": [
+   "23388f123c43de8d"
+  ],
+  "src/components/system/ComponentSample.astro": [
+   "33c89484cd7fe4be",
+   "a1e69e5f0d405599"
+  ],
+  "src/components/system/Loader.astro": [
+   "80d8f869998fa1ec",
+   "39d820b888f10a2a",
+   "e769d538935fa834"
+  ],
+  "src/components/system/PageTransitions.astro": [
+   "7bbe6d1fc9350b21",
+   "4ca976934d5de9e6"
+  ],
+  "src/components/system/SmoothScroll.astro": [
+   "243e8622ba40b0c2"
+  ],
+  "src/components/system/StarterHome.astro": [
+   "90bc99301b944164"
+  ],
+  "src/components/system/When.astro": [
+   "fb5c81fed44fc401"
+  ],
+  "src/components/typography/Eyebrow.astro": [
+   "dd48cc5f9026aca0"
+  ],
+  "src/components/typography/Heading.astro": [
+   "676d1a9078af80a1"
+  ],
+  "src/components/typography/Paragraph.astro": [
+   "93dfb181d3d9cfb7"
+  ],
+  "src/components/typography/RichText.astro": [
+   "347ed961f03cafc4"
+  ],
+  "src/components/utility/BaseHead.astro": [
+   "609b290d73fe5340",
+   "dea258deb44189a0",
+   "d1d3b0cd2137a3ba"
+  ],
+  "src/components/utility/FormattedDate.astro": [
+   "c13f372ec708d30c"
+  ],
+  "src/components/wrapper/ButtonWrapper.astro": [
+   "d3392a1c87be7bf2"
+  ],
+  "src/components/wrapper/ContentWrapper.astro": [
+   "8681330f38adfdb8"
+  ],
+  "src/components/wrapper/Grid.astro": [
+   "c54fa7022b55405e"
+  ],
+  "src/components/wrapper/Section.astro": [
+   "1bc8fdb98c00ec91"
+  ],
+  "src/layouts/BaseLayout.astro": [
+   "40795703eda86c4a",
+   "5e7c05b103a75946",
+   "11e4ce0d76902216",
+   "7646d2834a60be63",
+   "e124f7dcafe5fa62"
+  ]
+ }
+}

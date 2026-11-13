@@ -126,6 +126,10 @@ By hand:
 | `npm run check`   | Type-checks every `.astro` file                  |
 | `npm run format`  | Formats the project with Prettier                |
 | `npm run shot`    | Full-page PNGs of built pages, in `shots/` (`--loader`: the loading screen frame by frame) |
+| `npm run rules`   | The rules a site holds to stay one system, checked on its sources; every build runs it |
+| `npm run measure` | A page measured against its design, element by element (`review/README.md`) |
+| `npm run widths`  | A page at nine widths: overflow, the site grid, the image frames, proportion, line breaks |
+| `npm run compare` | The site before and after a change that must change nothing: HTML, pictures, what answers |
 
 Node 22.19 or newer is required (Cloudflare's build image runs Node 24 by default). `npm run build` runs `prebuild`
 first (`scripts/favicon.mjs --if-missing`: the icons from the repository's own files, no network and no secret; without

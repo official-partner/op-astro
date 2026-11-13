@@ -15,6 +15,7 @@ import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { finishes, LOADER_PRESETS, TRANSITION_PRESETS, SCROLL_INTENSITIES } from "../src/utils/finishes.ts";
+import { checkRules } from "../scripts/rules.mjs";
 
 const FR = {
   home: "Accueil",
@@ -606,6 +607,20 @@ export default function opSystem(site) {
         // The live build writes site.json from its inner static pass (OP_LIVE_INNER), so that one counts as live too.
         const liveBuild = process.env.OP_LIVE_INNER === "1" || (process.env.OP_LIVE ? process.env.OP_LIVE === "1" : process.env.WORKERS_CI_BRANCH === "review");
         if (liveBuild) manifest.content = { live: true };
+        // the rules the site holds to stay one system (scripts/rules.mjs, npm run rules; Nov 12): on a machine the
+        // build stops on a failure the team has not accepted, so no session pushes without seeing it; on Cloudflare
+        // it only warns, so the review is never blocked. site.json carries the count either way. OP_RULES=warn builds
+        // anyway (to look at the pages while fixing), OP_RULES=off skips the check.
+        const rulesMode = ["off", "warn", "fail"].includes(process.env.OP_RULES) ? process.env.OP_RULES : process.env.WORKERS_CI_BRANCH ? "warn" : "fail";
+        let broken = [];
+        let knownRules = 0;
+        if (rulesMode !== "off") {
+          const held = checkRules(root);
+          broken = held.fresh;
+          knownRules = held.known.length;
+          Object.assign(system, { rules: { failures: broken.length, known: knownRules, checked: today,
+            list: broken.slice(0, 60).map(({ rule, file, where, detail }) => ({ rule, file, where, detail })) } });
+        }
         await writeFile(path.join(out, "site.json"), JSON.stringify(manifest, null, 1) + "\n");
         // out of search engines until the site is live, and always on a branch other than main; the secure headers on
         // every build, but those the site's own _headers names (public/_headers, copied into dist/ by the build)
@@ -647,6 +662,20 @@ export default function opSystem(site) {
           throw error;
         }
         logger.info(`secret scan: ${scan.files} files, no key${scan.notices.length ? `, ${scan.notices.length} notice${scan.notices.length > 1 ? "s" : ""}` : ""}`);
+        if (rulesMode !== "off") {
+          const said = `rules: ${broken.length} failure${broken.length === 1 ? "" : "s"}${knownRules ? `, ${knownRules} known` : ""}`;
+          const shownRules = broken.slice(0, 12).map((f) => `  ${f.rule}  ${f.file}${f.where ? `  ${f.where}` : ""}${f.detail ? `: ${f.detail}` : ""}`).join("\n");
+          if (broken.length && rulesMode === "fail") {
+            const error = new Error(`${said}. The build stops here on a machine (never on Cloudflare).\n${shownRules}${broken.length > 12 ? `\n  and ${broken.length - 12} more: npm run rules` : ""}`);
+            error.hint = "Fix each in the system (a token, a rail, a global class, a component), as OP's skills op-global-classes and op-corrections say; "
+              + "npm run rules lists them. One the team accepts goes in review/data/rules-baseline.json with its reason (npm run rules -- --accept). "
+              + "To build anyway while fixing: OP_RULES=warn npm run build.";
+            error.stack = "";
+            throw error;
+          }
+          if (broken.length) logger.warn(`${said} (npm run rules)\n${shownRules}`);
+          else logger.info(said);
+        }
         logger.info(`site.json: ${pages.length} pages, ${collections.reduce((n, c) => n + c.variables.length, 0)} variables, ${themeList.length} themes (branch ${branch}${indexed ? "" : ", noindex"})`);
       },
     },
