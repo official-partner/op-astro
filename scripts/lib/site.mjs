@@ -4,7 +4,7 @@
 import { spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { createReadStream, readdirSync, statSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import os from "node:os";
 import path from "node:path";
 import { chromium } from "playwright-core";
@@ -233,6 +233,21 @@ export async function launch(onFail = () => {}) {
   }
 }
 
+/* ------------------------------------------------------------------ a site's own preparation of a page */
+// A site may prepare each page before it is looked at: a consent choice already made, a notice closed, so the
+// pictures show the page. scripts/site-page.mjs, when the site has one, exports
+// `prepare(page, { name, width, args })`, run before the page loads (page.addInitScript and the like).
+let own;
+export async function prepare(page, info = {}) {
+  if (own === undefined) {
+    const file = path.join(ROOT, "scripts/site-page.mjs");
+    own = stat(file)?.isFile()
+      ? ((await import(pathToFileURL(file).href)).prepare ?? null)
+      : null;
+  }
+  if (own) await own(page, { args: process.argv.slice(2), ...info });
+}
+
 /* ------------------------------------------------------------------ a page, whole */
 // Runs in the page: its fonts, its loading screen leaving or gone (html[data-loader], docs/finishes.md) and a
 // cover of its own gone (html[data-loading]), then every lazy image loaded now, so the whole page has them.
@@ -282,6 +297,7 @@ export async function open(
     if (m.type() === "error") logged.push(m.text());
   });
   page.on("pageerror", (e) => logged.push(e.message));
+  await prepare(page, { width });
   const response = await page.goto(url, { waitUntil: "load" });
   if (!response?.ok()) logged.push(`HTTP ${response?.status()} for ${url}`);
   await page.evaluate(opening);

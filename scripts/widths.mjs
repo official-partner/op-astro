@@ -27,6 +27,7 @@ import {
   fail,
   launch,
   opening,
+  prepare,
   pagesOf,
   seconds,
   serve,
@@ -244,6 +245,7 @@ const load = async (name, width) => {
     viewport: { width, height: heightFor(width) },
     reducedMotion: "reduce",
   });
+  await prepare(page, { name, width });
   await page.goto(server.base + pages.get(name), { waitUntil: "load" });
   await page.evaluate(opening);
   await page.waitForTimeout(SETTLE);

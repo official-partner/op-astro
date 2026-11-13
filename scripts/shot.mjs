@@ -28,6 +28,7 @@ import {
   fail,
   launch,
   opening,
+  prepare,
   pagesOf,
   seconds,
   serve,
@@ -108,6 +109,7 @@ const loaderFrames = async () => {
       });
       await cdp.send("Page.startScreencast", { format: "jpeg", quality: 75 });
       const route = pages.get(name);
+      await prepare(page, { name, width });
       await page.goto(`${base}${route}?op-loader`, { waitUntil: "load" });
       const played = await page
         .waitForFunction(
@@ -191,6 +193,7 @@ for (const name of args.includes("--loader") ? [] : names) {
     });
     page.on("pageerror", (e) => logged.push(e.message));
     try {
+      await prepare(page, { name, width });
       const response = await page.goto(base + pages.get(name), {
         waitUntil: "load",
       });

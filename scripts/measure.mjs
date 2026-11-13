@@ -38,6 +38,7 @@ import {
   launch,
   nameOf,
   opening,
+  prepare,
   pagesOf,
   serve,
   stat,
@@ -224,6 +225,7 @@ const page = await browser.newPage({
 });
 const logged = [];
 page.on("pageerror", (e) => logged.push(e.message));
+await prepare(page, { name, width });
 await page.goto(server.base + pages.get(name), { waitUntil: "load" });
 await page.evaluate(opening);
 // down and back: what waits to be seen (a lazy image, a reveal) is in

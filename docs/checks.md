@@ -53,3 +53,6 @@ Read once before the first change, then when a check's result is not clear.
   up to date yet). In op-astro only: after a change to a library component, `npm run rules -- --library`
   (scripts/lib/library.json holds a fingerprint of every version of the library's files, which is how a site knows
   the ones it changed).
+- A site prepares its pages before they are looked at in `scripts/site-page.mjs`, when it needs to: a consent choice
+  already made, a notice closed, so the pictures show the page. It exports `prepare(page, { name, width, args })`, run
+  by the shots and the checks before each page loads.
