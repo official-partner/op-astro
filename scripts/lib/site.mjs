@@ -234,7 +234,7 @@ export async function launch(onFail = () => {}) {
 }
 
 /* ------------------------------------------------------------------ a page, whole */
-// Runs in the page: its fonts, its loading screen leaving or gone (html[data-loader], CLAUDE.md, Loading screen) and a
+// Runs in the page: its fonts, its loading screen leaving or gone (html[data-loader], docs/finishes.md) and a
 // cover of its own gone (html[data-loading]), then every lazy image loaded now, so the whole page has them.
 export const opening = async () => {
   const root = document.documentElement;

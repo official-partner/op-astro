@@ -26,7 +26,7 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   its prefix, then the global ones, the project's own of `src/styles/project.css` first with the comment above each).
   OP System's settings list the libraries and the favicon (Technique) and turn a
   change into a request to Claude. The same integration writes `dist/_redirects` from op.config.json `redirects` (a
-  redo's old addresses, 301; it warns on op.config.json `addresses` that lead nowhere: CLAUDE.md, The current site's
+  redo's old addresses, 301; it warns on op.config.json `addresses` that lead nowhere: docs/redo.md, The current site's
   SEO and addresses) and `dist/_headers` and stops a build that holds a secret
   key (Security, below; Oct 17, 2026, Sam).
 - `op.config.json`: the project's id, name, client, studio and description, its staging link if it has one,
@@ -35,7 +35,7 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   follow the screen's width; 1440 by default), `domain` (the client's domain, empty until the launch: `SITE_URL` reads
   it) and `live` (false until the launch: every build is kept out of search engines until then, `dist/_headers`; OP
   System's « Lancer le site » sets both), `loader`, `transition` and `smoothScroll` (the finishing touches, each
-  false or a preset; `loaderTheme`, the theme the logo loader's ground takes until the team turns it on: CLAUDE.md, The finishing touches).
+  false or a preset; `loaderTheme`, the theme the logo loader's ground takes until the team turns it on: docs/finishes.md).
 - The finishing touches, each ready to turn on with a preset and to restyle per client (Oct 17, 2026; Sam: « un loading
   screen par projet et un langage de transition entre les pages (comme Barba), intégré dans l'UX de l'app »; presets
   and the smooth scroll Oct 27, 2026, Sam): `src/components/system/Loader.astro` (from the first paint until the fonts
@@ -58,17 +58,19 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   shape on every build), `<When>` for a field that may be empty (`src/components/system/When.astro`, `data-op-when`),
   `data-op-field` on each field's text. The staging (`review`) is rendered on demand by the Worker and reads OP's
   working copy of the collections, so a save shows on the page in about one round trip to OP; `main` stays static.
-  How it works, the Worker's two secrets and the checks: CLAUDE.md, Content. A sample: the `team` collection,
+  How it works, the Worker's two secrets and the checks: docs/content.md. A sample: the `team` collection,
   `src/components/content/CardTeam.astro` and the page `test-contenu` (under Système). A collection only for items
   with a page of their own or the same items on several pages (Oct 28, 2026, Sam); every other list is a block of its
-  page, marked for Modifier (CLAUDE.md, Content).
+  page, marked for Modifier (docs/content.md).
 - `wrangler.jsonc`: an assets-only Worker on Cloudflare, its workers.dev address, and a preview address for every
   branch but `main` (Worker Previews). `main` is the live site; `review` is the one OP System shows.
 - `src/styles/project.css` (Oct 27, 2026; Sam: « le même gap entre une image et son texte partout devient une classe
   globale »): the project's own global classes, a treatment several components share written once, in the patterns
   layer after Lumos's `patterns.css` (which a project never edits); each with a one-line comment that OP System's Web
   System shows. Empty in the starter. When one is made: OP's skill op-global-classes (`get_skill`).
-- `CLAUDE.md`: how Claude works here (the review branch, publishing only when asked, OP System's queue, the checks).
+- `CLAUDE.md`: how Claude works here, in short: what the site has of its own, the review branch and publishing only
+  when asked, the system file, the checks. The machinery is in `docs/`, one file per subject, read when the work
+  touches it; `system/` holds the system file and `review/` what the checks read.
 - French by default: `SITE_LOCALE` fr-CA, the page's `lang`, the menu, the 404 page and the skip link.
 - OP System's look until the client's (Oct 17, 2026; Sam: « aucune trace de Lumos, à part pour donner le crédit… tout
   devrait être relié à OP System et au langage graphique de l'app »): the tokens of `src/styles/base.css` are the
@@ -79,7 +81,7 @@ What this repository adds to Lumos for Astro (Oct 17, 2026; Sam: « allons-y ave
   stays as it is.
 - `scripts/favicon.mjs` (`npm run favicon`, and `prebuild` for what is missing): `public/favicon.svg`, `favicon.ico`,
   `apple-touch-icon.png` and `og-image.jpg` from the logo's mark (`src/assets/logo/mark.svg`), or from the site's
-  initial on `brandColor` until there is one (CLAUDE.md, Logo and favicon).
+  initial on `brandColor` until there is one (docs/look.md).
 
 ## Start a site
 
@@ -97,7 +99,7 @@ From OP System, the first way (Oct 17, 2026; Sam):
    comes from package.json's `build` script (`npm run build`); with no `deploy` script, the deploy command is
    `npx wrangler deploy`; a branch other than `main` is built with `npx wrangler preview`.
 2. OP System links the site to the project and asks the person's Claude to prepare it (a request of kind `setup`:
-   CLAUDE.md, OP System): op.config.json and src/consts.ts filled in, the Worker's name checked, `npm ci`,
+   docs/op-system.md): op.config.json and src/consts.ts filled in, the Worker's name checked, `npm ci`,
    `npm run check`, `npm run build`, a commit on `main`, then the branch `review` from it, both pushed. Its preview
    (`review-<name>.<account>.workers.dev`) is the address OP System shows. If the push of `review` gives no preview,
    turn on « Enable Preview Builds » in the Worker's Settings › Build › Branch control.
@@ -125,6 +127,7 @@ By hand:
 | `npm run preview` | Serves the built site                            |
 | `npm run check`   | Type-checks every `.astro` file                  |
 | `npm run format`  | Formats the project with Prettier                |
+| `npm run system`  | Writes `src/styles/base.css` from `system/site.json` (`--check`: says whether it is up to date) |
 | `npm run shot`    | Full-page PNGs of built pages, in `shots/` (`--loader`: the loading screen frame by frame) |
 | `npm run rules`   | The rules a site holds to stay one system, checked on its sources; every build runs it |
 | `npm run measure` | A page measured against its design, element by element (`review/README.md`) |

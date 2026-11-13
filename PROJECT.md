@@ -2,6 +2,23 @@
 
 One line per decision: the date, who asked, what was decided and why. The newest at the top.
 
+- 2026-11-12, Sam (20:06, « GO! lance ca! », the rest of the starter's update he had approved in the review of the
+  process): the system is one file. `system/site.json` holds every value and where it comes from, `npm run system`
+  writes `src/styles/base.css` from it (system/README.md), and `npm run rules` fails on a base.css that is not what
+  the file gives. Tranter and Curveball each had a generator of their own; this one does both scales (Lumos's one
+  fluid line, and two segments for a site drawn at one computer width: checked against Tranter's values on five
+  tokens). The starter's base.css, generated, is line for line the one written by hand but for the motion block.
+  Motion is named once, as OP's skill op-motion names it, the same on every site: `--faster-duration` (150 ms),
+  `--hover-duration` (250, was 140), `--open-duration` (450, was 240), `--base-duration` (800), `--slow-duration`
+  (1200); `--ease-out`, `--ease-arrive`, `--ease-travel`, `--ease-leave`. The starter's own components now answer on
+  `--ease-out`, a page leaves in 450 ms and arrives in 800 (were 320 and 560); `--ease-smooth`, `--ease-osmo` and
+  `--ease-rebound` stay for the components that name them. Compared before and after: the 4 pages' HTML, 8 pictures
+  and 3 presses the same (a duration does not show in a still picture: the hovers were not looked at).
+- 2026-11-12, Sam (same ask): CLAUDE.md is short (99 lines, from 345) and opens on what a site has of its own. The
+  machinery moved, word for word, to docs/ (op-system, content, finishes, look, redo, security, checks), each read
+  when the work touches it; CLAUDE.md says which. Not done: the windows kept in a `<template>` until they open
+  (Sani's, Nov 12) stay Sani's, since the starter's Modal is Lumos's own and no second site needs them yet.
+
 - 2026-11-12, Sam (19:12, « peux tu update le starter? », after the review of how Tranter, Curveball, Sani and
   manœuvre were built: OP's rewritten skills name checks that lived only in Tranter's repository, as Python written
   that night): every site made from the starter has four checks. `npm run rules` (the rules of one system, on the

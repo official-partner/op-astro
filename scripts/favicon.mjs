@@ -5,7 +5,7 @@
 //   public/og-image.jpg          1200 × 630, the mark on OP System's canvas, until the site has its own
 //
 // The mark is src/assets/logo/mark.svg when the site has one: a square of the brand's main colour with the logo's
-// first letter on it, its own path cut out of the logo (CLAUDE.md, Logo and favicon). Until then it is the site's
+// first letter on it, its own path cut out of the logo (docs/look.md). Until then it is the site's
 // initial (SITE_NAME, src/consts.ts) on op.config.json's brandColor (OP's ink by default), the letter drawn in strokes
 // as OP System draws its own mark (a ring, a stem and a bowl, 3 of 32 thick), so no font is needed to draw it.
 //

@@ -1,0 +1,134 @@
+/* Reset & base */
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+  > main {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+a:not([class]) {
+  text-decoration: underline;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+img,
+video {
+  width: 100%;
+  object-fit: cover;
+}
+
+img {
+  height: auto;
+  overflow: clip;
+  user-select: none;
+}
+
+button {
+  background-color: transparent;
+  text-align: inherit;
+  padding: 0;
+  border: 0;
+}
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+  list-style-type: "";
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+label {
+  font-weight: inherit;
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--mono-family);
+  font-size: 0.875em;
+}
+
+select:has(option[value=""]:checked) {
+  color: color-mix(in lab, currentcolor 60%, transparent);
+}
+
+:target {
+  scroll-margin-block: 2rem;
+}
+
+:focus-visible {
+  outline-color: var(--focus);
+  outline-offset: var(--focus-offset);
+  outline-width: var(--focus-width);
+  outline-style: solid;
+}
+
+::selection {
+  background-color: var(--selection-background);
+  color: var(--selection-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

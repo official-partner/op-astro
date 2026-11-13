@@ -5,6 +5,13 @@ This repository is a website built by a studio with Lumos for Astro and reviewed
 (README.md, Start a site). The site's own decisions are in PROJECT.md: search it before changing anything it may
 cover. How to build with Lumos: AGENTS.md, below.
 
+## This site
+- The starter has nothing of its own. A site writes here, in a few lines, what only it has: its client and its
+  language; the design it is built from (the Figma's file, its frames, the width it is drawn at); its system (the
+  scale of system/site.json, the rails of its grid, its role tokens); the pages that have a target (review/data/);
+  what is turned on (the loading screen, the transitions, the smooth scroll); what its checks must hold
+  (« l'accueil : 92 sur 92 dans la cible »). The system in prose is DESIGN.md, the decisions PROJECT.md.
+
 ## Working here
 - Answer in the studio's language (French at Official Partner). Code, comments and the docs are in English; the site's
   copy is in the client's language.
@@ -16,329 +23,76 @@ cover. How to build with Lumos: AGENTS.md, below.
 - Log every decision in PROJECT.md with the date and who asked.
 - Grep a long file (PROJECT.md, README.md, base.css, a large component) before reading it whole; read the part the
   change touches.
-- Craft: design and motion follow OP's craft, the Craft section of the OP System connector's guides and
-  its guides `direction` and `critique` (`get_guide`), or OP's skills op-design-direction, op-motion and op-critique
-  when the session has them. Anything that builds or changes a page, a section or a component follows it; a new page
-  gets a critique pass (`get_guide("critique")`) before the team sees it.
+- Craft: OP's skills, read whole through the OP System connector (`get_skill`) before the step they cover:
+  op-web-system (starting a site, building a page, changing the system), op-global-classes (the first component, a
+  look seen a second time), op-corrections (any change asked on a built site), op-design-direction (a direction, a
+  new page), op-motion (anything that moves), op-site-js (a script), op-critique (before the team sees work; a new
+  page gets its critique pass first).
 
 ## Branches: review, then live
 - `main` is the live site. Cloudflare builds and deploys it on every push: never push work to `main` directly.
-- `review` is what the team and the client see in OP System. Cloudflare builds it at its own address
-  (`review-<name>.<account>.workers.dev`, `<name>` being `name` in wrangler.jsonc). Work goes there: on `review`, or on
-  a branch of its own merged into `review`.
-- `review` goes to `main` (the site goes live, or a change reaches the live site) only when someone asks in so many
-  words: « publie », « mets en ligne », « publish ». The team's « Mettre en ligne » in OP System is that ask: it comes
-  from the queue as a request of kind `publish` (a change reaches the live site) or `launch` (the site goes live).
-- OP System's « Mettre en ligne » does it itself, through its GitHub App, when the App is installed on this
-  repository: `main` moved to the version the team saw on the staging, a fast-forward only; the launch writes
-  `"domain"` and `"live": true` in op.config.json on `review` first. No request reaches Claude then.
-- A request of kind `publish` or `launch` means the App could not: do it as the OP System connector's
-  `get_guide("astro")` says (Live), the one source of these steps: the commits only (no clone, no npm, no build), the
-  version the request names (`versions.review`), a fast-forward only, never forced; if `main` has a commit `review`
-  lacks, stop, change nothing and say so in plain words. Then `add_journal`, one `reply` in one sentence, `finish_work`.
-  Cloudflare builds `main` in about a minute and OP System checks the site itself: do not wait for it.
-- Before the launch, op.config.json says `"live": false` and every build tells search engines to stay out
-  (`dist/_headers`, noindex); `SITE_URL` (src/consts.ts) reads op.config.json's `domain`, a stand-in until it has one.
+- `review` is what the team and the client see in OP System. Work goes there: on `review`, or on a branch of its own
+  merged into `review`.
+- `review` goes to `main` only when someone asks in so many words (« publie », « mets en ligne », « publish », or the
+  team's « Mettre en ligne » in OP System, which comes as a request of kind `publish` or `launch`).
+- How a publish, a launch, a request from the queue and a new site's setup are done: docs/op-system.md, before any of
+  them.
 
-## OP System
-- After each build, `integrations/op-system.mjs` writes `dist/site.json`: the project (op.config.json), the pages (their
-  title and description, from the built HTML), the screens, the Web System (the tokens of `src/styles/base.css`, a
-  fluid value as its two ends, at `--viewport-min` and `--viewport-max`; the `.text-style-*` classes) and the themes
-  (their roles, as colour variables). OP System reads
-  it through its proxy; it adds its own bridge to the pages, never this site. The build's last line says what it found
-  (`site.json: N pages, N variables, N themes`): check it after a change to the pages or the tokens.
-- A new page: a file in `src/pages/`, its title and description given to the layout. It shows in OP System at the next
-  build of `review`. A page kept out of search engines: `NOINDEX_ROUTES` in src/consts.ts. The components page
-  (`composantes`) and the team's own pages (op.config.json `systemPages`, « * » for any characters: a test page,
-  a style sheet) are the system's: OP System shows them under Système. Keep those out of search engines too.
-- A new token: in `src/styles/base.css`, as Lumos names them (`--x-min` and `--x-max` for a fluid one, a hex for a
-  colour in `:root`, a theme's roles in its `.theme-*` class). Edits made in OP System's Variables come back as
-  requests: change the token here, never `dist/`.
-- Requests from OP System's queue come through the OP System connector: read `get_guide("queue")` and follow it. Here
-  that means: `git checkout review && git pull --rebase`, the change in `src/`, `npm run check` and `npm run build`
-  (both clean, the site.json line as expected), the pages looked at (Check what you changed), a line in PROJECT.md,
-  commit, `git push` (Cloudflare builds `review` in about a minute), then `add_journal` for each change,
-  `settle_comment` for each comment, one `reply` per request, and `finish_work` with `published: true`. Never `main`
-  from the queue, except a request of kind `publish` or `launch` (Branches, above).
-- A request of kind `setup` prepares a site OP System just made (« Un nouveau site »: Cloudflare's Deploy button copied
-  this starter into the studio's GitHub, made the Worker and wrote its name in wrangler.jsonc). On `main`:
-  op.config.json (`id`, `name`, `client`, `studio`, `description`), src/consts.ts (`SITE_NAME`, `SITE_DESCRIPTION`,
-  `SITE_LOCALE`), `name` in wrangler.jsonc checked against the Worker's (set to it if it differs); `npm ci`, `npm run
-  check`, `npm run build`, commit, push `main`. Then the branch `review` from `main`, pushed: its preview,
-  `review-<worker>.<account>.workers.dev`, is what OP System shows. The only push to `main` that is not a publish.
+## The system
+- `system/site.json` holds the site's system and where each value comes from; `npm run system` writes
+  `src/styles/base.css` from it. base.css is never edited by hand. A change of the system (a token, a theme, a text
+  style, a duration) is a change of that file (system/README.md), also when it comes from OP System's Variables.
+- New CSS is the last resort (LUMOS.md, New style checklist). A text style lives in the system only, never in a
+  component. A place across the grid is a rail (a named line of the site grid) and a span, never a column number.
+- A treatment several of the site's components share (two declarations or more seen in three places) is one of the
+  project's global classes, in `src/styles/project.css`, named for its job (no `_`, no `u-`, no `is-`), a one-line comment above it, its values
+  from tokens; never a copy of the same rules in two components, never an edit of Lumos's `patterns.css` or
+  `utilities.css`. Log each in PROJECT.md and DESIGN.md.
+- Motion names OP's durations and curves (`--hover-duration`, `--ease-out`...), never a raw one.
 
-## Content: the collections, Contenu and the live staging
-- A site's editable content is its Astro content collections: one folder per collection in `src/content/<name>/`, one
-  file per item named by its slug (the item's id), JSON (Markdown when the item has a text of its own). OP System's
-  « Contenu » edits them, and the team creates collections and fields there too: the app writes
-  `src/content.config.ts` and the folders itself, through OP's GitHub App, on `review`.
-- A collection only where a CMS is needed (Sam, Oct 28): items with a page of their own (a template: a blog's
-  articles, a project's case study) or the same items listed on several pages and managed as data (questions shown on
-  two pages). Everything else is a block of its page, never a collection: a section's cards, offers, values, prices,
-  partners, logos, a team on one page. A block's list is written in the page or in a data file (`src/data/`) and
-  marked for OP System's Modifier: `data-op-list="<name>"`, `data-op-source` the file it is written in (`page`, or
-  `src/data/offers.ts`), `data-op-item` on each item (op-system's `docs/bridge.md`, Lists); the team and the client
-  duplicate, delete and move its items on the canvas, as a Webflow component's slots, with no collection to create
-  or link. Before adding a collection, say which page or pages show its items and why they need one; when in doubt,
-  a block. A site redone from Webflow brings its CMS collections that have a template page as collections, and its
-  static lists as blocks.
-- `src/content.config.ts` keeps the simple form the app reads and writes: one `defineCollection` per collection with a
-  `glob()` loader, its `schema` a `z.object({ ... })` (or `({ image }) => z.object(...)` when it has a picture) with a
-  `.describe("…")` on each field and on the object, `export const collections = { ... }`. Names are code (English
-  camelCase), labels are words for people in the client's language. Nothing else goes in it: no helper, no exported
-  schema, no import but `astro:content`, `astro/loaders`, `astro/zod`. The live machinery lives elsewhere and picks a
-  collection up by itself.
-- Fields: every one optional (`.optional()`) but the name (`name`, `title` or `question`: the item's title), and the
-  slug is the file's name, so an item with a page always has both. `visible: z.boolean().default(true)` hides an item
-  everywhere; `order: z.number().optional()` sorts them (Contenu writes 1, 2, 3; an item without one comes last).
-- A page reads a collection through `getItems("<name>")` and `getItem("<name>", id)` (`src/utils/content.ts`), never
-  `getCollection`: the visible items, in their order, `{ id, data }` the same way on every build. A picture field gives
-  a `Picture`: pass it to `<Img {...img(data.photo)} alt="…" />`. A collection added to content.config.ts works by its
-  name at once, on the files and on the staging, with nothing written anywhere else.
-- A field shown in a page: `data-op-field="<field>"` on the element that holds its text; a field that may be empty (all
-  but the name) inside `<When field="<field>" value={data.<field>} as="p" class="…">` (`src/components/system/When.astro`),
-  which renders the element only when the value is there (a text not blank, a list not empty, a picture, a number, true)
-  and marks it `data-op-when="<field>"` for OP's bridge; its `else` slot (marked `data-op-empty`) holds what shows in
-  its place, when the layout needs one (the initials of `CardTeam` without a photo). A list of items is marked
-  `data-op-list="<name>" data-op-source="astro:<name>"` and each item `data-op-item={id}` (op-system's `docs/bridge.md`, Lists).
-  `src/components/content/CardTeam.astro` on `src/pages/test-contenu.astro` is the sample: a new site keeps it as the
-  model, or removes the `team` collection, its files, its pictures, the card, the page and its entries in consts.ts and
-  op.config.json together.
-- The staging is live: Cloudflare's build of `review` (`WORKERS_CI_BRANCH`, or `OP_LIVE=1` by hand) renders every page
-  but the 404 on demand in the Worker (`@astrojs/cloudflare` 14.3.4, pinned for Astro 7.3; `integrations/op-live.mjs`),
-  and `getItems` reads OP's working copy of each collection (`src/live.config.ts`, made from content.config.ts's own
-  schemas; `src/utils/content-loader.ts`): `GET <OP_CONTENT_URL>?p=<project>&c=<collection>` with
-  `Authorization: Bearer <OP_CONTENT_TOKEN>`, kept 2 s (`OP_CONTENT_TTL`), read again at once when the request names a
-  newer version (`?op-v=<version>` or `x-op-content-version`, OP System after a save). An error, a timeout (1.5 s) or no
-  `OP_CONTENT_URL`: the committed files (a failure is remembered 5 s). An item the schema refuses: its committed file.
-  A picture not committed yet is a URL in OP's storage, shown only from a host of `OP_STORAGE_ORIGINS` (build time,
-  default `https://*.supabase.co`). `main` and every other branch build static, as before.
-- What the staging reads is what is published (OP System, Oct 28): every change made in OP System's Contenu is a
-  draft until someone presses « Publier » there, so the client's link never shows one. OP System's own frame shows the
-  drafts: its proxy asks for each page with a header `x-op-draft` (a short proof OP signs for the project and the
-  person looking); `src/middleware.ts` renders the page within it (`src/utils/draft.ts`, AsyncLocalStorage: the
-  `nodejs_als` flag in wrangler.jsonc) and the loader hands it on with its read, keeping that answer apart, keyed by
-  the proof. OP gives the drafts only for a good proof of someone who may change the content. Never read the header
-  anywhere else, never put it in a page, a link or a cookie; a page that carries drafts is `no-store` like every page
-  of the staging.
-- The Worker's secrets on Cloudflare (Settings › Variables and Secrets, type Secret; they apply to the review
-  preview): `OP_CONTENT_URL` (OP's content address) and `OP_CONTENT_TOKEN` (the project's read token, given by OP
-  System). Optional variables: `OP_PROJECT` (default op.config.json's `id`), `OP_CONTENT_TTL` (ms). Never in the
-  repository, op.config.json or `src/`. The staging's pages carry the static files' headers (noindex always, the secure
-  headers) and `Cache-Control: private, no-store` (src/middleware.ts).
-- Check a change to this machinery: `npm run check`, `npm run build` (static: the pages as before) and `OP_LIVE=1 npm
-  run build` (the Worker in `dist/server`, site.json read from a static build in `.op-static`); to see the staging
-  locally, `npx wrangler dev` after the live build, with `--var OP_CONTENT_URL:<a stand-in>`.
+## Every component
+- Its script runs in `onPage((signal) => { … })` (`src/utils/page.ts`), never at the top level: with the page
+  transitions a module runs once per visit, not once per page (docs/finishes.md).
+- A component made for the site (`src/components/content/`, `section/`) gets its sample on the components page
+  (`src/pages/composantes.astro`) in the same commit, with the client's copy or a plausible stand-in, never lorem
+  ipsum: `<ComponentSample file="content/HeroBlog.astro" note="…"><HeroBlog … /></ComponentSample>`.
+- Content lives in files. A collection only where a CMS is needed (items with a page of their own, or the same items
+  on several pages); everything else is a block of its page, its list marked for OP System's Modifier
+  (docs/content.md).
+- One place per fact: an address, a phone, an email, an outside link is written in one data file every page reads.
+- Never commit a key or put one in `src/`, `public/` or op.config.json (docs/security.md).
 
-## The look, the logo and the favicon
-- The starter wears OP System's look (README.md, What this repository adds): a new site replaces the swatches and the
-  themes of `src/styles/base.css` with the client's (same token names), and `src/pages/index.astro` with its own home
-  page (then `src/components/system/StarterHome.astro` goes). Nothing of Lumos's own look comes back: no Lumos logo,
-  colour or showcase page; its credit stays in README.md and LICENSE only.
-- The client's logo goes in `src/assets/logo/logo.svg`: the nav and the footer show it in place of the site's name.
-- Logo and favicon: when a client's logo is added, draw `src/assets/logo/mark.svg` from the logo's first letter: that
-  letter's own path cut out of the logo's SVG (never a letter set in a font), centred on a square of the brand's main
-  colour (a `viewBox` square, the colour edge to edge, the letter about 42 % of the square's height, as OP System's own
-  mark: 13.5 of 32), in the colour the logo uses on that ground. Set `brandColor` in op.config.json to the same colour,
-  run `npm run favicon` (it writes `public/favicon.svg`, `favicon.ico`, `apple-touch-icon.png` and, unless one was
-  made by hand, `og-image.jpg`), look at the result, commit them with the mark. A site with no logo yet: its initial
-  (SITE_NAME) on OP's ink, which `prebuild` keeps up to date when the name or `brandColor` changes. A favicon or a
-  social image made by hand is never replaced by the build.
-- A site redone keeps the current site's icons (Oct 27, Sam): at a « same » or « redo » project's setup OP System
-  copies them from the export into `public/` on `review` (favicon.ico, apple-touch-icon.png, favicon.svg when the site
-  has one, else the starter's favicon.svg goes) and writes `"favicon": "site"` in op.config.json; `scripts/favicon.mjs`
-  then never writes those three files, and BaseHead links favicon.svg only when it is there. Webflow's default « W » is
-  never taken: the starter's stays. site.json says where the favicon comes from (`faviconFrom`: site, generated, hand).
-
-## The current site's SEO and addresses (a redo)
-- An old SEO value is the client's content, kept word for word (read_export part seo, OP System's connector): a page's
-  title as its layout's `seoTitle` (the whole title, the site's name not added), its description; an item's in its
-  collection's fields, written in its schema like any other (content.config.ts takes no helper: Content, above),
-  exactly `seoTitle: z.string().optional().describe("Titre pour Google")`, `seoDescription: z.string().optional()
-  .describe("Description pour Google")`, `ogImage: image().optional().describe("Image de partage")` (the names
-  Contenu shows under « Pour Google »), in a collection whose items have a page; its page gives them to its layout. A value plainly bad is told to the team as a decision,
-  never rewritten silently.
-- Every old address stays: one that changes gets a 301 in op.config.json `redirects` (`{ "/old": "/new" }`); the build
-  writes them in `dist/_redirects` after `public/_redirects`, and warns on a redirect to no page. The current site's
-  addresses (part seo, `addresses`) go in op.config.json `addresses`: the build warns on each that is neither a page
-  nor redirected.
-- The verification metas (Google Search Console and the like) go in op.config.json `verification`
-  (`{ "google-site-verification": "…" }`): BaseHead writes them on every page.
-- Done without asking, and listed: one h1 per page, the language declared, the sitemap and robots.txt (the starter's),
-  the canonical address (BaseHead), the share tags from the fields, basic structured data (the person or the company,
-  the site), the site out of search engines until its launch (`live: false`).
-
-## The finishing touches: loading screen, page transitions, smooth scroll
-- All three are off in the starter, each turned on per project. Each is one key of op.config.json, `false` or a
-  preset, read by `src/utils/finishes.ts`:
-  - `"loader"`: `"logo"` (the default: the site's logo revealed on the brand's ground, below), `"mark"` (the site's
-    square mark on the page's ground), `"counter"` (a count to 100 at the foot of the screen, a line filling under
-    it), `"curtain"` (the brand's ground lifting away whole), `"custom"`; `true` is `"logo"`
-    (src/components/system/Loader.astro);
-  - `"transition"`: `"fade"` (the page fades out, the next fades in), `"slide"` (the page lifts away a little, the
-    next rises into place), `"curtain"` (the brand's ground rises over the page while the next one loads, then lifts
-    away), `"custom"`; the older `"transitions": true` is `"slide"` (src/components/system/PageTransitions.astro, on
-    Astro's `<ClientRouter />`: a page change no longer reloads the page; never Barba, which would fight Astro's router);
-  - `"smoothScroll"`: `"light"`, `"medium"` or `"strong"` (how long the page glides after the wheel: Lenis's lerp,
-    0.16, 0.1 and 0.065), `true` is `"medium"`; `"smoothScrollTouch": true` smooths a touch screen too, off by default
-    (src/components/system/SmoothScroll.astro, Lenis, MIT).
-  The next build carries them and site.json announces them (`motion`: each one's preset, and the presets the site
-  has). OP System's « Expérience » (Web, under Système) shows them, replays them and asks Claude for a change. Turn
-  one on only when the team asks for it, and log it in PROJECT.md.
-- The logo loader (Sam, Oct 27: « prends le logo du site en SVG et anime-le », never the favicon's square mark):
-  - the logo is `src/assets/logo/logo.svg`, inlined by Loader.astro, never `mark.svg` nor the favicon. Draw it in
-    `fill="currentColor"` (or `stroke`) wherever it has the one colour, so it takes the ground's text colour; a logo of
-    several colours keeps them, and its ground is then one they read on. No logo yet: the site's name rises instead.
-  - the ground is a theme of base.css: op.config.json `"loaderTheme"` names it (the theme that carries the logo on the
-    brand's colour, the one the nav or the footer uses on that ground), else `.theme-brand`, else the theme whose
-    `--background` is the swatch of `brandColor`, else `.theme-dark`. Never the page's own ground by default: a white
-    cover over a dark hero flashes.
-  - the reveal: each shape of the SVG (`path`, `rect`, `polygon`...) is a part that rises into place through the
-    logo's own box (a mask, never a fade), left to right by where it starts, `--loader-duration` x 1.2 on
-    `--loader-ease`, 60 ms apart (the whole stagger 360 ms at most, however many shapes). It holds 150 ms once the last
-    part is in, and until the page is ready; then the parts rise out and the ground lifts away whole
-    (`--loader-duration` x 1.2), the page already in place under it: nothing under the cover moves. Its size is
-    `--loader-logo-width` (default `clamp(8rem, 6rem + 10vw, 14rem)`), set in base.css when the logo needs another.
-  - a logo whose shapes are many small pieces (a pictogram, outlined letters with counters) still reads: the parts are
-    ordered by their first point, and the stagger shrinks to fit. A logo that should move otherwise (drawn as a line,
-    its symbol before its name) is a `"custom"` loader, the team's words in the request.
-- The loading screen covers the page from its first paint (its styles and a short script inline in the head, before
-  the stylesheets), holds until the fonts are loaded and the first image in view and shown is decoded (an image in a
-  closed menu is not waited for; 600 ms at least, 2.5 s at most: `MIN` and `MAX` in its script; the logo's reveal ends
-  first; the counter reaches 100 then), then leaves. Once per tab session; `?op-loader`
-  in the address plays it every time (OP System's replay). With reduced motion it does not play, unless asked with
-  `?op-loader` (then it cuts). Without JS it never shows; if its script fails, its CSS takes it away after 3.5 s. While
-  it covers the page, `<html>` has `data-loader="play"`, then `"leave"` as it goes: a page's opening waits for
-  `op:loader-leave` on `document` when that attribute says `play`.
-- The transitions: the nav holds still (`view-transition-name: site-nav`); with reduced motion fade and slide become a
-  short crossfade and the curtain a cut; back and forward cut with the curtain (op-motion: they can be instant). The
-  curtain keeps its element across pages (`transition:persist`) and swaps the page under it, at its top.
-- The smooth scroll: never with reduced motion (it stops when the setting changes), and on a touch screen Lenis is not
-  even loaded unless `smoothScrollTouch` says so; the browser's own scroll stays underneath (find in page, anchors,
-  the keyboard). It starts once per visit and lives across pages with the transitions. A script that needs it waits
-  for it with `onLenis((lenis) => …)` (`src/utils/smooth-scroll.ts`), never a global; a site that adds GSAP's
-  ScrollTrigger calls `scrollTriggerWithLenis(gsap, ScrollTrigger)` once where it registers the plugin (GSAP from a CDN,
-  `window.gsap` and `window.ScrollTrigger`, is found on its own). OP System's « Voir » sends `op:glide` on `document`:
-  the page glides most of a screen down at the site's intensity.
-- A custom one, made from the team's words (a request from « Expérience », « Demander à Claude »), follows OP's motion
-  skill (`get_skill("op-motion")`: one job, transform and opacity, the named durations and eases of base.css, reduced
-  motion, no layout shift) and lives in its own file, never in place of the presets:
-  - `"loader": "custom"`: `src/components/system/LoaderCustom.astro`, the cover's content (inside `.loader_wrap.custom`,
-    whose timing and states stay Loader.astro's), its styles in `<style is:global>` under `@layer components`, keyed on
-    `html[data-loader="play"]` and `html[data-loader="leave"]`; its exit as CSS transitions or Web Animations on the
-    cover's elements (the cover goes once they end, 2 s at most), started by `data-loader="leave"` or
-    `op:loader-leave`; the site's logo from `src/assets/logo/logo.svg` when it shows one, never the favicon;
-  - `"transition": "custom"`: `src/components/system/TransitionCustom.astro`, its styles scoped to
-    `html[data-page-transition="custom"]` (`::view-transition-old(root)`, `::view-transition-new(root)`, the page
-    tokens), and a script on Astro's router events when it covers the page (the curtain's way:
-    `astro:before-preparation` and its `loader`, `astro:after-swap`), with a crossfade or a cut under reduced motion.
-  Without its file a custom one falls back to the first preset (logo, slide). The timing of all of them is in
-  `src/styles/base.css` (`--loader-duration`, `--loader-ease`, `--page-leave-duration`, `--page-leave-ease`,
-  `--page-arrive-duration`, `--page-arrive-ease`): they show in OP System's Variables, under Mouvement.
-- Check one: `npm run build` (its site.json `motion`), `npm run shot` on the home and another page (reduced motion: the
-  page as it ends), and the motion itself frame by frame without reduced motion. The loader: `npm run shot -- / <a
-  page> 1440 390 --loader` (every painted frame in `shots/loader/<page>-<width>/`, a contact sheet
-  `shots/loader-<page>-<width>.png`, and its timeline: when it covers, on which ground, when it leaves and is gone, the
-  layout shift). Read the sheets: the ground from the first painted frame (no white flash), the logo whole and sharp
-  at its size, every part in before it leaves, it leaves well before 2.5 s on a fast page, the page under it already
-  in place when it lifts (nothing moves after). The transition: a link followed, frame by frame. Nothing blocking
-  the first paint.
-- With the transitions on, a module script runs once per visit, not once per page. A component's script goes in
-  `onPage((signal) => { … })` (`src/utils/page.ts`), never at the top level or on `DOMContentLoaded`; `signal` goes on
-  its listeners to `document`, `window` or a media query, and stops its timers and observers. Every component's script
-  does it already. After a page change, focus goes to `<main>` and Astro announces the page's title. A link that must
-  load the page in full: `data-astro-reload`.
-- OP System's review points at an element in a slide with `op:reveal` (op-system's `docs/bridge.md`): the starter's
-  Slider goes to the slide that holds it (`src/utils/op-reveal.ts`). A component of the site's that hides content (a
-  carousel, custom tabs) does the same on its own root.
-
-## The components page
-- `src/pages/composantes.astro` (« Composantes », under Système in OP System) shows the components made for this site,
-  never Lumos's base ones: every file of `src/components/content/` and `src/components/section/` is listed by
-  itself. Each custom component gets its sample there when it is made, in the same commit:
-  `<ComponentSample file="content/HeroBlog.astro" note="…"><HeroBlog …sample props /></ComponentSample>` inside
-  `<ComponentList>`, with the client's copy or a plausible stand-in, never lorem ipsum. A component without one shows
-  under « Sans exemple ».
-
-## Security (every build, `integrations/op-system.mjs`)
-- The build fails when `dist/` holds a secret key (a private key; an AWS, GitHub, Stripe live, Slack, OpenAI,
-  Anthropic, Resend or Supabase secret key; a service_role JWT), naming the file and the kind, never the value:
-  Cloudflare then deploys nothing. Never commit a key or put one in `src/`, `public/` or op.config.json: a key the site
-  needs lives in Cloudflare (the Worker's Variables and Secrets), read by server code only. A Google API key only warns
-  (a browser key, public by design: restricted to the site's domain).
-- `dist/_headers` gives every file nosniff, a referrer policy, no camera, microphone or location, frames from the same
-  site only and HSTS for a year (no subdomains). A page that needs one otherwise (a map asking for the location, a site
-  framed elsewhere): that header in `public/_headers`, which the build then leaves to it. OP System's proxy drops the
-  frame and HSTS headers for the review.
-
-## Build and check
-- `npm ci` once, then `npm run dev` (http://localhost:4321), `npm run check` (types), `npm run build` (`dist/` and its
-  site.json; it runs the rules: The checks, below). Node 22.19 or newer.
-- A page or a component changed: look at it (Check what you changed, below).
-- Content lives in files by default: in the page, or in an Astro content collection (`src/content/`, Content above)
-  when people edit it in Contenu. A CMS (Sanity)
-  only when the client must edit the site alone, decided with the team and logged in PROJECT.md.
-
-## Check what you changed
-- `npm run shot -- <page...> [width...]` takes each page at each width as a full-page PNG,
-  `shots/<page>-<width>.png` (git-ignored): `accueil` (or `/`) for the home, another page by its route (`a-propos`,
-  `coachs-fitness`), `404`, or `all`; 1440 and 390 when no width is given. It builds first when `dist/` is older than
-  the sources (`--build` forces it), serves `dist/` itself, asks for reduced motion (the reveals in their final state)
-  and waits for the fonts, the loading screen and every image, whole (Nov 12: a lazy image with `sizes="auto"` was
-  missing from three shots in four). It fails on a page missing from `dist/` or an error in the console, and prints
-  them. About a second a shot. `--parts` adds the page in parts 1800 px high
-  (`<page>-<width>-<n>.png`): a long PNG is shrunk when it is read, its parts are not. `--loader` takes the loading
-  screen instead, frame by frame (The finishing touches, Check one).
-- After a change: the page at the comment's width (else 1440) and at 390, `npm run shot -- coachs-fitness 1300 390`.
-- Which pages, by what changed: a page's own section or copy, that page; a shared component, the nav, the footer, a
-  token or a theme, the home and two other pages that show it, plus `composantes`; the layout (`src/layouts/`,
-  `BaseHead`, the loading screen, the transitions), `404` too.
-- Look at the PNGs (Read them; the parts for a detail) before saying it is done, and say in the reply which pages, at
-  which widths, were looked at.
-- No browser is downloaded: `SHOT_BROWSER` (a Chrome or Chromium executable), else Playwright's browsers already
-  installed (`PLAYWRIGHT_BROWSERS_PATH`: /opt/pw-browsers in Claude's cloud sessions), else Google Chrome. Without any,
-  it says what to install.
-
-## The checks (Nov 12)
-- Four commands close a step (OP's skill op-web-system, Checks). Each prints what it found and exits 1 on a failure:
-  - `npm run rules`: the rules a site holds to stay one system, on its sources. No CSS in a page; no text style
-    outside the system; a place across the grid is a rail and a span, never a column number; no copied block; each
-    global class of project.css used in 3 places, 15 at most, none under a name Lumos uses; no raw px, hex, duration
-    or z-index; no `!important`; no fact (an email, a phone, a postal code, an outside link) written in two files;
-    every component with its sample. It reads project.css and the components made or changed for the site: the
-    starter's library as it came is not the site's to fix.
-  - `npm run measure -- <page>`: each element tied to the design (`data-figma="<node id>"`) against the design
-    corrected by the system, at the design's width: 2 px for a place, 1 px for a text's size. review/README.md says
-    the two files it reads and how a section is a band of the design.
-  - `npm run widths -- <page>`: at nine widths, nothing overflows from 320 px, every page grid (`.site-grid`) sits on
-    the site's margin and every image frame (`.media`) on its columns; on a two-segment scale (`--viewport-min` at
-    1024) every element keeps its place in proportion and the large headings break on the same words.
-  - `npm run compare -- save`, the change, then `npm run compare`: the HTML, the pictures and what every button and
-    link to a place does, before and after a change that must change nothing people see (a clean-up, an upgrade of
-    the starter). Its pictures of what differs are in `.compare/diff/`: look at them.
+## Build, look, check
+- `npm ci` once, then `npm run dev` (http://localhost:4321), `npm run check` (types), `npm run build` (`dist/`, its
+  site.json, and the rules). Node 22.19 or newer.
+- A page or a component changed: look at it. `npm run shot -- <page> <width> 390` (the comment's width, else 1440),
+  then Read the PNGs before saying it is done, and say in the reply which pages, at which widths, were looked at. A
+  shared component, a token or the layout: the home, two other pages that show it and `composantes`.
+- Four checks close a step, each exits 1 on a failure:
+  `npm run rules` (the rules of one system, on the sources; every build runs it and stops on a machine),
+  `npm run measure -- <page>` (each `data-figma` element against the design corrected by the system),
+  `npm run widths -- <page>` (nine widths: overflow, the grid, the image frames, proportion, line breaks),
+  `npm run compare -- save`, the change, `npm run compare` (HTML, pictures and what every button does, before and
+  after a change that must change nothing).
 - Which, by what changed: a component or a style, `rules`; a designed page or a correction on one, `measure` and
-  `widths`; a clean-up, `compare` around it. Say the numbers in the reply (« 92 sur 92 dans la cible, aucune règle
-  brisée ») and what was not run.
-- Every build runs the rules (integrations/op-system.mjs): on a machine it stops on a failure the team has not
-  accepted, so no session pushes without seeing it; on Cloudflare it warns and site.json carries the count
-  (`system.rules`), so the review is never blocked. `npm run shot` and the other checks build whatever the rules say;
-  `OP_RULES=warn npm run build` does too.
-- A failure the team accepts lives in `review/data/rules-baseline.json` with its reason and its date (`npm run rules --
-  --accept` writes today's failures there, on a site that has debt; then each gets its `why`). The list only shrinks:
-  never accept a failure a change just made, fix it in the system.
-- `OP_SITE=<folder> npm run widths -- accueil` looks at another site with this copy of the scripts (a site not brought
-  up to date yet). In op-astro only: after a change to a library component, `npm run rules -- --library`
-  (scripts/lib/library.json holds a fingerprint of every version of the library's files, which is how a site knows
-  the ones it changed).
+  `widths`; a clean-up, `compare` around it. Say the numbers in the reply and what was not run. A failure is fixed in
+  the system; one the team accepts goes in `review/data/rules-baseline.json` with its reason, never one a change just
+  made.
+
+## Read before the work touches it
+| The work | Read |
+| --- | --- |
+| A publish, a launch, a request from the queue, a new site's setup, site.json, a new page | docs/op-system.md |
+| A collection, a field, a list the team edits on the canvas, the live staging | docs/content.md |
+| The loading screen, the page transitions, the smooth scroll, a component's script | docs/finishes.md |
+| The starter's look replaced by a client's, the logo, the favicon | docs/look.md |
+| A site that replaces a current one: its SEO, its addresses | docs/redo.md |
+| A key, a header | docs/security.md |
+| The shots and the four checks, in detail | docs/checks.md |
+| The system file | system/README.md |
+| The design as data, the target, the accepted failures | review/README.md |
 
 ## Lumos
-- New CSS is the last resort (LUMOS.md, New style checklist).
-- A treatment several of the site's components share (two declarations or more seen in three places: the same gap
-  between an image and its caption, a rule with its space) is one of the project's global classes, in
-  `src/styles/project.css` (the patterns layer), named for its job (no `_`, no `u-`, no `is-`), a one-line comment above
-  it, its values from base.css's tokens; never a copy of the same rules in two components, never an edit of Lumos's
-  `patterns.css` or `utilities.css`. OP's skill op-global-classes (`get_skill`) says when and how; site.json's
-  `system.classes` shows each with its uses in OP System's Web System. Log each in PROJECT.md and DESIGN.md.
 - Lumos for Astro is MIT, © 2026 Timothy Ricks (LICENSE): keep LICENSE as it is. An upgrade of Lumos goes through the
   `lumos-upgrade-version` skill.
 

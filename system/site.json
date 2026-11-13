@@ -1,0 +1,359 @@
+{
+  "note": "The site's system, in one file. npm run system writes src/styles/base.css from it: edit here, never base.css. A size, a space or a text style has two ends, at the scale's min and max widths (or three values, phone, tablet and computer, on a two-segment scale). from, job and why say where a value comes from; decisions keeps what the team decided, with its date.",
+  "scale": {
+    "min": 320,
+    "max": 1440
+  },
+  "swatches": {
+    "canvas": "#efefec",
+    "sunken": "#f4f4f1",
+    "surface": "#ffffff",
+    "ink": "#141413",
+    "ink-2": "#1c1c1a",
+    "ink-3": "#252523",
+    "grey-dark": "#5c5c55",
+    "grey-light": "#a3a39d",
+    "accent": "#2e44ff",
+    "accent-light": "#8f97ff",
+    "accent-text": "var(--surface)"
+  },
+  "type": {
+    "primitives": {
+      "primary-family": "-apple-system, BlinkMacSystemFont, \"Helvetica Neue\", Helvetica, Arial, sans-serif",
+      "mono-family": "ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, Consolas, monospace",
+      "primary-regular": "400",
+      "primary-medium": "500",
+      "primary-bold": "700"
+    },
+    "letterSpacing": {
+      "tight": "-0.02em",
+      "normal": "0em"
+    },
+    "lineHeight": {
+      "small": "1",
+      "medium": "1.1",
+      "large": "1.3",
+      "huge": "1.5"
+    },
+    "styles": {
+      "display": {
+        "size": [64, 112],
+        "line-height": "var(--line-height-small)",
+        "letter-spacing": "var(--letter-spacing-tight)",
+        "text-transform": "none",
+        "margin-top": "var(--space-7)",
+        "margin-bottom": "var(--space-6)",
+        "font-family": "var(--primary-family)",
+        "font-weight": "var(--primary-regular)",
+        "text-wrap": "balance"
+      },
+      "h1": {
+        "size": [48, 80],
+        "line-height": "var(--line-height-small)",
+        "letter-spacing": "var(--letter-spacing-tight)",
+        "text-transform": "none",
+        "margin-top": "var(--space-7)",
+        "margin-bottom": "var(--space-6)",
+        "font-family": "var(--primary-family)",
+        "font-weight": "var(--primary-regular)",
+        "text-wrap": "balance"
+      },
+      "h2": {
+        "size": [40, 64],
+        "line-height": "var(--line-height-small)",
+        "letter-spacing": "var(--letter-spacing-tight)",
+        "text-transform": "none",
+        "margin-top": "var(--space-7)",
+        "margin-bottom": "var(--space-5)",
+        "font-family": "var(--primary-family)",
+        "font-weight": "var(--primary-regular)",
+        "text-wrap": "balance"
+      },
+      "h3": {
+        "size": [36, 48],
+        "line-height": "var(--line-height-medium)",
+        "letter-spacing": "var(--letter-spacing-tight)",
+        "text-transform": "none",
+        "margin-top": "var(--space-6)",
+        "margin-bottom": "var(--space-5)",
+        "font-family": "var(--primary-family)",
+        "font-weight": "var(--primary-regular)",
+        "text-wrap": "balance"
+      },
+      "h4": {
+        "size": [28, 32],
+        "line-height": "var(--line-height-medium)",
+        "letter-spacing": "var(--letter-spacing-tight)",
+        "text-transform": "none",
+        "margin-top": "var(--space-6)",
+        "margin-bottom": "var(--space-4)",
+        "font-family": "var(--primary-family)",
+        "font-weight": "var(--primary-regular)",
+        "text-wrap": "balance"
+      },
+      "h5": {
+        "size": [22, 24],
+        "line-height": "var(--line-height-medium)",
+        "letter-spacing": "var(--letter-spacing-tight)",
+        "text-transform": "none",
+        "margin-top": "var(--space-5)",
+        "margin-bottom": "var(--space-4)",
+        "font-family": "var(--primary-family)",
+        "font-weight": "var(--primary-regular)",
+        "text-wrap": "balance"
+      },
+      "h6": {
+        "size": [16, 18],
+        "line-height": "var(--line-height-medium)",
+        "letter-spacing": "var(--letter-spacing-tight)",
+        "text-transform": "none",
+        "margin-top": "var(--space-5)",
+        "margin-bottom": "var(--space-3)",
+        "font-family": "var(--primary-family)",
+        "font-weight": "var(--primary-regular)",
+        "text-wrap": "balance"
+      },
+      "text-large": {
+        "size": [18, 20],
+        "line-height": "var(--line-height-large)",
+        "letter-spacing": "var(--letter-spacing-normal)",
+        "text-transform": "none",
+        "margin-top": "var(--space-4)",
+        "margin-bottom": "var(--space-4)",
+        "font-family": "var(--primary-family)",
+        "font-weight": "var(--primary-regular)",
+        "text-wrap": "pretty"
+      },
+      "text-main": {
+        "size": [16, 18],
+        "line-height": "var(--line-height-huge)",
+        "letter-spacing": "var(--letter-spacing-normal)",
+        "text-transform": "none",
+        "margin-top": "var(--space-4)",
+        "margin-bottom": "var(--space-4)",
+        "font-family": "var(--primary-family)",
+        "font-weight": "var(--primary-regular)",
+        "text-wrap": "pretty"
+      },
+      "text-small": {
+        "size": [14, 16],
+        "line-height": "var(--line-height-huge)",
+        "letter-spacing": "var(--letter-spacing-normal)",
+        "text-transform": "none",
+        "margin-top": "var(--space-4)",
+        "margin-bottom": "var(--space-4)",
+        "font-family": "var(--primary-family)",
+        "font-weight": "var(--primary-regular)",
+        "text-wrap": "pretty"
+      }
+    }
+  },
+  "borders": {
+    "border-width": "0.0625rem",
+    "focus-width": "0.125rem",
+    "focus-offset": "0.1827rem",
+    "focus-offset-inner": "calc(var(--focus-width) * -1)"
+  },
+  "motion": {
+    "durations": {
+      "faster": 150,
+      "hover": 250,
+      "open": 450,
+      "base": 800,
+      "slow": 1200
+    },
+    "eases": {
+      "out": "cubic-bezier(0.23, 1, 0.32, 1)",
+      "arrive": "cubic-bezier(0.625, 0.05, 0, 1)",
+      "travel": "cubic-bezier(0.65, 0, 0.35, 1)",
+      "leave": "cubic-bezier(0.5, 0, 0.75, 0)"
+    },
+    "loader": 600,
+    "pageLeave": 450,
+    "pageArrive": 800,
+    "more": {
+      "ease-smooth": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "ease-osmo": "cubic-bezier(0.625, 0.05, 0, 1)",
+      "ease-rebound": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "radius": {
+    "radius-small": "0.625rem",
+    "radius-main": "0.875rem",
+    "radius-round": "100vw"
+  },
+  "maxWidth": {
+    "max-width-small": "70rem",
+    "max-width-main": "calc(var(--viewport-max) / 16 * 1rem)",
+    "max-width-full": "100%"
+  },
+  "nav": {
+    "nav-height": "3.5rem"
+  },
+  "layout": {
+    "site-margin": [16, 48],
+    "site-gutter": [16, 32],
+    "columns": [4, 8, 12]
+  },
+  "space": {
+    "space-1": [6, 8],
+    "space-2": [10, 12],
+    "space-3": [14, 16],
+    "space-4": [20, 24],
+    "space-5": [28, 32],
+    "space-6": [32, 40],
+    "space-7": [36, 48],
+    "space-8": [40, 64]
+  },
+  "sectionSpace": {
+    "small": [48, 80],
+    "medium": [64, 112],
+    "large": [88, 160],
+    "nav-overlap": [160, 224]
+  },
+  "fluid": {},
+  "roles": {},
+  "groups": [],
+  "themes": [
+    {
+      "selectors": [
+        ":root",
+        ".theme-light",
+        ".theme-dark .theme-invert",
+        ".theme-brand .theme-invert"
+      ],
+      "scheme": "light",
+      "roles": [
+        {
+          "background": "var(--canvas)",
+          "background-2": "var(--sunken)",
+          "background-3": "var(--surface)",
+          "background-skeleton": "color-mix(in lab, currentcolor 6%, transparent)",
+          "text": "var(--ink)",
+          "text-2": "var(--grey-dark)",
+          "border": "color-mix(in lab, var(--text) 9%, transparent)",
+          "heading-accent": "var(--accent)",
+          "focus": "var(--accent)"
+        },
+        {
+          "selection-background": "color-mix(in lab, var(--accent) 16%, transparent)",
+          "selection-text": "var(--text)"
+        },
+        {
+          "button-background": "var(--ink)",
+          "button-border": "var(--button-background)",
+          "button-text": "var(--surface)",
+          "button-background-hover": "color-mix(in lab, var(--ink) 86%, var(--background))",
+          "button-border-hover": "var(--button-background-hover)",
+          "button-text-hover": "var(--button-text)"
+        },
+        {
+          "button-2-background": "var(--surface)",
+          "button-2-border": "var(--border)",
+          "button-2-text": "var(--text)",
+          "button-2-background-hover": "var(--sunken)",
+          "button-2-border-hover": "var(--button-2-border)",
+          "button-2-text-hover": "var(--text)"
+        },
+        {
+          "link-text": "var(--text)",
+          "link-border": "color-mix(in lab, var(--text) 17%, transparent)",
+          "link-text-hover": "var(--text)",
+          "link-border-hover": "var(--text)"
+        }
+      ]
+    },
+    {
+      "selectors": [
+        ".theme-dark",
+        ".theme-light .theme-invert"
+      ],
+      "scheme": "dark",
+      "roles": [
+        {
+          "background": "var(--ink)",
+          "background-2": "var(--ink-2)",
+          "background-3": "var(--ink-3)",
+          "background-skeleton": "color-mix(in lab, currentcolor 8%, transparent)",
+          "text": "var(--canvas)",
+          "text-2": "var(--grey-light)",
+          "border": "color-mix(in lab, var(--text) 10%, transparent)",
+          "heading-accent": "var(--accent-light)",
+          "focus": "var(--accent-light)"
+        },
+        {
+          "selection-background": "color-mix(in lab, var(--accent-light) 28%, transparent)",
+          "selection-text": "var(--text)"
+        },
+        {
+          "button-background": "var(--canvas)",
+          "button-border": "var(--button-background)",
+          "button-text": "var(--ink)",
+          "button-background-hover": "color-mix(in lab, var(--canvas) 86%, var(--background))",
+          "button-border-hover": "var(--button-background-hover)",
+          "button-text-hover": "var(--button-text)"
+        },
+        {
+          "button-2-background": "var(--ink-2)",
+          "button-2-border": "var(--border)",
+          "button-2-text": "var(--text)",
+          "button-2-background-hover": "var(--ink-3)",
+          "button-2-border-hover": "var(--button-2-border)",
+          "button-2-text-hover": "var(--text)"
+        },
+        {
+          "link-text": "var(--text)",
+          "link-border": "color-mix(in lab, var(--text) 18%, transparent)",
+          "link-text-hover": "var(--text)",
+          "link-border-hover": "var(--text)"
+        }
+      ]
+    },
+    {
+      "selectors": [
+        ".theme-brand"
+      ],
+      "scheme": "dark",
+      "roles": [
+        {
+          "background": "var(--accent)",
+          "background-2": "color-mix(in lab, var(--background) 90%, var(--text))",
+          "background-3": "color-mix(in lab, var(--background) 80%, var(--text))",
+          "background-skeleton": "color-mix(in lab, currentcolor 10%, transparent)",
+          "text": "var(--accent-text)",
+          "text-2": "color-mix(in lab, var(--text) 84%, transparent)",
+          "border": "color-mix(in lab, var(--text) 24%, transparent)",
+          "heading-accent": "var(--text)",
+          "focus": "var(--text)"
+        },
+        {
+          "selection-background": "var(--text)",
+          "selection-text": "var(--background)"
+        },
+        {
+          "button-background": "var(--accent-text)",
+          "button-border": "var(--button-background)",
+          "button-text": "var(--accent)",
+          "button-background-hover": "color-mix(in lab, var(--accent-text) 88%, var(--background))",
+          "button-border-hover": "var(--button-background-hover)",
+          "button-text-hover": "var(--button-text)"
+        },
+        {
+          "button-2-background": "transparent",
+          "button-2-border": "var(--border)",
+          "button-2-text": "var(--text)",
+          "button-2-background-hover": "color-mix(in lab, var(--text) 12%, transparent)",
+          "button-2-border-hover": "var(--button-2-border)",
+          "button-2-text-hover": "var(--text)"
+        },
+        {
+          "link-text": "var(--text)",
+          "link-border": "var(--border)",
+          "link-text-hover": "var(--text)",
+          "link-border-hover": "var(--text)"
+        }
+      ]
+    }
+  ],
+  "decisions": []
+}

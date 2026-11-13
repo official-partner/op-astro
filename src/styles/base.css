@@ -36,23 +36,29 @@
   --focus-offset: 0.1827rem;
   --focus-offset-inner: calc(var(--focus-width) * -1);
 
-  /* Hover motion */
-  --hover-duration: 140ms;
-  --hover-ease: var(--ease-smooth);
+  /* Motion: OP's named durations and curves, the same on every site (OP's skill op-motion). What answers the
+     person (a hover, a press, a menu) is on the out curve; what is watched (a heading, a reveal, a page) on the
+     arrive curve. A component names one of these, never a raw duration or curve. */
+  --faster-duration: 150ms;
+  --hover-duration: 250ms;
+  --open-duration: 450ms;
+  --base-duration: 800ms;
+  --slow-duration: 1200ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-arrive: cubic-bezier(0.625, 0.05, 0, 1);
+  --ease-travel: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-leave: cubic-bezier(0.5, 0, 0.75, 0);
 
-  /* Opening motion */
-  --open-duration: 240ms;
-  --open-ease: var(--ease-smooth);
-
-  /* Page motion: the loading screen leaving, a page leaving and the next one arriving */
+  /* What the starter's own components read: a hover, an opening, the loading screen, a page leaving and the next
+     one arriving */
+  --hover-ease: var(--ease-out);
+  --open-ease: var(--ease-out);
   --loader-duration: 600ms;
-  --loader-ease: var(--ease-osmo);
-  --page-leave-duration: 320ms;
-  --page-leave-ease: var(--ease-smooth);
-  --page-arrive-duration: 560ms;
-  --page-arrive-ease: var(--ease-osmo);
-
-  /* Eases */
+  --loader-ease: var(--ease-arrive);
+  --page-leave-duration: 450ms;
+  --page-leave-ease: var(--ease-out);
+  --page-arrive-duration: 800ms;
+  --page-arrive-ease: var(--ease-arrive);
   --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-osmo: cubic-bezier(0.625, 0.05, 0, 1);
   --ease-rebound: cubic-bezier(0.34, 1.56, 0.64, 1);

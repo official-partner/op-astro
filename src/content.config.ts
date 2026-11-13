@@ -6,7 +6,7 @@ import { z } from "astro/zod";
    collection or a field): one file per item in src/content/<collection>/, named by its slug. Names are code
    (English camelCase); each .describe() is the label people see, in the client's language. Every field is optional
    but the name; `visible` hides an item everywhere, `order` sorts them (src/utils/content.ts). Keep this form: one
-   defineCollection per collection, a glob() loader, its z.object(); nothing else goes here (CLAUDE.md, Content). */
+   defineCollection per collection, a glob() loader, its z.object(); nothing else goes here (docs/content.md). */
 
 const team = defineCollection({
   loader: glob({ pattern: "*.json", base: "./src/content/team" }),

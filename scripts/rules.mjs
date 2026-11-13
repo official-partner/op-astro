@@ -28,6 +28,7 @@
 //   fact-twice      an email, a phone number, a postal code or an outside link is written in one file only (a data
 //                   file every page reads)
 //   no-sample       every component of content/ and section/ has its sample on the components page
+//   system-file     src/styles/base.css is what system/site.json gives (npm run system): never edited by hand
 //
 // A failure the team accepts lives in review/data/rules-baseline.json with its reason: it is listed as known and
 // never stops a build. The list only shrinks: `--accept` on a site with debt, then the health review takes them out.
@@ -41,6 +42,7 @@ import {
 } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { fromFiles } from "./system.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BASELINE = "review/data/rules-baseline.json";
@@ -489,6 +491,23 @@ export function checkRules(root, { all = false } = {}) {
           "no sample on the components page (src/pages/composantes.astro)",
         );
     }
+  }
+
+  // system-file (a site made before the system file has none: nothing to check)
+  try {
+    const given = fromFiles(root);
+    if (
+      given !== null &&
+      given !== read(path.join(root, "src/styles/base.css"))
+    )
+      fail(
+        "system-file",
+        "src/styles/base.css",
+        "",
+        "is not what system/site.json gives: the change goes in the system file, then npm run system",
+      );
+  } catch (error) {
+    fail("system-file", "system/site.json", "", error.message.slice(0, 160));
   }
 
   // what the team accepted

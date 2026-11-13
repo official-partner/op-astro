@@ -15,6 +15,7 @@
     "astro": "astro",
     "format": "prettier --write .",
     "favicon": "node scripts/favicon.mjs",
+    "system": "node scripts/system.mjs",
     "shot": "node scripts/shot.mjs",
     "rules": "node scripts/rules.mjs",
     "measure": "node scripts/measure.mjs",
