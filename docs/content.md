@@ -87,6 +87,8 @@ Read before adding or changing a collection, a field, a list the team edits on t
   copy). An option of an item (`data-op-options` on the item or inside it) whose value is one of the item's keys
   names it, `"field": "<key>"` (a card's colour: `"field": "theme"`), and the app writes the choice there; an option
   without `field` waits for Claude. A page may show a part of a file (the first six): the others keep their place.
-  A list inside an item (a plan's prices) is part of its item: the app does not write it yet.
+  A list inside an item (a plan's prices) is that item's own array under a key, each line an object with its `id`;
+  its list on the page says its place, `data-op-source="src/data/<name>.json#<item id>.<key>"`, each line
+  `data-op-item={line.id}`, and the app writes it in its item.
 - Never rename an item's `id` without a reason: the app's saved changes name it.
 
