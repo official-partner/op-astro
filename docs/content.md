@@ -83,5 +83,10 @@ Read before adding or changing a collection, a field, a list the team edits on t
   « Edit: … (OP) » on review, a copy under the id `<id>-copy`): no request to Claude, no wait. A list written in a
   .ts file or in the page still works on the canvas, but each change waits for Claude. When a change touches such a
   list, move it to a data file in the same commit; `npm run compare` around the move (it must change nothing).
+- A text of an item changed on the canvas is written in that item of the file (a copy's words too, right after the
+  copy). An option of an item (`data-op-options` on the item or inside it) whose value is one of the item's keys
+  names it, `"field": "<key>"` (a card's colour: `"field": "theme"`), and the app writes the choice there; an option
+  without `field` waits for Claude. A page may show a part of a file (the first six): the others keep their place.
+  A list inside an item (a plan's prices) is part of its item: the app does not write it yet.
 - Never rename an item's `id` without a reason: the app's saved changes name it.
 
