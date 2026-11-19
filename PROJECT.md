@@ -130,3 +130,4 @@ One line per decision: the date, who asked, what was decided and why. The newest
   the live site, `review` the one OP System shows; content in files until a CMS is decided.
 
 - Nov 19, 2026 (Sam: « oui pour les deux »): a block's list is kept as data, `src/data/<name>.json`, read with `listFrom` and marked with `listMarks` (src/utils/data-list.ts; docs/content.md, Lists as data), so OP System writes a copy, a deletion or a move itself. The test page has one (src/data/reperes.json).
+- Nov 19, 2026 (Sam, 17:49: « les lots c e et h »; the app's plan, lot 3, its first part): a list of a collection's items has a rule (which ones, the order, how many), written in `src/data/lists.json` and read with `listed` (src/utils/lists.ts); the rule itself is src/utils/list-rule.ts, tested alone (`npm run test:rules`, 8 tests). The test page shows one (« equipe-test »: three at most, by name). The app does not write the file yet: its Options panel is the next part.

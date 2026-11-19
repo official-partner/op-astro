@@ -92,3 +92,36 @@ Read before adding or changing a collection, a field, a list the team edits on t
   `data-op-item={line.id}`, and the app writes it in its item.
 - Never rename an item's `id` without a reason: the app's saved changes name it.
 
+## A list's rule (Nov 19; the app's plan, lot 3; Sam, Nov 18: « une liste se règle sur la page »)
+
+A list of a collection's items says which ones it shows, in what order and how many in a rule, written in
+`src/data/lists.json` under the list's name, never in the page's code. OP System's Options panel will write that file
+itself (the app's lot 3; until then a rule is changed by Claude, in the file).
+
+```json
+{ "lists": { "projets-accueil": {
+  "collection": "projects",
+  "shows": "some",
+  "where": [{ "field": "wood", "op": "is", "value": ["Walnut", "White oak"] }, { "field": "year", "op": "after", "value": 2022 }],
+  "order": [{ "by": "year", "dir": "desc" }, { "by": "title" }],
+  "limit": 6, "start": 1, "out": [], "skipSelf": false
+} } }
+```
+
+- `shows`: `all` (every visible item), `some` (those every condition of `where` keeps), `chosen` (the ids of `chosen`,
+  in that order: picked by hand).
+- `where`: a field, how (`is`, `not`, `after`, `before`, `has`, `set`, `unset`), a value. `is` and `not` take one value
+  or several (one of them); a reference is its id; `after` and `before` read a number or a date; `has` looks in a text
+  or a list of words.
+- `order`: the fields that sort, the first first, each `asc` (by default) or `desc`; the empty ones last. `"hand"`: the
+  ids of `chosen` first, in their order, then the others as the collection has them (a card moved on the page).
+  Nothing: the collection's own order (`order`, then the id).
+- `limit` (at most; 0 or nothing: all), `start` (the first one shown, from 1), `out` (ids left aside), `skipSelf` (on
+  an item's page, that item left out).
+
+A page reads it with `listed("<name>", self?)` and marks it with `ruleMarks("<name>")` (src/utils/lists.ts):
+`data-op-list`, `data-op-source="astro:<collection>"` and `data-op-rule="src/data/lists.json"`, each item
+`data-op-item={id}`. The bounds a layout has stay on the list (`data-op-min`, `data-op-max`). A name the file does not
+have stops the build. The rule itself is src/utils/list-rule.ts, with nothing of Astro in it: `npm run test:rules`
+after any change to it. A list with no rule reads its collection whole with `getItems`, as before.
+

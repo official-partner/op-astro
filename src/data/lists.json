@@ -1,0 +1,10 @@
+{
+  "lists": {
+    "equipe-test": {
+      "collection": "team",
+      "shows": "all",
+      "order": [{ "by": "name", "dir": "asc" }],
+      "limit": 3
+    }
+  }
+}

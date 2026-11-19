@@ -10,12 +10,15 @@ import { getItems, LIVE } from "@/utils/content";
 import { z } from "astro/zod";
 import { listFrom, listMarks } from "@/utils/data-list";
 import reperesData from "@/data/reperes.json";
+import { listed, ruleMarks } from "@/utils/lists";
 
 // a block's list kept as data (docs/content.md, Lists as data): OP System writes src/data/reperes.json itself
 const REPERES = "src/data/reperes.json";
 const reperes = listFrom(reperesData, z.object({ id: z.string().regex(/^[a-z0-9-]+$/), title: z.string(), text: z.string() }), REPERES);
 
 const team = await getItems("team");
+// a list with a rule (docs/content.md, A list's rule): which ones, in what order, how many, in src/data/lists.json
+const some = await listed<"team">("equipe-test");
 ---
 
 <Layout
@@ -42,6 +45,12 @@ const team = await getItems("team");
           </ContentWrapper>
         ))
       }
+    </Grid>
+  </Section>
+  {/* A list of the same collection with a rule of its own: three at most, by name */}
+  <Section paddingTop="none">
+    <Grid small={2} medium={3} {...ruleMarks("equipe-test")}>
+      {some.map(({ id, data }) => <CardTeam data-op-item={id} person={data} />)}
     </Grid>
   </Section>
   {/* Team */}

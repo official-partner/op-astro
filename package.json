@@ -20,7 +20,8 @@
     "rules": "node scripts/rules.mjs",
     "measure": "node scripts/measure.mjs",
     "widths": "node scripts/widths.mjs",
-    "compare": "node scripts/compare.mjs"
+    "compare": "node scripts/compare.mjs",
+    "test:rules": "node --test scripts/list-rule.test.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
