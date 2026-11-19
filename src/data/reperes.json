@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "id": "ecrire",
+      "title": "Écrire sur la page",
+      "text": "Un texte se change là où il se lit, en mode Edit."
+    },
+    {
+      "id": "copier",
+      "title": "Copier un bloc",
+      "text": "Un bloc copié, supprimé ou déplacé s’écrit dans ce fichier, sans attendre."
+    },
+    {
+      "id": "publier",
+      "title": "Publier",
+      "text": "Le staging montre le changement dès qu’il est enregistré."
+    }
+  ]
+}

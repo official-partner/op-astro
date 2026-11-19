@@ -7,6 +7,13 @@ import Paragraph from "@/components/typography/Paragraph.astro";
 import Grid from "@/components/wrapper/Grid.astro";
 import CardTeam from "@/components/content/CardTeam.astro";
 import { getItems, LIVE } from "@/utils/content";
+import { z } from "astro/zod";
+import { listFrom, listMarks } from "@/utils/data-list";
+import reperesData from "@/data/reperes.json";
+
+// a block's list kept as data (docs/content.md, Lists as data): OP System writes src/data/reperes.json itself
+const REPERES = "src/data/reperes.json";
+const reperes = listFrom(reperesData, z.object({ id: z.string().regex(/^[a-z0-9-]+$/), title: z.string(), text: z.string() }), REPERES);
 
 const team = await getItems("team");
 ---
@@ -23,6 +30,19 @@ const team = await getItems("team");
         {LIVE ? "Lu en direct sur le staging" : "Lu dans les fichiers du site"}
       </Paragraph>
     </ContentWrapper>
+  </Section>
+  {/* A list kept as data */}
+  <Section paddingTop="none">
+    <Grid small={1} medium={3} {...listMarks("reperes", REPERES)}>
+      {
+        reperes.map((it) => (
+          <ContentWrapper data-op-item={it.id}>
+            <Heading variant="h5" tag="h2">{it.title}</Heading>
+            <Paragraph class="color-faded">{it.text}</Paragraph>
+          </ContentWrapper>
+        ))
+      }
+    </Grid>
   </Section>
   {/* Team */}
   <Section paddingTop="none">

@@ -59,6 +59,8 @@ cover. How to build with Lumos: AGENTS.md, below.
 - Content lives in files. A collection only where a CMS is needed (items with a page of their own, or the same items
   on several pages); everything else is a block of its page, its list marked for OP System's Modifier
   (docs/content.md).
+- A block's list is data: its items in `src/data/<name>.json`, read with `listFrom` and marked with `listMarks`
+  (docs/content.md, Lists as data), so OP System writes a copy, a deletion or a move itself.
 - One place per fact: an address, a phone, an email, an outside link is written in one data file every page reads.
 - Never commit a key or put one in `src/`, `public/` or op.config.json (docs/security.md).
 

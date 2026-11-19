@@ -68,3 +68,20 @@ Read before adding or changing a collection, a field, a list the team edits on t
   run build` (the Worker in `dist/server`, site.json read from a static build in `.op-static`); to see the staging
   locally, `npx wrangler dev` after the live build, with `--var OP_CONTENT_URL:<a stand-in>`.
 - A CMS (Sanity) only when the client must edit the site alone, decided with the team and logged in PROJECT.md.
+
+## Lists as data (Nov 19; Sam: « oui pour les deux »)
+- A block's list (a section's cards, offers, values, prices, partners, logos: everything that is not a collection)
+  is kept in `src/data/<name>.json`, never in a .ts file nor in the page: `{ "items": [ { "id": "…", … } ] }`, each
+  item with an `id` of its own (lowercase letters, digits, hyphens), its other keys plain values (a text, a number, a
+  boolean, a list of words, a picture as its path under `src/assets/`). The words are the client's, in the file.
+- The page reads it with `listFrom(data, schema, file)` (src/utils/data-list.ts): a zod schema per list, so a wrong
+  entry stops the build and says which; a picture through `picture(path, file)`, optimised as any import. What is
+  code stays code: a link built from another file, a component per kind, a default.
+- The page marks it: `{...listMarks("<name>", "src/data/<name>.json")}` on the list, `data-op-item={item.id}` on each
+  of its direct children (`data-op-min`, `data-op-max` as before). src/pages/test-contenu.astro has one.
+- Why: OP System writes that file itself when someone copies, deletes or moves an item on the canvas (a commit
+  « Edit: … (OP) » on review, a copy under the id `<id>-copy`): no request to Claude, no wait. A list written in a
+  .ts file or in the page still works on the canvas, but each change waits for Claude. When a change touches such a
+  list, move it to a data file in the same commit; `npm run compare` around the move (it must change nothing).
+- Never rename an item's `id` without a reason: the app's saved changes name it.
+
