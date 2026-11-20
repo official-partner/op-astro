@@ -117,7 +117,8 @@ itself (the app's lot 3: a commit « Edit: … (its rule) (OP) » on review).
   ids of `chosen` first, in their order, then the others as the collection has them (a card moved on the page).
   Nothing: the collection's own order (`order`, then the id).
 - `limit` (at most; 0 or nothing: all), `start` (the first one shown, from 1), `out` (ids left aside), `skipSelf` (on
-  an item's page, that item left out).
+  an item's page, that item left out). A list on an item's own page writes the key, `true` or `false`: OP System's
+  panel then offers « Leave out this page's own item »; a list elsewhere leaves the key out.
 
 A page reads it with `listed("<name>", self?)` and marks it with `ruleMarks("<name>")` (src/utils/lists.ts):
 `data-op-list`, `data-op-source="astro:<collection>"`, `data-op-rule="src/data/lists.json"` and `data-op-rule-is`
