@@ -80,8 +80,9 @@ Read before adding or changing a collection, a field, a list the team edits on t
 ## Several pictures in an order (Nov 20; the app's plan, lot 6)
 - A gallery is a field `galerie: z.array(image()).optional().describe("Galerie")`: the item's file lists each picture
   by its path from the item (`../../assets/content/<collection>/x.jpg`), as a single picture's field does. OP System's
-  Contenu shows them as a wall, moves and removes them, and writes the list back as the same paths; a picture is added
-  by Claude for now (the file under `src/assets/content/<collection>/`, its path in the list). The page reads the
+  Contenu shows them as a wall, adds, moves and removes them, and writes the list back as paths; a picture added there
+  is committed as `src/assets/content/<collection>/<item>-<field>-<id>.<ext>`, and until then the live staging gets
+  its address in OP's storage in the list, which `img()` takes as it takes a single picture's. The page reads the
   list in its order and gives each picture its alternative text from the item's own words.
 
 ## Lists as data (Nov 19; Sam: « oui pour les deux »)
