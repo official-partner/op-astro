@@ -95,8 +95,8 @@ Read before adding or changing a collection, a field, a list the team edits on t
 ## A list's rule (Nov 19; the app's plan, lot 3; Sam, Nov 18: « une liste se règle sur la page »)
 
 A list of a collection's items says which ones it shows, in what order and how many in a rule, written in
-`src/data/lists.json` under the list's name, never in the page's code. OP System's Options panel will write that file
-itself (the app's lot 3; until then a rule is changed by Claude, in the file).
+`src/data/lists.json` under the list's name, never in the page's code. OP System's Options panel writes that file
+itself (the app's lot 3: a commit « Edit: … (its rule) (OP) » on review).
 
 ```json
 { "lists": { "projets-accueil": {
@@ -120,7 +120,8 @@ itself (the app's lot 3; until then a rule is changed by Claude, in the file).
   an item's page, that item left out).
 
 A page reads it with `listed("<name>", self?)` and marks it with `ruleMarks("<name>")` (src/utils/lists.ts):
-`data-op-list`, `data-op-source="astro:<collection>"` and `data-op-rule="src/data/lists.json"`, each item
+`data-op-list`, `data-op-source="astro:<collection>"`, `data-op-rule="src/data/lists.json"` and `data-op-rule-is`
+(the rule as the build read it, JSON: what the app's Options panel shows and changes from), each item
 `data-op-item={id}`. The bounds a layout has stay on the list (`data-op-min`, `data-op-max`). A name the file does not
 have stops the build. The rule itself is src/utils/list-rule.ts, with nothing of Astro in it: `npm run test:rules`
 after any change to it. A list with no rule reads its collection whole with `getItems`, as before.

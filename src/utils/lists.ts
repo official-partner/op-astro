@@ -44,10 +44,12 @@ export async function listed<C extends CollectionKey>(name: string, self?: strin
   return applyRule(items as (Item<C> & { data: Record<string, unknown> })[], r, self);
 }
 
-/** What the list's element carries for OP System: its name, its collection, and where its rule is written. Each item
- *  carries `data-op-item={id}` as any list of a collection. */
+/** What the list's element carries for OP System: its name, its collection, where its rule is written and the rule
+ *  as this build read it (what the app's Options panel shows, and changes from). Each item carries
+ *  `data-op-item={id}` as any list of a collection. */
 export const ruleMarks = (name: string) => ({
   "data-op-list": name,
   "data-op-source": `astro:${ruleOf(name).collection}`,
   "data-op-rule": FILE,
+  "data-op-rule-is": JSON.stringify(ruleOf(name)),
 });
