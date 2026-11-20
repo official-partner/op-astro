@@ -69,6 +69,14 @@ Read before adding or changing a collection, a field, a list the team edits on t
   locally, `npx wrangler dev` after the live build, with `--var OP_CONTENT_URL:<a stand-in>`.
 - A CMS (Sanity) only when the client must edit the site alone, decided with the team and logged in PROJECT.md.
 
+## A colour picked in Contenu (Nov 20; the app's plan, lot 6)
+- OP System's kind « Colour » is a text in the schema (`couleur: z.string().optional().describe("Couleur")`); its
+  value is the name of one of the system's colour variables (« --brand-500 »), picked in the app among the colours of
+  `system/site.json`, never a free value. The page writes it as a variable on the element, and the component's CSS
+  reads that variable with a token as its fallback: `<article style={item.couleur ? `--card-accent: var(${item.couleur})`
+  : undefined}>` and `border-color: var(--card-accent, var(--theme-border))`. Never the value as a class, and never a
+  hex in the item. A colour removed from the system leaves the fallback showing.
+
 ## Lists as data (Nov 19; Sam: « oui pour les deux »)
 - A block's list (a section's cards, offers, values, prices, partners, logos: everything that is not a collection)
   is kept in `src/data/<name>.json`, never in a .ts file nor in the page: `{ "items": [ { "id": "…", … } ] }`, each
