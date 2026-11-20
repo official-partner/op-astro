@@ -77,6 +77,13 @@ Read before adding or changing a collection, a field, a list the team edits on t
   : undefined}>` and `border-color: var(--card-accent, var(--theme-border))`. Never the value as a class, and never a
   hex in the item. A colour removed from the system leaves the fallback showing.
 
+## Several pictures in an order (Nov 20; the app's plan, lot 6)
+- A gallery is a field `galerie: z.array(image()).optional().describe("Galerie")`: the item's file lists each picture
+  by its path from the item (`../../assets/content/<collection>/x.jpg`), as a single picture's field does. OP System's
+  Contenu shows them as a wall, moves and removes them, and writes the list back as the same paths; a picture is added
+  by Claude for now (the file under `src/assets/content/<collection>/`, its path in the list). The page reads the
+  list in its order and gives each picture its alternative text from the item's own words.
+
 ## Lists as data (Nov 19; Sam: « oui pour les deux »)
 - A block's list (a section's cards, offers, values, prices, partners, logos: everything that is not a collection)
   is kept in `src/data/<name>.json`, never in a .ts file nor in the page: `{ "items": [ { "id": "…", … } ] }`, each
