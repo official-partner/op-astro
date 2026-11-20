@@ -62,8 +62,9 @@ cover. How to build with Lumos: AGENTS.md, below.
 - A block's list is data: its items in `src/data/<name>.json`, read with `listFrom` and marked with `listMarks`
   (docs/content.md, Lists as data), so OP System writes a copy, a deletion or a move itself.
 - An item's page built in sections is a field `sections`, a list of typed blocks (`z.discriminatedUnion("type", …)`),
-  each kind a branch of `src/components/content/Sections.astro` (docs/content.md, Sections): the one list of objects a
-  collection holds.
+  each kind a branch of `src/components/content/Sections.astro` (docs/content.md, Sections). A collection holds two
+  lists of objects and no other: its sections, and rows of small cells (credits: a role, a name), `z.array(z.object({
+  id: z.string(), … }))` with texts only (docs/content.md, Rows).
 - A list of a collection's items that shows some of them, sorted or counted, has a rule in `src/data/lists.json`, read
   with `listed` and marked with `ruleMarks` (docs/content.md, A list's rule): never a filter or a sort in the page.
 - One place per fact: an address, a phone, an email, an outside link is written in one data file every page reads.

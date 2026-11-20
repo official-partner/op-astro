@@ -85,6 +85,15 @@ Read before adding or changing a collection, a field, a list the team edits on t
   its address in OP's storage in the list, which `img()` takes as it takes a single picture's. The page reads the
   list in its order and gives each picture its alternative text from the item's own words.
 
+## Rows: small cells, row after row (Nov 20; the app's plan, lot 6)
+- Credits, a team by role, opening hours by day: a field `credits: z.array(z.object({ id: z.string(), role:
+  z.string().describe("Rôle"), name: z.string().describe("Nom") })).optional().describe("Crédits")`. Each row has an
+  id of its own (OP System's Contenu makes it, a short slug) and its cells, texts only, each with its French
+  `.describe()`. Contenu shows a row as its cells side by side, adds, moves and removes rows, and writes the list
+  back; a row with nothing in it is not kept. The page reads `row.role` and `row.name`, in the list's order, and gives
+  each row `data-op-item={row.id}` when the list is marked for the Modifier. Never « Role : Name » on one line for a
+  new field: a name with a colon in it would be split.
+
 ## Lists as data (Nov 19; Sam: « oui pour les deux »)
 - A block's list (a section's cards, offers, values, prices, partners, logos: everything that is not a collection)
   is kept in `src/data/<name>.json`, never in a .ts file nor in the page: `{ "items": [ { "id": "…", … } ] }`, each
@@ -150,8 +159,8 @@ OP System reads it to say where an item shows (Contenu, « Shows in »).
 ## Sections: a page built in typed blocks (Nov 19; the app's plan, lot 4, its first part)
 
 An item's page can be built in sections the client adds, fills, moves and removes: a field `sections`, a list of
-blocks, each of a kind the site has. It is the one list of objects a collection may hold (every other field stays of
-the kinds Contenu edits). In `src/content.config.ts` the field is `z.array(z.discriminatedUnion("type", [ … ]))`,
+blocks, each of a kind the site has. With rows of small cells (Rows, above), it is one of the two lists of objects a collection may hold (every other field
+stays of the kinds Contenu edits). In `src/content.config.ts` the field is `z.array(z.discriminatedUnion("type", [ … ]))`,
 each kind a `z.object` with:
 
 - `type: z.literal("<kind>")`, what tells the kinds apart;
