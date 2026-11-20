@@ -6,5 +6,11 @@
     { "type": "visual", "id": "etabli", "image": "../../assets/content/notes/atelier-etabli.webp", "alt": "Un aplat bleu, à la place d’une photo de l’établi.", "caption": "L’établi, en fin de journée." },
     { "type": "text", "id": "soir", "text": "On ferme quand la dernière page est relue." }
   ],
+  "gallery": ["../../assets/content/notes/atelier-etabli.webp", "../../assets/content/team/lea-photo.webp", "../../assets/content/team/marc-photo.webp"],
+  "credits": [
+    { "id": "r1", "role": "Texte", "name": "Léa Tremblay" },
+    { "id": "r2", "role": "Photos", "name": "Marc Gagnon : atelier" }
+  ],
+  "accent": "--accent",
   "order": 1
 }

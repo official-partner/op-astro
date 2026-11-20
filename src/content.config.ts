@@ -8,7 +8,7 @@ import { z } from "astro/zod";
    but the name; `visible` hides an item everywhere, `draft` keeps it on the staging only, `order` sorts them
    (src/utils/content.ts). Keep this form: one
    defineCollection per collection, a glob() loader, its z.object(); nothing else goes here (docs/content.md). A
-   field is never a list of objects, but a page's sections (below). */
+   field is never a list of objects, but a page's sections and rows of small cells (below). */
 
 const team = defineCollection({
   loader: glob({ pattern: "*.json", base: "./src/content/team" }),
@@ -75,6 +75,15 @@ const notes = defineCollection({
           )
           .optional()
           .describe("Sections"),
+        // several pictures in an order (docs/content.md): each by its path from the item, as a single picture is
+        gallery: z.array(image()).optional().describe("Galerie"),
+        // rows of small cells (docs/content.md, Rows): the second list of objects a collection may hold
+        credits: z
+          .array(z.object({ id: z.string(), role: z.string().describe("Rôle"), name: z.string().describe("Nom") }))
+          .optional()
+          .describe("Crédits"),
+        // a colour picked in Contenu (docs/content.md): the name of one of the system's colour variables
+        accent: z.string().optional().describe("Couleur"),
         visible: z.boolean().default(true).describe("Visible sur le site"),
         draft: z.boolean().default(false).describe("Brouillon"),
         order: z.number().optional().describe("Ordre"),

@@ -6,7 +6,8 @@ import Heading from "@/components/typography/Heading.astro";
 import Paragraph from "@/components/typography/Paragraph.astro";
 import Grid from "@/components/wrapper/Grid.astro";
 import CardTeam from "@/components/content/CardTeam.astro";
-import { getItems, LIVE } from "@/utils/content";
+import { getItems, LIVE, img } from "@/utils/content";
+import Img from "@/components/media/Img.astro";
 import { z } from "astro/zod";
 import { listFrom, listMarks } from "@/utils/data-list";
 import reperesData from "@/data/reperes.json";
@@ -63,6 +64,20 @@ const notes = await getItems("notes");
         <ContentWrapper>
           <Heading variant="h5" tag="h2">{data.title}</Heading>
           <Sections collection="notes" item={id} sections={data.sections} />
+          {/* a colour picked in Contenu: the variable's name, written as var(…) */}
+          {data.accent && <Paragraph style={`color: var(${data.accent})`} data-op-test="accent">Couleur choisie</Paragraph>}
+          {/* rows of small cells */}
+          {data.credits && (
+            <ul data-op-test="credits">
+              {data.credits.map((row) => <li data-op-item={row.id}>{row.role} : {row.name}</li>)}
+            </ul>
+          )}
+          {/* several pictures in an order */}
+          {data.gallery && (
+            <Grid small={2} medium={3} data-op-test="gallery">
+              {data.gallery.map((picture) => <Img {...img(picture)} alt="" />)}
+            </Grid>
+          )}
         </ContentWrapper>
       </Section>
     ))
