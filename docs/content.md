@@ -129,3 +129,25 @@ after any change to it. A list with no rule reads its collection whole with `get
 site.json says the lists of a collection's items the pages show (`lists`: each one's name, collection, page and, when
 it has one, its rule as built, and `items`, the ids it shows as built; integrations/op-system.mjs, read from the built pages, the team's own pages left out):
 OP System reads it to say where an item shows (Contenu, « Shows in »).
+
+## Sections: a page built in typed blocks (Nov 19; the app's plan, lot 4, its first part)
+
+An item's page can be built in sections the client adds, fills, moves and removes: a field `sections`, a list of
+blocks, each of a kind the site has. It is the one list of objects a collection may hold (every other field stays of
+the kinds Contenu edits). In `src/content.config.ts` the field is `z.array(z.discriminatedUnion("type", [ … ]))`,
+each kind a `z.object` with:
+
+- `type: z.literal("<kind>")`, what tells the kinds apart;
+- `id: z.string()`, a slug of its own in the item (what the page marks, what a move or a change names);
+- `name` (optional: the team's own name for the section, never on the site) and `hidden` (optional: left out of the
+  page, kept in the item);
+- its own fields, each with its `.describe("…")`; the object's `.describe("…")` is the kind's name where people pick it.
+
+Each kind is a component of the site: `src/components/content/Sections.astro` draws an item's sections, a branch per
+kind, and marks the list for OP System (`data-op-list="sections"`, `data-op-source="astro:<collection>/<item>#sections"`,
+each section `data-op-item={id}` and `data-op-kind`, its fields `data-op-field`). A new kind is a z.object in the
+schema and a branch there, with its sample on the components page. The starter's example is the collection `notes`
+(a text, a quote), shown on the test page.
+
+Not there yet: a kind with a picture (how a picture inside a list goes through the live staging is not verified), and
+the app's side (Contenu reads the field; adding, moving and filling a section from the app is the next part).

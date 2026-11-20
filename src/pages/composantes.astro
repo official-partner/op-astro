@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/BaseLayout.astro";
 import ComponentList from "@/components/system/ComponentList.astro";
+import Sections from "@/components/content/Sections.astro";
 import ComponentSample from "@/components/system/ComponentSample.astro";
 import Grid from "@/components/wrapper/Grid.astro";
 import CardTeam from "@/components/content/CardTeam.astro";
@@ -32,6 +33,21 @@ import photo from "@/assets/content/team/lea-photo.webp";
           />
           <CardTeam person={{ name: "Sophie Roy" }} />
         </Grid>
+      </div>
+    </ComponentSample>
+    <ComponentSample
+      file="content/Sections.astro"
+      note="Les sections d’un item, une sorte par composant : un texte, une citation."
+    >
+      <div class="container">
+        <Sections
+          collection="notes"
+          item="exemple"
+          sections={[
+            { type: "text", id: "a", text: "On ouvre à huit heures. Le premier café se prend debout, devant les plans de la veille." },
+            { type: "quote", id: "b", quote: "Un site se relit comme un texte : à voix haute, et sans se presser.", by: "Léa Tremblay" },
+          ]}
+        />
       </div>
     </ComponentSample>
   </ComponentList>

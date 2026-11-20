@@ -1,0 +1,9 @@
+{
+  "title": "Une journée à l’atelier",
+  "sections": [
+    { "type": "text", "id": "matin", "name": "Le matin", "text": "On ouvre à huit heures. Le premier café se prend debout, devant les plans de la veille." },
+    { "type": "quote", "id": "mot", "quote": "Un site se relit comme un texte : à voix haute, et sans se presser.", "by": "Léa Tremblay" },
+    { "type": "text", "id": "soir", "text": "On ferme quand la dernière page est relue." }
+  ],
+  "order": 1
+}

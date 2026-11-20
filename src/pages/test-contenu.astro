@@ -11,6 +11,7 @@ import { z } from "astro/zod";
 import { listFrom, listMarks } from "@/utils/data-list";
 import reperesData from "@/data/reperes.json";
 import { listed, ruleMarks } from "@/utils/lists";
+import Sections from "@/components/content/Sections.astro";
 
 // a block's list kept as data (docs/content.md, Lists as data): OP System writes src/data/reperes.json itself
 const REPERES = "src/data/reperes.json";
@@ -19,6 +20,8 @@ const reperes = listFrom(reperesData, z.object({ id: z.string().regex(/^[a-z0-9-
 const team = await getItems("team");
 // a list with a rule (docs/content.md, A list's rule): which ones, in what order, how many, in src/data/lists.json
 const some = await listed<"team">("equipe-test");
+// a page built in sections (docs/content.md, Sections): the item's list of typed blocks, each kind a component
+const notes = await getItems("notes");
 ---
 
 <Layout
@@ -53,6 +56,17 @@ const some = await listed<"team">("equipe-test");
       {some.map(({ id, data }) => <CardTeam data-op-item={id} person={data} />)}
     </Grid>
   </Section>
+  {/* An item's sections */}
+  {
+    notes.map(({ id, data }) => (
+      <Section paddingTop="none">
+        <ContentWrapper>
+          <Heading variant="h5" tag="h2">{data.title}</Heading>
+          <Sections collection="notes" item={id} sections={data.sections} />
+        </ContentWrapper>
+      </Section>
+    ))
+  }
   {/* Team */}
   <Section paddingTop="none">
     <Grid small={2} medium={3} data-op-list="team" data-op-source="astro:team">
