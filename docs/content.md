@@ -147,7 +147,11 @@ Each kind is a component of the site: `src/components/content/Sections.astro` dr
 kind, and marks the list for OP System (`data-op-list="sections"`, `data-op-source="astro:<collection>/<item>#sections"`,
 each section `data-op-item={id}` and `data-op-kind`, its fields `data-op-field`). A new kind is a z.object in the
 schema and a branch there, with its sample on the components page. The starter's example is the collection `notes`
-(a text, a quote), shown on the test page.
+(a text, a quote, a visual), shown on the test page.
 
-Not there yet: a kind with a picture (how a picture inside a list goes through the live staging is not verified), and
-the app's side (Contenu reads the field; adding, moving and filling a section from the app is the next part).
+A kind may hold a picture (`image()`, the schema then written `({ image }) => z.object(…)`): the example's « visual »
+(a picture, its alternative text, a caption). The static build resolves it as any picture of a collection (checked
+Nov 20); on the live staging the pictures of an item are resolved wherever they are in its data
+(src/utils/content.ts, `resolve`), which this sandbox could not run. The app's side: Contenu's field « Sections »
+adds, names, fills, moves, hides and deletes sections, and Edit changes them on the page (op-system, docs/content.md,
+Sections).

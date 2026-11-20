@@ -34,40 +34,52 @@ const team = defineCollection({
    the kind's name where people pick it. */
 const notes = defineCollection({
   loader: glob({ pattern: "*.json", base: "./src/content/notes" }),
-  schema: z
-    .object({
-      title: z.string().describe("Titre"),
-      sections: z
-        .array(
-          z.discriminatedUnion("type", [
-            z
-              .object({
-                type: z.literal("text"),
-                id: z.string(),
-                name: z.string().optional().describe("Nom"),
-                hidden: z.boolean().optional().describe("Cachée"),
-                text: z.string().describe("Texte"),
-              })
-              .describe("Texte"),
-            z
-              .object({
-                type: z.literal("quote"),
-                id: z.string(),
-                name: z.string().optional().describe("Nom"),
-                hidden: z.boolean().optional().describe("Cachée"),
-                quote: z.string().describe("Citation"),
-                by: z.string().optional().describe("De"),
-              })
-              .describe("Citation"),
-          ]),
-        )
-        .optional()
-        .describe("Sections"),
-      visible: z.boolean().default(true).describe("Visible sur le site"),
-      draft: z.boolean().default(false).describe("Brouillon"),
-      order: z.number().optional().describe("Ordre"),
-    })
-    .describe("Notes"),
+  schema: ({ image }) =>
+    z
+      .object({
+        title: z.string().describe("Titre"),
+        sections: z
+          .array(
+            z.discriminatedUnion("type", [
+              z
+                .object({
+                  type: z.literal("text"),
+                  id: z.string(),
+                  name: z.string().optional().describe("Nom"),
+                  hidden: z.boolean().optional().describe("Cachée"),
+                  text: z.string().describe("Texte"),
+                })
+                .describe("Texte"),
+              z
+                .object({
+                  type: z.literal("quote"),
+                  id: z.string(),
+                  name: z.string().optional().describe("Nom"),
+                  hidden: z.boolean().optional().describe("Cachée"),
+                  quote: z.string().describe("Citation"),
+                  by: z.string().optional().describe("De"),
+                })
+                .describe("Citation"),
+              z
+                .object({
+                  type: z.literal("visual"),
+                  id: z.string(),
+                  name: z.string().optional().describe("Nom"),
+                  hidden: z.boolean().optional().describe("Cachée"),
+                  image: image().optional().describe("Image"),
+                  alt: z.string().optional().describe("Texte de remplacement"),
+                  caption: z.string().optional().describe("Légende"),
+                })
+                .describe("Visuel"),
+            ]),
+          )
+          .optional()
+          .describe("Sections"),
+        visible: z.boolean().default(true).describe("Visible sur le site"),
+        draft: z.boolean().default(false).describe("Brouillon"),
+        order: z.number().optional().describe("Ordre"),
+      })
+      .describe("Notes"),
 });
 
 export const collections = { team, notes };

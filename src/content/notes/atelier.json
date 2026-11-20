@@ -3,6 +3,7 @@
   "sections": [
     { "type": "text", "id": "matin", "name": "Le matin", "text": "On ouvre à huit heures. Le premier café se prend debout, devant les plans de la veille." },
     { "type": "quote", "id": "mot", "quote": "Un site se relit comme un texte : à voix haute, et sans se presser.", "by": "Léa Tremblay" },
+    { "type": "visual", "id": "etabli", "image": "../../assets/content/notes/atelier-etabli.webp", "alt": "Un aplat bleu, à la place d’une photo de l’établi.", "caption": "L’établi, en fin de journée." },
     { "type": "text", "id": "soir", "text": "On ferme quand la dernière page est relue." }
   ],
   "order": 1

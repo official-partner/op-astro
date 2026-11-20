@@ -2,13 +2,16 @@
 import type { HTMLAttributes } from "astro/types";
 import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
 import Paragraph from "@/components/typography/Paragraph.astro";
+import Img from "@/components/media/Img.astro";
+import { img, type Picture } from "@/utils/content";
 
 /* An item's sections, each one the component of its kind (docs/content.md, Sections). A new kind is a z.object in the
    collection's schema (src/content.config.ts) and a branch here; a hidden section is left out. The list is marked for
    OP System: its source is the item's field (« astro:<collection>/<item>#sections »), each section its id and kind. */
 type Section =
   | { type: "text"; id: string; name?: string; hidden?: boolean; text: string }
-  | { type: "quote"; id: string; name?: string; hidden?: boolean; quote: string; by?: string };
+  | { type: "quote"; id: string; name?: string; hidden?: boolean; quote: string; by?: string }
+  | { type: "visual"; id: string; name?: string; hidden?: boolean; image?: Picture; alt?: string; caption?: string };
 
 type Props = HTMLAttributes<"div"> & {
   /** Set to `false` to omit the component. */
@@ -39,6 +42,11 @@ const shown = sections.filter((s) => !s.hidden);
               <Paragraph variant="h4" data-op-field="quote">{s.quote}</Paragraph>
             </blockquote>
             {s.by && <figcaption data-op-field="by">{s.by}</figcaption>}
+          </figure>
+        ) : s.type === "visual" ? (
+          <figure data-op-item={s.id} data-op-kind="visual">
+            {s.image && <Img {...img(s.image)} alt={s.alt ?? ""} />}
+            {s.caption && <figcaption data-op-field="caption">{s.caption}</figcaption>}
           </figure>
         ) : (
           <div data-op-item={s.id} data-op-kind="text">
