@@ -127,5 +127,5 @@ have stops the build. The rule itself is src/utils/list-rule.ts, with nothing of
 after any change to it. A list with no rule reads its collection whole with `getItems`, as before.
 
 site.json says the lists of a collection's items the pages show (`lists`: each one's name, collection, page and, when
-it has one, its rule as built; integrations/op-system.mjs, read from the built pages, the team's own pages left out):
+it has one, its rule as built, and `items`, the ids it shows as built; integrations/op-system.mjs, read from the built pages, the team's own pages left out):
 OP System reads it to say where an item shows (Contenu, « Shows in »).

@@ -265,7 +265,7 @@ export default function opSystem(site) {
         // Classes; op-system's op-global-classes skill). Astro's scoped classes (astro-…) left out
         const classUse = new Map();
         // the lists of a collection's items the pages show (data-op-list with data-op-source="astro:<collection>"): on
-        // which page, and its rule when it has one (docs/content.md, A list's rule). OP System reads them to say where
+        // which page, the items it shows as built, and its rule when it has one (docs/content.md, A list's rule). OP System reads them to say where
         // an item shows (Contenu, « Shows in »)
         const cmsLists = [];
         const attr = (tag, name) => { const m = new RegExp(`\\s${name}=(?:"([^"]*)"|'([^']*)')`).exec(tag); return m ? (m[1] ?? m[2]).replace(/&quot;/g, '"').replace(/&#34;/g, '"').replace(/&amp;/g, "&") : ""; };
@@ -305,7 +305,10 @@ export default function opSystem(site) {
             if (!name || internal) continue;
             let rule = null;
             try { rule = attr(m[0], "data-op-rule") ? JSON.parse(attr(m[0], "data-op-rule-is")) : null; } catch { rule = null; }
-            cmsLists.push(Object.assign({ name, collection: m[1], page: id }, attr(m[0], "data-op-label") ? { label: attr(m[0], "data-op-label") } : {}, rule ? { rule } : {}));
+            // the items it shows as built: the entries marked after it, up to the next list
+            const from = m.index + m[0].length, next = html.indexOf(" data-op-list=", from);
+            const items = [...new Set([...html.slice(from, next < 0 ? html.length : next).matchAll(/\sdata-op-item="([^"]+)"/g)].map((x) => x[1]))].slice(0, 500);
+            cmsLists.push(Object.assign({ name, collection: m[1], page: id, items }, attr(m[0], "data-op-label") ? { label: attr(m[0], "data-op-label") } : {}, rule ? { rule } : {}));
           }
           pages.push(Object.assign({ id, title: own || id, path: route, group: internal ? t.system : t.site },
             components ? { role: "components" } : { seo: { title: full, description, slug: route === "./" ? "" : route, index } }));
