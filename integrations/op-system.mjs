@@ -264,6 +264,11 @@ export default function opSystem(site) {
         // the classes the site's pages use (not the system's own pages): how many times, on how many pages (Web System,
         // Classes; op-system's op-global-classes skill). Astro's scoped classes (astro-…) left out
         const classUse = new Map();
+        // the lists of a collection's items the pages show (data-op-list with data-op-source="astro:<collection>"): on
+        // which page, and its rule when it has one (docs/content.md, A list's rule). OP System reads them to say where
+        // an item shows (Contenu, « Shows in »)
+        const cmsLists = [];
+        const attr = (tag, name) => { const m = new RegExp(`\\s${name}=(?:"([^"]*)"|'([^']*)')`).exec(tag); return m ? (m[1] ?? m[2]).replace(/&quot;/g, '"').replace(/&#34;/g, '"').replace(/&amp;/g, "&") : ""; };
         const htmlDir = site.pagesDir ? path.join(root, site.pagesDir) : out;
         for (const file of await htmlFiles(htmlDir)) {
           if (/(^|\/)404\.html$/.test(file)) continue;
@@ -295,6 +300,13 @@ export default function opSystem(site) {
             }
           }
           const id = route === "./" ? (lang === "en" ? "home" : "accueil") : route.replace(/\//g, "-");
+          for (const m of html.matchAll(/<[a-z][^>]*\sdata-op-source="astro:([A-Za-z_][\w-]*)"[^>]*>/g)) {
+            const name = attr(m[0], "data-op-list");
+            if (!name || internal) continue;
+            let rule = null;
+            try { rule = attr(m[0], "data-op-rule") ? JSON.parse(attr(m[0], "data-op-rule-is")) : null; } catch { rule = null; }
+            cmsLists.push(Object.assign({ name, collection: m[1], page: id }, attr(m[0], "data-op-label") ? { label: attr(m[0], "data-op-label") } : {}, rule ? { rule } : {}));
+          }
           pages.push(Object.assign({ id, title: own || id, path: route, group: internal ? t.system : t.site },
             components ? { role: "components" } : { seo: { title: full, description, slug: route === "./" ? "" : route, index } }));
         }
@@ -598,6 +610,7 @@ export default function opSystem(site) {
           changes: [],
         };
         if (grid) manifest.grid = JSON.parse(JSON.stringify(grid));
+        if (cmsLists.length) manifest.lists = cmsLists;
         if (icon) manifest.favicon = icon;
         // where the favicon comes from (OP System's Réglages › Technique › Favicon): the current site's (op.config.json
         // "favicon": "site", written at a redo's setup), scripts/favicon.mjs's (its stamp in favicon.svg), or made by hand
