@@ -31,13 +31,15 @@
    "b7bb9737e2005565",
    "31e7758d0bc81932",
    "3466757ba959b0e8",
-   "cde5f7dac814e49e"
+   "cde5f7dac814e49e",
+   "a140373b1b947de9"
   ],
   "src/components/global/Nav.astro": [
    "e4718a7d4c802336",
    "4260d1d52a809b4e",
    "60e84ad93b62b4dd",
-   "6bef692e5b2340e2"
+   "6bef692e5b2340e2",
+   "cb68a0898dfa7f62"
   ],
   "src/components/global/NavLink.astro": [
    "15ca36931898a7c7"

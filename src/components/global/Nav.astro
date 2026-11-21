@@ -31,7 +31,7 @@ const { render = true, overlap = false } = Astro.props;
             <Icon src={logo} variant="full-width" />
           </a>
         ) : (
-          <a class="nav_name" href="/">
+          <a class="nav_name text-style-small" href="/">
             {SITE_NAME}
           </a>
         )}
@@ -131,7 +131,7 @@ const { render = true, overlap = false } = Astro.props;
     .nav_wrap {
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: var(--layer-nav);
       display: flex;
       justify-content: center;
       padding-inline: var(--site-margin);
@@ -178,9 +178,7 @@ const { render = true, overlap = false } = Astro.props;
     .nav_name {
       display: flex;
       align-items: center;
-      font-size: var(--text-small);
       font-weight: var(--primary-medium);
-      line-height: var(--line-height-medium);
       transition: opacity var(--hover-duration) var(--hover-ease);
       @media (hover: hover) {
         &:hover {

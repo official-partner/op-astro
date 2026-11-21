@@ -213,7 +213,7 @@
   },
   "fluid": {},
   "roles": {},
-  "groups": [],
+  "groups": [{ "title": "Layers", "set": { "layer-nav": "100" } }],
   "themes": [
     {
       "selectors": [
