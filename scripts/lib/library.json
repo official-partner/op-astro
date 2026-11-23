@@ -46,7 +46,8 @@
   ],
   "src/components/global/SkipLink.astro": [
    "4b104ac7915b35dc",
-   "c52baf9f405884c0"
+   "c52baf9f405884c0",
+   "14d1987f6dfa847a"
   ],
   "src/components/interactive/Accordion.astro": [
    "3c197f6fee67c1b0",
@@ -100,6 +101,9 @@
   "src/components/system/ComponentSample.astro": [
    "33c89484cd7fe4be",
    "a1e69e5f0d405599"
+  ],
+  "src/components/system/CopyCase.astro": [
+   "976f11eea490e132"
   ],
   "src/components/system/Loader.astro": [
    "80d8f869998fa1ec",
@@ -156,7 +160,8 @@
    "5e7c05b103a75946",
    "11e4ce0d76902216",
    "7646d2834a60be63",
-   "e124f7dcafe5fa62"
+   "e124f7dcafe5fa62",
+   "8c157ec4f569fde3"
   ]
  }
 }

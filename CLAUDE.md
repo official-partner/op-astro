@@ -20,6 +20,9 @@ cover. How to build with Lumos: AGENTS.md, below.
 - Never write to Webflow, Figma, Sanity or any client system unless asked in so many words. Read only.
 - The site's copy: plain, written like a person: no slogans, no rhythmic triplets, no exclamation marks, no em dashes.
   The client's copy is kept word for word unless it has an error; flag errors in PROJECT.md.
+- The site's words are typed in their own case, in the pages and the content: capitals are the text style's
+  (`text-transform`), never typed (Sam, Nov 22). `npm run rules` flags two words in capitals in a row (caps-typed); the
+  layout's `CopyCase` makes a copy from the page give the words as written.
 - Log every decision in PROJECT.md with the date and who asked.
 - Grep a long file (PROJECT.md, README.md, base.css, a large component) before reading it whole; read the part the
   change touches.

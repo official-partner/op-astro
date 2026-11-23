@@ -1,0 +1,46 @@
+---
+/**
+ * A copy from the page gives the words as they are written, never as a text style shows them: Chrome and Safari copy
+ * a heading in text-transform's capitals, and the site's words are typed in their own case (Sam, Nov 22: « un
+ * copier-coller des titres donne du texte tout en capitales »; the rule caps-typed, scripts/rules.mjs). The plain text
+ * and the HTML of the selection go to the clipboard with no transform; a field, a text being written, a copy with no
+ * text-transform in it are left to the browser. Carried by the layout on every page.
+ */
+---
+
+<script>
+  import { onPage } from "@/utils/page.ts";
+
+  onPage((signal) => {
+    document.addEventListener(
+      "copy",
+      (e) => {
+        const sel = document.getSelection();
+        if (!sel || sel.isCollapsed || !e.clipboardData) return;
+        const at = sel.anchorNode instanceof Element ? sel.anchorNode : sel.anchorNode?.parentElement;
+        if (at?.closest("input, textarea, [contenteditable]:not([contenteditable='false'])")) return;
+        const box = document.createElement("div");
+        box.setAttribute("aria-hidden", "true");
+        box.style.cssText = "position:fixed;left:-100vw;top:0;white-space:pre-wrap;text-transform:none";
+        for (let i = 0; i < sel.rangeCount; i += 1) box.appendChild(sel.getRangeAt(i).cloneContents());
+        document.body.appendChild(box);
+        // a transform on what holds the selection (a heading's words alone) or on a part of it
+        const holder = sel.getRangeAt(0).commonAncestorContainer;
+        let el: Element | null = holder instanceof Element ? holder : holder.parentElement;
+        let transformed = false;
+        for (; el && !transformed; el = el.parentElement) transformed = getComputedStyle(el).textTransform !== "none";
+        const parts = [...box.querySelectorAll<HTMLElement>("*")];
+        if (!transformed) transformed = parts.some((x) => getComputedStyle(x).textTransform !== "none");
+        parts.forEach((x) => x.style.setProperty("text-transform", "none", "important"));
+        const written = box.innerText;
+        const html = box.innerHTML;
+        box.remove();
+        if (!transformed) return; // nothing a transform changes: the browser's own copy
+        e.clipboardData.setData("text/plain", written);
+        e.clipboardData.setData("text/html", html);
+        e.preventDefault();
+      },
+      { signal },
+    );
+  });
+</script>

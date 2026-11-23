@@ -7,6 +7,7 @@ import Footer from "@/components/global/Footer.astro";
 import Loader from "@/components/system/Loader.astro";
 import PageTransitions from "@/components/system/PageTransitions.astro";
 import SmoothScroll from "@/components/system/SmoothScroll.astro";
+import CopyCase from "@/components/system/CopyCase.astro";
 import type { SeoProps } from "@/types.ts";
 import { SITE_LOCALE } from "@/consts.ts";
 import { finishes } from "@/utils/finishes.ts";
@@ -72,5 +73,6 @@ const { smoothScroll } = finish;
       <slot />
     </main>
     <Footer />
+    <CopyCase />
   </body>
 </html>

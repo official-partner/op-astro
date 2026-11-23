@@ -29,6 +29,7 @@
 //                   file every page reads)
 //   no-sample       every component of content/ and section/ has its sample on the components page
 //   system-file     src/styles/base.css is what system/site.json gives (npm run system): never edited by hand
+//   caps-typed      the site's words in their own case: two words or more typed in capitals are text-transform's job
 //
 // A failure the team accepts lives in review/data/rules-baseline.json with its reason: it is listed as known and
 // never stops a build. The list only shrinks: `--accept` on a site with debt, then the health review takes them out.
@@ -508,6 +509,26 @@ export function checkRules(root, { all = false } = {}) {
       );
   } catch (error) {
     fail("system-file", "system/site.json", "", error.message.slice(0, 160));
+  }
+
+  // caps-typed (Sam, Nov 22, C2): the site's words keep their own case in the sources; capitals are the text style's
+  // (text-transform), never typed, or the page reads them in capitals to a screen reader, a copy and a search engine.
+  // Two words or more in capitals in a row in a text of the pages or a value of the content (src/content, src/data);
+  // an acronym alone (« GEICO », « ESPN/Bachelor ») is a name and stays
+  const CAPS = /(?<![\w-])[A-ZÀ-Ý]{2,}(?:[ '’][A-ZÀ-Ý]{2,})+(?![\w-])/;
+  const typed = (f, text) => {
+    const m = text.match(CAPS);
+    if (m && /[A-ZÀ-Ý]{3}/.test(m[0])) fail("caps-typed", rel(f), "", `« ${m[0].slice(0, 60)} » (write it in its own case; the capitals are text-transform's)`);
+  };
+  for (const f of walk(path.join(root, "src"), (x) => /\.(astro|md|mdx)$/.test(x))) {
+    const text = read(f).replace(/<(script|style)[\s\S]*?<\/\1>/g, "").replace(/^---[\s\S]*?^---/m, "").replace(/\{[^{}]*\}/g, " ");
+    for (const t of text.match(/>[^<>]+</g) ?? []) typed(f, t);
+  }
+  for (const f of ["src/content", "src/data"].flatMap((d) => walk(path.join(root, d), (x) => x.endsWith(".json")))) {
+    let data;
+    try { data = JSON.parse(read(f)); } catch { continue; }
+    const each = (v) => { if (typeof v === "string") { if (!/^(?:@|\.|\/|https?:|#|[a-z0-9-]+$)/.test(v)) typed(f, v); } else if (v && typeof v === "object") Object.values(v).forEach(each); };
+    each(data);
   }
 
   // what the team accepted
