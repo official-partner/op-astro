@@ -268,6 +268,9 @@ export default function opSystem(site) {
         // which page, the items it shows as built, and its rule when it has one (docs/content.md, A list's rule). OP System reads them to say where
         // an item shows (Contenu, « Shows in »)
         const cmsLists = [];
+        // the lists kept as data the pages show (data-op-list with data-op-source="src/data/<name>.json"): on which page,
+        // so OP System says a list shown on several pages before anything is changed in it (its canvas's B9)
+        const dataLists = [];
         const attr = (tag, name) => { const m = new RegExp(`\\s${name}=(?:"([^"]*)"|'([^']*)')`).exec(tag); return m ? (m[1] ?? m[2]).replace(/&quot;/g, '"').replace(/&#34;/g, '"').replace(/&amp;/g, "&") : ""; };
         const htmlDir = site.pagesDir ? path.join(root, site.pagesDir) : out;
         for (const file of await htmlFiles(htmlDir)) {
@@ -309,6 +312,10 @@ export default function opSystem(site) {
             const from = m.index + m[0].length, next = html.indexOf(" data-op-list=", from);
             const items = [...new Set([...html.slice(from, next < 0 ? html.length : next).matchAll(/\sdata-op-item="([^"]+)"/g)].map((x) => x[1]))].slice(0, 500);
             cmsLists.push(Object.assign({ name, collection: m[1], page: id, items }, attr(m[0], "data-op-label") ? { label: attr(m[0], "data-op-label") } : {}, rule ? { rule } : {}));
+          }
+          for (const m of html.matchAll(/<[a-z][^>]*\sdata-op-source="(src\/data\/[\w/-]+\.json)"[^>]*>/g)) {
+            const name = attr(m[0], "data-op-list");
+            if (name && !internal && !dataLists.some((l) => l.source === m[1] && l.page === id)) dataLists.push({ name, source: m[1], page: id });
           }
           pages.push(Object.assign({ id, title: own || id, path: route, group: internal ? t.system : t.site },
             components ? { role: "components" } : { seo: { title: full, description, slug: route === "./" ? "" : route, index } }));
@@ -614,6 +621,7 @@ export default function opSystem(site) {
         };
         if (grid) manifest.grid = JSON.parse(JSON.stringify(grid));
         if (cmsLists.length) manifest.lists = cmsLists;
+        if (dataLists.length) manifest.dataLists = dataLists;
         if (icon) manifest.favicon = icon;
         // where the favicon comes from (OP System's Réglages › Technique › Favicon): the current site's (op.config.json
         // "favicon": "site", written at a redo's setup), scripts/favicon.mjs's (its stamp in favicon.svg), or made by hand

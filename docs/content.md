@@ -116,6 +116,10 @@ Read before adding or changing a collection, a field, a list the team edits on t
   its list on the page says its place, `data-op-source="src/data/<name>.json#<item id>.<key>"`, each line
   `data-op-item={line.id}`, and the app writes it in its item.
 - Never rename an item's `id` without a reason: the app's saved changes name it.
+- A list shown on several pages (the same file marked on each: the opening hours on two pages) is one list: site.json
+  says each page that shows it (`dataLists`: its name, its file, its page; integrations/op-system.mjs, read from the
+  built pages, the team's own pages left out), and OP System says so in Edit before anything is changed in it (Nov 24).
+  Show it through one component (no copied block), as Atelier Nord's hours are.
 
 ## A list's rule (Nov 19; the app's plan, lot 3; Sam, Nov 18: « une liste se règle sur la page »)
 
