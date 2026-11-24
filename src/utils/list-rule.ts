@@ -7,8 +7,9 @@
 export type Condition = {
   field: string;
   /** `is`: equal, or one of several; `not`: the reverse; `after`, `before`: a number or a date; `has`: a text or a
-   *  list of words that holds it; `set`, `unset`: filled or not. */
-  op: "is" | "not" | "after" | "before" | "has" | "set" | "unset";
+   *  list of words that holds it; `set`, `unset`: filled or not; `same`: shares a value with the page's own item (a
+   *  list on an item's page: « Wood same as this project »), no `value`. */
+  op: "is" | "not" | "after" | "before" | "has" | "set" | "unset" | "same";
   value?: unknown;
 };
 export type Order = { by: string; dir?: "asc" | "desc" };
@@ -52,13 +53,20 @@ const word = (v: unknown): string =>
   v instanceof Date ? v.toISOString().slice(0, 10) : v && typeof v === "object" && "id" in v ? String((v as { id: unknown }).id) : String(v ?? "");
 const same = (a: unknown, b: unknown) => word(a).trim().toLowerCase() === word(b).trim().toLowerCase();
 
-/** Whether an item passes one condition. A condition on a field the item does not have keeps nothing, but `unset`. */
-export function passes(data: Record<string, unknown>, c: Condition): boolean {
+/** Whether an item passes one condition. A condition on a field the item does not have keeps nothing, but `unset`.
+ *  `me`: the page's own item's fields, which `same` reads; with no such item (a list on another page), `same` keeps
+ *  nothing. */
+export function passes(data: Record<string, unknown>, c: Condition, me?: Record<string, unknown>): boolean {
   const v = data[c.field];
   if (c.op === "set") return !blank(v);
   if (c.op === "unset") return blank(v);
-  const wanted = Array.isArray(c.value) ? c.value : [c.value];
   const mine = Array.isArray(v) ? v : [v];
+  if (c.op === "same") {
+    const theirs = me ? me[c.field] : undefined;
+    if (blank(v) || blank(theirs)) return false;
+    return mine.some((m) => (Array.isArray(theirs) ? theirs : [theirs]).some((t) => same(m, t)));
+  }
+  const wanted = Array.isArray(c.value) ? c.value : [c.value];
   if (c.op === "is") return !blank(v) && mine.some((m) => wanted.some((w) => same(m, w)));
   if (c.op === "not") return !mine.some((m) => wanted.some((w) => same(m, w)));
   if (c.op === "has") return !blank(v) && wanted.some((w) => mine.some((m) => word(m).toLowerCase().includes(word(w).trim().toLowerCase())));
@@ -79,12 +87,13 @@ const compare = (a: unknown, b: unknown): number => {
 export function applyRule<T extends Entry>(items: T[], rule: ListRule | undefined, self?: string): T[] {
   if (!rule) return items;
   const out = new Set(rule.out ?? []), chosen = rule.chosen ?? [];
+  const me = self ? items.find((i) => i.id === self)?.data : undefined;
   let list = items.filter((i) => !out.has(i.id) && !(rule.skipSelf && self && i.id === self));
   if (rule.shows === "chosen") {
     const by = new Map(list.map((i) => [i.id, i]));
     list = chosen.map((id) => by.get(id)).filter((i): i is T => !!i);
   } else {
-    if (rule.shows === "some") list = list.filter((i) => (rule.where ?? []).every((c) => passes(i.data, c)));
+    if (rule.shows === "some") list = list.filter((i) => (rule.where ?? []).every((c) => passes(i.data, c, me)));
     if (rule.order === "hand") {
       const at = new Map(chosen.map((id, n) => [id, n]));
       list = list

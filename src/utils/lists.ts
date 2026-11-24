@@ -11,7 +11,7 @@ import listsData from "@/data/lists.json";
 const FILE = "src/data/lists.json";
 const condition = z.object({
   field: z.string(),
-  op: z.enum(["is", "not", "after", "before", "has", "set", "unset"]),
+  op: z.enum(["is", "not", "after", "before", "has", "set", "unset", "same"]),
   value: z.unknown().optional(),
 });
 const rule = z.object({
@@ -46,10 +46,12 @@ export async function listed<C extends CollectionKey>(name: string, self?: strin
 
 /** What the list's element carries for OP System: its name, its collection, where its rule is written and the rule
  *  as this build read it (what the app's Options panel shows, and changes from). Each item carries
- *  `data-op-item={id}` as any list of a collection. */
-export const ruleMarks = (name: string) => ({
+ *  `data-op-item={id}` as any list of a collection. `self`, on an item's own page: that item's id, the one `listed`
+ *  was given (the panel leaves it out and offers « same as this one » with it). */
+export const ruleMarks = (name: string, self?: string) => ({
   "data-op-list": name,
   "data-op-source": `astro:${ruleOf(name).collection}`,
   "data-op-rule": FILE,
   "data-op-rule-is": JSON.stringify(ruleOf(name)),
+  ...(self ? { "data-op-rule-self": self } : {}),
 });

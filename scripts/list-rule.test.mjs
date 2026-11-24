@@ -47,6 +47,13 @@ test("left aside, the page's own item, at most, start at", () => {
   assert.deepEqual(ids({ collection: "p", limit: 2, start: 2 }), ["buffet", "banc"]);
   assert.deepEqual(ids({ collection: "p", start: 9 }), []);
 });
+test("same as the page's own item: those that share its value (a list on an item's page)", () => {
+  assert.deepEqual(ids({ collection: "p", shows: "some", where: [{ field: "wood", op: "same" }], skipSelf: true }, "table"), ["lit"]);
+  assert.deepEqual(ids({ collection: "p", shows: "some", where: [{ field: "wood", op: "same" }] }, "table"), ["table", "lit"]);
+  assert.deepEqual(ids({ collection: "p", shows: "some", where: [{ field: "tags", op: "same" }] }, "table"), ["table"]);
+  assert.deepEqual(ids({ collection: "p", shows: "some", where: [{ field: "wood", op: "same" }] }, "console"), []);   // its own wood empty: none
+  assert.deepEqual(ids({ collection: "p", shows: "some", where: [{ field: "wood", op: "same" }] }), []);   // on no item's page: none
+});
 test("passes: a condition alone", () => {
   assert.equal(passes({ n: "3" }, { field: "n", op: "after", value: 2 }), true);
   assert.equal(passes({ n: "abc" }, { field: "n", op: "after", value: 2 }), false);

@@ -135,9 +135,10 @@ itself (the app's lot 3: a commit « Edit: … (its rule) (OP) » on review).
 
 - `shows`: `all` (every visible item), `some` (those every condition of `where` keeps), `chosen` (the ids of `chosen`,
   in that order: picked by hand).
-- `where`: a field, how (`is`, `not`, `after`, `before`, `has`, `set`, `unset`), a value. `is` and `not` take one value
-  or several (one of them); a reference is its id; `after` and `before` read a number or a date; `has` looks in a text
-  or a list of words.
+- `where`: a field, how (`is`, `not`, `after`, `before`, `has`, `set`, `unset`, `same`), a value. `is` and `not` take
+  one value or several (one of them); a reference is its id; `after` and `before` read a number or a date; `has` looks
+  in a text or a list of words; `same` takes no value: the items that share one with the page's own item (« Wood same
+  as this project », Nov 24), nothing on a page that is no item's.
 - `order`: the fields that sort, the first first, each `asc` (by default) or `desc`; the empty ones last. `"hand"`: the
   ids of `chosen` first, in their order, then the others as the collection has them (a card moved on the page).
   Nothing: the collection's own order (`order`, then the id).
@@ -145,7 +146,8 @@ itself (the app's lot 3: a commit « Edit: … (its rule) (OP) » on review).
   an item's page, that item left out). A list on an item's own page writes the key, `true` or `false`: OP System's
   panel then offers « Leave out this page's own item »; a list elsewhere leaves the key out.
 
-A page reads it with `listed("<name>", self?)` and marks it with `ruleMarks("<name>")` (src/utils/lists.ts):
+A page reads it with `listed("<name>", self?)` and marks it with `ruleMarks("<name>", self?)` (src/utils/lists.ts; on an
+item's page both are given the item's id, and the list carries it as `data-op-rule-self`):
 `data-op-list`, `data-op-source="astro:<collection>"`, `data-op-rule="src/data/lists.json"` and `data-op-rule-is`
 (the rule as the build read it, JSON: what the app's Options panel shows and changes from), each item
 `data-op-item={id}`. The bounds a layout has stay on the list (`data-op-min`, `data-op-max`). A name the file does not
