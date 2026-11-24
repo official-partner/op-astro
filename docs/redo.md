@@ -8,7 +8,11 @@ Read when the site replaces a current one: its titles, descriptions, addresses a
   collection's fields, written in its schema like any other (content.config.ts takes no helper: Content, above),
   exactly `seoTitle: z.string().optional().describe("Titre pour Google")`, `seoDescription: z.string().optional()
   .describe("Description pour Google")`, `ogImage: image().optional().describe("Image de partage")` (the names
-  Contenu shows under « Pour Google »), in a collection whose items have a page; its page gives them to its layout. A value plainly bad is told to the team as a decision,
+  Contenu shows under « Pour Google »), in a collection whose items have a page; its page gives them to its layout. Left
+  empty they are filled by the item itself (Nov 24: `itemSeo(data)`, src/utils/seo.ts, spread into the layout): its
+  title, its first short text (summary, description, excerpt, intro, bio, role, text; 160 characters), its first
+  picture (cover, image, photo, picture, thumbnail); site.json says so (`seoDefaults`) and Contenu shows them as the
+  fields' placeholders. A value plainly bad is told to the team as a decision,
   never rewritten silently.
 - Every old address stays: one that changes gets a 301 in op.config.json `redirects` (`{ "/old": "/new" }`); the build
   writes them in `dist/_redirects` after `public/_redirects`, and warns on a redirect to no page. The current site's

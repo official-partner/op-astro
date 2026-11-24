@@ -622,6 +622,9 @@ export default function opSystem(site) {
         if (grid) manifest.grid = JSON.parse(JSON.stringify(grid));
         if (cmsLists.length) manifest.lists = cmsLists;
         if (dataLists.length) manifest.dataLists = dataLists;
+        // an item's page fills its own title, description and share picture when « For Google » is left empty
+        // (src/utils/seo.ts, itemSeo): OP System shows those as the fields' placeholders
+        try { if (/export function itemSeo\b/.test(await readFile(path.join(root, "src/utils/seo.ts"), "utf8"))) manifest.seoDefaults = { words: ["summary", "description", "excerpt", "intro", "bio", "role", "text"], pictures: ["cover", "image", "photo", "picture", "thumbnail"] }; } catch (err) { /* a site without it */ }
         if (icon) manifest.favicon = icon;
         // where the favicon comes from (OP System's Réglages › Technique › Favicon): the current site's (op.config.json
         // "favicon": "site", written at a redo's setup), scripts/favicon.mjs's (its stamp in favicon.svg), or made by hand
