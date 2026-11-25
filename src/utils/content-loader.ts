@@ -29,19 +29,25 @@ type Answer = { version: number; updatedAt?: string; items: Item[] };
 export const PICTURE = "__opPicture";
 
 export class OpContentError extends Error {
-  constructor(message: string) {
+  status: number;
+  constructor(message: string, status = 0) {
     super(message);
     this.name = "OpContentError";
+    this.status = status;
   }
 }
 
 const TIMEOUT = 1500;
 const RETRY = 5000;
+/* how long OP's last good answer stands for one that failed (OP slow or down): the page then shows what was saved, never
+   the files of the last build, which are behind it */
+const STALE = 10 * 60000;
 type Kept = {
   at: number;
   version: number;
   answer: Promise<Answer>;
   failed?: boolean;
+  good?: { at: number; answer: Answer };
 };
 const kept = new Map<string, Kept>();
 const refused = new Map<string, Set<string>>();
@@ -85,18 +91,30 @@ function read(collection: string): Promise<Answer> {
     ? { authorization: `Bearer ${OP_CONTENT_TOKEN}` }
     : {};
   if (draft) headers[DRAFT_HEADER] = draft;
+  const last = hit?.good;
   const answer = fetch(url, {
     headers,
     signal: AbortSignal.timeout(TIMEOUT),
-  }).then(async (res) => {
-    if (!res.ok)
-      throw new OpContentError(`OP answered ${res.status} for ${collection}`);
-    const body = (await res.json()) as Answer;
-    if (!body || !Array.isArray(body.items))
-      throw new OpContentError(`OP gave no items for ${collection}`);
-    return { ...body, version: Number(body.version) || 0 };
-  });
-  const entry: Kept = { at: Date.now(), version: asked, answer };
+  })
+    .then(async (res) => {
+      if (!res.ok)
+        throw new OpContentError(
+          `OP answered ${res.status} for ${collection}`,
+          res.status,
+        );
+      const body = (await res.json()) as Answer;
+      if (!body || !Array.isArray(body.items))
+        throw new OpContentError(`OP gave no items for ${collection}`);
+      return { ...body, version: Number(body.version) || 0 };
+    })
+    .catch((err) => {
+      // OP slow or down: its last good answer stands (a save made a moment ago stays on the page). A collection OP
+      // says it does not hold (404: one the app cannot edit) is the files', at once
+      const gone = err instanceof OpContentError && err.status === 404;
+      if (last && !gone && Date.now() - last.at < STALE) return last.answer;
+      throw err;
+    });
+  const entry: Kept = { at: Date.now(), version: asked, answer, good: last };
   kept.delete(key);
   kept.set(key, entry);
   if (draft) {
@@ -106,6 +124,13 @@ function read(collection: string): Promise<Answer> {
   }
   answer.then(
     (a) => {
+      if (last && a === last.answer) {
+        // the last good answer served for a read that failed: asked again after a moment, as a failure is
+        entry.failed = true;
+        entry.at = Date.now();
+        return;
+      }
+      entry.good = { at: Date.now(), answer: a };
       entry.version = a.version;
       // a version named that OP does not have yet (or never will): this answer stands for it, so a wrong ?op-v
       // costs one read, not every read after it

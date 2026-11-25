@@ -28,7 +28,19 @@ Read before adding or changing a collection, a field, a list the team edits on t
   everywhere; `draft: z.boolean().default(false)` keeps one on the staging only (OP System's « Draft », Nov 12: the
   live site's build leaves it out of every list, its own page with it, until someone sets it to « On the site »;
   `npm run dev` shows it; site.json says `content.drafts` so the app offers the state); `order: z.number().optional()`
-  sorts them (Contenu writes 1, 2, 3; an item without one comes last).
+  sorts them (Contenu writes 1, 2, 3; an item without one comes last). A site that names them otherwise is read the
+  same way by the app and by `getItems`: `visible`, `published`, `publie` or `shown`; `draft` or `brouillon`; `order`,
+  `ordre`, `position` or `rank` (`src/utils/content.ts`, the same lists as op-system's worker, kept word for word:
+  a name the app reads and the site does not would hide nothing).
+- A formatted text (Contenu's « Formatted text »: a string field whose kind is `rich`) is the app's Markdown: titles,
+  paragraphs, lists with bullets or numbers, a quote, bold, italic, a link, a line break. A page sets
+  `richHtml(value, classes)` (`src/utils/rich.ts`) with `set:html` on the element that carries `data-op-field`, and
+  gives the same classes to `data-op-rich={richMarks(classes)}` so a block made in Edit takes the same look
+  (`{ h2: "text-style-h4", p: "text-style-main" }`: a text style of the system, never a rule of the component);
+  `inlineRich(value)` is the same without blocks, for a text set in a line. It reads what the app writes and nothing
+  more: anything else stays as written, as words, and a link goes to a page, the web, an email or a phone, never a
+  script. Never another Markdown reader for these fields: the app's panel, its Edit and this file read one format
+  (op-system's `docs/content.md`), and a change here is a change there.
 - A page reads a collection through `getItems("<name>")` and `getItem("<name>", id)` (`src/utils/content.ts`), never
   `getCollection`: the visible items, in their order, `{ id, data }` the same way on every build. A picture field gives
   a `Picture`: pass it to `<Img {...img(data.photo)} alt="…" />`. A collection added to content.config.ts works by its
@@ -48,7 +60,9 @@ Read before adding or changing a collection, a field, a list the team edits on t
   schemas; `src/utils/content-loader.ts`): `GET <OP_CONTENT_URL>?p=<project>&c=<collection>` with
   `Authorization: Bearer <OP_CONTENT_TOKEN>`, kept 2 s (`OP_CONTENT_TTL`), read again at once when the request names a
   newer version (`?op-v=<version>` or `x-op-content-version`, OP System after a save). An error, a timeout (1.5 s) or no
-  `OP_CONTENT_URL`: the committed files (a failure is remembered 5 s). An item the schema refuses: its committed file.
+  `OP_CONTENT_URL`: OP's last good answer for ten minutes (`STALE`: a save made a moment ago stays on the page while
+  OP is slow), then the committed files (a failure is remembered 5 s). A collection OP answers 404 for (one it holds
+  no row of: the app cannot edit it) is the files' at once. An item the schema refuses: its committed file.
   A picture not committed yet is a URL in OP's storage, shown only from a host of `OP_STORAGE_ORIGINS` (build time,
   default `https://*.supabase.co`). `main` and every other branch build static, as before.
 - What the staging reads is what is published (OP System, Oct 28): every change made in OP System's Contenu is a

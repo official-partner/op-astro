@@ -100,13 +100,25 @@ function resolve(collection: string, value: unknown): unknown {
 
 /* An item shows unless it is hidden (`visible: false`: nowhere) or a draft (`draft: true`) outside the staging.
    OP System's « Draft » (Nov 12) keeps an item on the staging only, until someone sets it to « On the site »: the
-   live site's build leaves it out of every list, and its own page with it. */
-const shown = (e: { data: object }) => {
-  const d = e.data as { visible?: boolean; draft?: boolean };
-  return d.visible !== false && (STAGING || d.draft !== true);
+   live site's build leaves it out of every list, and its own page with it.
+
+   The names are the ones OP System's Contenu reads a collection's switches and order under (op-system,
+   worker/content-copy.js VISIBLE_NAMES and DRAFT_NAMES, worker/content.js ORDER_NAMES): the two lists are one, kept
+   word for word. The app offered « Hidden » on a field named `published` while the site read `visible` only, and
+   the item stayed on the site (the review of Nov 24). The first name of a list that holds a value of its kind counts. */
+const VISIBLE_NAMES = ["visible", "published", "publie", "shown"];
+const DRAFT_NAMES = ["draft", "brouillon"];
+const ORDER_NAMES = ["order", "ordre", "position", "rank"];
+const firstOf = (data: object, names: string[], kind: "boolean" | "number") => {
+  const d = data as Record<string, unknown>;
+  for (const n of names) if (typeof d[n] === kind) return d[n];
+  return undefined;
 };
+const shown = (e: { data: object }) =>
+  firstOf(e.data, VISIBLE_NAMES, "boolean") !== false &&
+  (STAGING || firstOf(e.data, DRAFT_NAMES, "boolean") !== true);
 const orderOf = (e: { data: object }) => {
-  const o = (e.data as { order?: unknown }).order;
+  const o = firstOf(e.data, ORDER_NAMES, "number");
   return typeof o === "number" && Number.isFinite(o) ? o : Infinity;
 };
 const byOrder = (
