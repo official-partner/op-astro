@@ -14,6 +14,8 @@ from. OP reads them to change the site's own files: no selector, no `data-op-*` 
 - What a marked page holds: `<!--avb-s:PLACE-->` and `<!--avb-e:PLACE-->` around each node, `data-avb-p` on each
   element (its place in the page, and in each component that renders it, as `file|place`), and `data-avb-d`, the
   stamp `avb-d:<sha256>:<file>`.
+- Every marked page also says the commit it was built from (`window.opBuild`, one inline line in its head:
+  Cloudflare's `WORKERS_CI_COMMIT_SHA`, else git's): OP states a change against that commit's files.
 - What it costs (measured Nov 24, 2026): 0.6 s on an 18-page site, 3.5 s on a 56-page one; the HTML is about four
   times larger before compression, under twice after.
 

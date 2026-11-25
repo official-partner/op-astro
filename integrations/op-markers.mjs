@@ -4,20 +4,36 @@
 // (official-partner/op-v2, scripts/build-markers.mts: bring a newer one from there, never edit it here). This file
 // only hands Astro the marked copy of each .astro file as Vite loads it. Nothing is written to the project, and a
 // build without OP_MARKERS=1 (the live site, and every site of OP v1) never loads it.
+import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import path from "node:path";
 
 const require = createRequire(import.meta.url);
+
+function buildCommit(root) {
+  const said = process.env.WORKERS_CI_COMMIT_SHA || "";
+  if (/^[0-9a-f]{40}$/.test(said)) return said;
+  try {
+    const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+    return /^[0-9a-f]{40}$/.test(sha) ? sha : "";
+  } catch {
+    return "";
+  }
+}
 
 /** @returns {import("astro").AstroIntegration} */
 export default function opMarkers({ on }) {
   return {
     name: "op-markers",
     hooks: {
-      "astro:config:setup": ({ updateConfig, config }) => {
+      "astro:config:setup": ({ updateConfig, injectScript, config }) => {
         if (!on) return;
         const { markSourceFile } = require("./op-markers/stacki-markers.cjs");
         const root = path.resolve(config.root instanceof URL ? config.root.pathname : String(config.root));
+        // Every page says the commit it was built from (window.opBuild): OP states a change against that commit's
+        // files, whatever it last read of site.json. Cloudflare's build says it; a build by hand asks git.
+        const build = buildCommit(root);
+        if (build) injectScript("head-inline", `window.opBuild=${JSON.stringify(build)};`);
         updateConfig({
           vite: {
             plugins: [
