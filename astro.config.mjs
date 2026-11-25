@@ -5,6 +5,7 @@ import { SITE_NAME, SITE_URL, SITE_LOCALE } from "./src/consts.ts";
 import { isNoindexRoute } from "./src/utils/seo.ts";
 import opSystem from "./integrations/op-system.mjs";
 import opLive, { STATIC_DIR } from "./integrations/op-live.mjs";
+import opMarkers from "./integrations/op-markers.mjs";
 
 // The staging (branch review) is rendered on demand by a Worker and reads OP's working copy of the collections;
 // main, and any build without it, stays static. OP_LIVE=1 or 0 decides; unset, Cloudflare's build of review is live.
@@ -43,6 +44,8 @@ export default defineConfig({
     sitemap({
       filter: (page) => !isNoindexRoute(new URL(page).pathname),
     }),
+    // OP v2: the staging's source markers (integrations/op-markers.mjs), on only with OP_MARKERS=1
+    opMarkers({ on: process.env.OP_MARKERS === "1" }),
     opLive({ live: LIVE }),
     // site.json for OP System, beside the pages (integrations/op-system.mjs)
     opSystem({ siteName: SITE_NAME, siteUrl: SITE_URL, locale: SITE_LOCALE, pagesDir: LIVE ? STATIC_DIR : undefined }),

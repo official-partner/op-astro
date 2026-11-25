@@ -1,0 +1,20 @@
+# The source markers (OP v2)
+
+A site reviewed in OP v2 builds its staging with source markers: every element a page shows carries the file and the
+place it was written in, and every page carries a stamp, its file and the checksum of the exact bytes it was built
+from. OP reads them to change the site's own files: no selector, no `data-op-*` mark written by hand.
+
+- On with `OP_MARKERS=1`, off otherwise: the live site and every site of OP v1 build exactly as before (checked: the
+  same files byte for byte on this branch and on `main`, site.json apart).
+- `integrations/op-markers.mjs` hands Astro a marked copy of each `.astro` file as Vite loads it. Nothing is written
+  to the project.
+- `integrations/op-markers/stacki-markers.cjs` is Stacki's own marking (MIT, © 2026 Timothy Ricks, its licence beside
+  it), bundled by `official-partner/op-v2` (`scripts/build-markers.mts`). Never edit it here: bring a newer one from
+  there. It needs `typescript`, which the starter already has.
+- What a marked page holds: `<!--avb-s:PLACE-->` and `<!--avb-e:PLACE-->` around each node, `data-avb-p` on each
+  element (its place in the page, and in each component that renders it, as `file|place`), and `data-avb-d`, the
+  stamp `avb-d:<sha256>:<file>`.
+- What it costs (measured Nov 24, 2026): 0.6 s on an 18-page site, 3.5 s on a 56-page one; the HTML is about four
+  times larger before compression, under twice after.
+
+This branch (`v2`) is where the starter changes for OP v2. `main` stays as OP v1's sites need it until each one moves.
