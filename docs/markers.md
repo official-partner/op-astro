@@ -4,8 +4,10 @@ A site reviewed in OP v2 builds its staging with source markers: every element a
 place it was written in, and every page carries a stamp, its file and the checksum of the exact bytes it was built
 from. OP reads them to change the site's own files: no selector, no `data-op-*` mark written by hand.
 
-- On with `OP_MARKERS=1`, off otherwise: the live site and every site of OP v1 build exactly as before (checked: the
-  same files byte for byte on this branch and on `main`, site.json apart).
+- On for a staging, with nothing to set in Cloudflare: its build of any branch but `main` (`WORKERS_CI_BRANCH`), so
+  `review` and a trial branch have them. By hand, `OP_MARKERS=1`; `OP_MARKERS=0` turns them off on a branch. The live
+  site (`main`) never has them, whatever is set (`markersOn` in the integration): it builds exactly as before
+  (checked: the same files byte for byte on this branch and on `main`, site.json apart).
 - `integrations/op-markers.mjs` hands Astro a marked copy of each `.astro` file as Vite loads it. Nothing is written
   to the project.
 - `integrations/op-markers/stacki-markers.cjs` is Stacki's own marking (MIT, © 2026 Timothy Ricks, its licence beside

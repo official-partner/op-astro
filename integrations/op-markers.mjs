@@ -3,7 +3,7 @@
 // (MIT, © 2026 Timothy Ricks: op-markers/LICENSE), bundled as it is in op-markers/stacki-markers.cjs by OP v2
 // (official-partner/op-v2, scripts/build-markers.mts: bring a newer one from there, never edit it here). This file
 // only hands Astro the marked copy of each .astro file as Vite loads it. Nothing is written to the project, and a
-// build without OP_MARKERS=1 (the live site, and every site of OP v1) never loads it.
+// build without them (the live site always: markersOn, below) never loads it.
 import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -19,6 +19,20 @@ function buildCommit(root) {
   } catch {
     return "";
   }
+}
+
+/**
+ * Whether this build carries the markers. A staging does: Cloudflare's build of any branch but main (it says the
+ * branch, WORKERS_CI_BRANCH), with nothing to set in Cloudflare, so a variable there can never mark the live site by
+ * mistake. By hand, OP_MARKERS=1. OP_MARKERS=0 turns them off on a branch. The live site (main) never has them,
+ * whatever is set.
+ */
+export function markersOn(env = process.env) {
+  const branch = env.WORKERS_CI_BRANCH || "";
+  if (branch === "main") return false;
+  if (env.OP_MARKERS === "0") return false;
+  if (env.OP_MARKERS === "1") return true;
+  return branch !== "";
 }
 
 /** @returns {import("astro").AstroIntegration} */
